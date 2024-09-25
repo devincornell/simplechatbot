@@ -17,7 +17,7 @@ sys.path.append('..')
 import simplechatbot.v4 as simplechatbot
 
 
-def get_tools(model: ChatOpenAI) -> list[langchain_core.tools.BaseTool]:
+def get_tools() -> list[langchain_core.tools.BaseTool]:
     '''Get the tools that this chatbot uses..'''
 
     # can use objects to specify structure of input
@@ -43,7 +43,11 @@ def get_tools(model: ChatOpenAI) -> list[langchain_core.tools.BaseTool]:
         return first + second
 
     return [
-        DuckDuckGoSearchResults(),
+        DuckDuckGoSearchResults(
+            keys_to_include=['snippet', 'title'], 
+            results_separator='\n\n',
+            num_results = 10,
+        ),
         multiply,
         add,
     ]
@@ -61,32 +65,32 @@ if __name__ == '__main__':
             model_name = 'gpt-4o-mini', 
             api_key=simplechatbot.APIKeyChain.from_json_file('keys.json')['openai'],
             system_prompt=system_prompt,
-            tool_callable=get_tools,
+            tools=get_tools(),
         )
     else:
         chatbot = simplechatbot.ChatBot.from_ollama(
             model_name = 'llama3.1', 
             system_prompt=system_prompt,
-            tool_callable=get_tools,
+            tools=get_tools(),
         )
     
-    try:
-        system_prompt = chatbot.history.first_system.content
-        print('=============== System Message for this Chat ===================')
-        print(system_prompt, '\n')
-    except ValueError as e:
-        pass
-    try:
-        tools = chatbot.toolset.render()
-        print('\n=============== Tools for this Chat ===================')
-        print(tools, '\n')
-    except AttributeError:
-        pass
+    if True:
+        try:
+            system_prompt = chatbot.history.first_system.content
+            print('=============== System Message for this Chat ===================')
+            print(system_prompt, '\n')
+        except ValueError as e:
+            pass
+        try:
+            tools = chatbot.toolset.render()
+            print('\n=============== Tools for this Chat ===================')
+            print(tools, '\n')
+        except AttributeError:
+            pass
 
     print('=============== Starting Chat ===================\n')
-    if False:
-        chatbot.ui.start_streamlit(streamlit=streamlit)
-    else:
-        chatbot.ui.start_interactive(stream=False, tool_verbose_callback=print)
+    
+    chatbot.ui.start_interactive(stream=False, tool_verbose_callback=print)
+    
     print('=============== Chat Ended ===================')
 
