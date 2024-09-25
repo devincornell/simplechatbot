@@ -56,8 +56,7 @@ def get_tools() -> list[langchain_core.tools.BaseTool]:
 if __name__ == '__main__':
 
     system_prompt = '''
-    You are designed to answer any question the user has by browsing the web with Duck Duck Go Search.
-    Even if the user did not ask for it, perform a search to answer every question.
+    You are designed to answer any question the user has.
     '''
 
     if True:
