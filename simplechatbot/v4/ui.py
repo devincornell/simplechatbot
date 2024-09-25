@@ -12,9 +12,24 @@ class ChatBotUI:
     chatbot: ChatBot
 
     def start_interactive(self, 
-        stream: bool = True,
+        stream: bool = False,
+        show_intro: bool = False,
         tool_verbose_callback: typing.Callable[[str],None]|None = None,
-        ) -> None:
+    ) -> None:
+        if show_intro:
+            try:
+                system_prompt = self.chatbot.history.first_system.content
+                print('=============== System Message for this Chat ===================')
+                print(system_prompt, '\n')
+            except ValueError as e:
+                pass
+            try:
+                tools = self.chatbot.toolset.render()
+                print('\n=============== Tools for this Chat ===================')
+                print(tools, '\n')
+            except AttributeError:
+                pass
+
         while True:
             if len(self.chatbot.history) and not self.chatbot.history.last.content.endswith('\n'):
                 print()

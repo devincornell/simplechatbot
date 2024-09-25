@@ -73,23 +73,10 @@ if __name__ == '__main__':
             tools=get_tools(),
         )
     
-    if True:
-        try:
-            system_prompt = chatbot.history.first_system.content
-            print('=============== System Message for this Chat ===================')
-            print(system_prompt, '\n')
-        except ValueError as e:
-            pass
-        try:
-            tools = chatbot.toolset.render()
-            print('\n=============== Tools for this Chat ===================')
-            print(tools, '\n')
-        except AttributeError:
-            pass
 
     print('=============== Starting Chat ===================\n')
     
-    chatbot.ui.start_interactive(stream=False, tool_verbose_callback=print)
+    chatbot.ui.start_interactive(stream=False, show_intro=True, tool_verbose_callback=print)
     
     print('=============== Chat Ended ===================')
 
