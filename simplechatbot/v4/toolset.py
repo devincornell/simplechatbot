@@ -57,8 +57,8 @@ class ToolSet:
         
         # print tool output?
         if verbose_callback is not None:
-            #verbose_callback(f'function: {format_tool_text(tool_info)} -> {value}')
-            verbose_callback(f'tool call: {format_tool_text(tool_info)}')
+            verbose_callback(f'\n==== {tool_info["name"]} ====\n{format_tool_text(tool_info)} -> \n{value}\n=====\n')
+            #verbose_callback(f'tool call: {format_tool_text(tool_info)}')
         
         return ToolCallResult(
             id=tool_info['id'],
