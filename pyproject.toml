@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "langchain", "duckduckgo-search", "langchain-ollama"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simplechatbot"
+version = "0.1"
+authors = [
+  { name="Devin J. Cornell", email="devincornell@github.com" },
+]
+description = "Interface for making chatbot that combines llm, chat history, and tools."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/devincornell/simplechatbot"
+
