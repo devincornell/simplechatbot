@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 import typing
 import dataclasses
@@ -16,40 +17,45 @@ sys.path.append('..')
 
 import simplechatbot.v4 as simplechatbot
 
+# stores notes in memory
+fake_note_db = list()
 
-def get_tools() -> list[langchain_core.tools.BaseTool]:
-    '''Get the tools that this chatbot uses..'''
-
-    # can use objects to specify structure of input
-    # benefit is you can add more detailed description to help the LLM decide
-    class MultiplyInputs(pydantic.BaseModel):
-        """Inputs to the multiply tool."""
-        a: int = pydantic.Field(
-            description="First number to multiply by."
+def note_db_tools() -> list[langchain_core.tools.BaseTool]:
+    '''These tools are for saving and listing notes.'''
+    class SaveNoteInput(pydantic.BaseModel):
+        """Inputs to the function to save notes."""
+        title: str = pydantic.Field(
+            description="Brief title of the note."
         )
-        b: int = pydantic.Field(
-            description="Second number to multiply by."
+        description: str = pydantic.Field(
+            description="Full text of note to store."
         )
 
-    # input specification appears above
-    @langchain_core.tools.tool("multiply", args_schema=MultiplyInputs)
-    def multiply(a: int, b: int) -> int:
-        """Multiply two numbers together."""
-        return a * b
+    @langchain_core.tools.tool("save_note", args_schema=SaveNoteInput)
+    def save_note(title: str, description: str) -> str:
+        """Save a note to the database."""
+        return fake_note_db.append((title, description))
 
-    @langchain_core.tools.tool
-    def add(first: int, second: int) -> int:
-        "Add two numbers."
-        return first + second
+    @langchain_core.tools.tool("list_available_notes")
+    def list_available_notes(title: str, description: str) -> str:
+        """Get a list of all available notes."""
+        return '\n'.join([f'{i+1}. title="{title}"; description="{desc}"' for i, (title,desc) in enumerate(fake_note_db)])
+    
+    return [
+        save_note,
+        list_available_notes,
+    ]
+
+
+def builtin_tools() -> list[langchain_core.tools.BaseTool]:
+    '''Get the tools that are available from langchain.'''
 
     return [
         DuckDuckGoSearchResults(
             keys_to_include=['snippet', 'title'], 
             results_separator='\n\n',
-            num_results = 10,
+            num_results = 4,
         ),
-        multiply,
-        add,
     ]
 
 
@@ -64,7 +70,7 @@ if __name__ == '__main__':
             model_name = 'gpt-4o-mini', 
             api_key=simplechatbot.APIKeyChain.from_json_file('keys.json')['openai'],
             system_prompt=system_prompt,
-            tools=get_tools(),
+            tools = builtin_tools() + note_db_tools(),
         )
     else:
         chatbot = simplechatbot.ChatBot.from_ollama(
