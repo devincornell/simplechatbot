@@ -57,7 +57,7 @@ class ToolSet:
         
         # print tool output?
         if verbose_callback is not None:
-            verbose_callback(f'\n==== {tool_info["name"]} ====\n{format_tool_text(tool_info)} -> \n{value}\n=====\n')
+            verbose_callback(f'\n==== {tool_info["name"]} ====\n{format_tool_text(tool_info)} -> \n{value}\n^^^^ {tool_info["name"]} ^^^^\n')
             #verbose_callback(f'tool call: {format_tool_text(tool_info)}')
         
         return ToolCallResult(
@@ -72,7 +72,7 @@ class ToolSet:
         try:
             return self.tools[name]
         except KeyError as e:
-            raise UknownToolError.from_tooL_name(
+            raise UknownToolError.from_tool_name(
                 tool_name = name,
                 available_tools = self.names(),
             ) from e
