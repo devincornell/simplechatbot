@@ -9,7 +9,7 @@ class UknownToolError(Exception):
     available_tools: str
 
     @classmethod
-    def from_tooL_name(cls, tool_name: str, available_tools: list[str]) -> typing.Self:
+    def from_tool_name(cls, tool_name: str, available_tools: list[str]) -> typing.Self:
         o = cls(f'The tool {tool_name} was not recognized from valid tool list: {list(available_tools)}')
         o.tool_name = tool_name
         o.available_tools = available_tools
