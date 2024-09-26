@@ -7,10 +7,10 @@ import langchain_core.tools
 from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
 import pydantic
+import json
 
 #pip install duckduckgo-search
 from langchain_community.tools import DuckDuckGoSearchResults
-
 
 import sys
 sys.path.append('..')
@@ -19,6 +19,34 @@ import simplechatbot.v4 as simplechatbot
 
 # stores notes in memory
 fake_note_db = list()
+
+def get_tools(model: ChatOllama) -> list[langchain_core.tools.BaseTool]:
+    '''Get the tools that this chatbot uses..'''
+
+    # can use objects to specify structure of input
+    # benefit is you can add more detailed description to help the LLM decide
+    class MultiplyInputs(pydantic.BaseModel):
+        """Inputs to the multiply tool."""
+
+        a: int = pydantic.Field(
+            description="First number to multiply by."
+        )
+        b: int = pydantic.Field(
+            description="Second number to multiply by."
+        )
+
+    # input specification appears above
+    @langchain_core.tools.tool("multiply", args_schema=MultiplyInputs)
+    def multiply(a: int, b: int) -> int:
+        """Multiply two numbers together."""
+        return a * b
+
+    @langchain_core.tools.tool
+    def add(first: int, second: int) -> int:
+        "Add two numbers."
+        return first + second
+
+    return [DuckDuckGoSearchResults(), multiply, add]
 
 def note_db_tools() -> list[langchain_core.tools.BaseTool]:
     '''These tools are for saving and listing notes.'''
@@ -58,25 +86,31 @@ def builtin_tools() -> list[langchain_core.tools.BaseTool]:
         ),
     ]
 
-
+# Read keys.json file
+with open("keys.json") as file:
+    keys = json.load(file)
+    
 if __name__ == '__main__':
 
     system_prompt = '''
     You are designed to answer any question the user has.
     '''
 
-    if True:
+    if keys["openai"] != "":
+
         chatbot = simplechatbot.ChatBot.from_openai(
             model_name = 'gpt-4o-mini', 
             api_key=simplechatbot.APIKeyChain.from_json_file('keys.json')['openai'],
             system_prompt=system_prompt,
             tools = builtin_tools() + note_db_tools(),
         )
+
     else:
+
         chatbot = simplechatbot.ChatBot.from_ollama(
             model_name = 'llama3.1', 
             system_prompt=system_prompt,
-            tools=get_tools(),
+            tools=get_tools(model = ChatOllama),
         )
     
 
