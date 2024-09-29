@@ -3,7 +3,6 @@ from __future__ import annotations
 import typing
 import dataclasses
 
-import langchain_core.tools
 
 # BaseChatModel
 from langchain_ollama import ChatOllama
@@ -168,25 +167,35 @@ class ChatBot:
 
     def chat(self, 
         new_message: typing.Optional[str], 
+        add_to_history: bool = True,
         tool_verbose_callback: typing.Callable[[str],None]|None = None,
     ) -> str:
         '''Send a message to the chatbot and return the response.
         Args:
             new_message: message to send to the chatbot. If None is entered, a new message will not be added to history..
             show_tools: whether to show tool calls in the response.
+            add_to_history: whether to add the message to the history after the response is received.
         '''
+        # if new_message is None, assume user didn't want to add a new message to the history
+        # use when re-calling chat after a tool call.
+        new_messages = [new_message] if new_message is not None else []
         
-        if new_message is not None:
+        # call the model
+        response = self.model.invoke(self.history.messages + new_messages)
+
+
+        # add new message and response to history
+        if new_message is not None and add_to_history:
             self.history.add_human_message(new_message)
-
-        response = self.model.invoke(self.history.messages)
-
         self.history.add_message(response)
+
+        # handle any tool calls that happened. if tools were called, follow up with new chat
         results = self._handle_tool_calls(response, verbose_callback=tool_verbose_callback)
         if len(results) > 0:
             return self.chat(None)
+        
         return response.content
-
+    
     def _handle_tool_calls(self, 
         message: AIMessage, 
         verbose_callback: typing.Callable[[str],None]
