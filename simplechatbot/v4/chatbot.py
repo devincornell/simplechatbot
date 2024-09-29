@@ -14,8 +14,6 @@ from .toolset import ToolSet, ToolCallResult
 
 from .ui import ChatBotUI
 
-from .rag import RagPrompt 
-
 #if typing.TYPE_CHECKING:
 from langchain_core.messages import AIMessageChunk, AIMessage
 
@@ -36,7 +34,6 @@ class ChatBot:
     model: BaseChatModel
     history: MessageHistory = dataclasses.field(default_factory=MessageHistory)
     toolset: typing.Optional[ToolSet] = dataclasses.field(default_factory=None)
-    rag: typing.Optional[bool] = False
 
     @classmethod
     def from_openai(cls,
@@ -70,7 +67,6 @@ class ChatBot:
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
         tool_callable: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
-        rag: typing.Optional[bool] = False,
         **model_kwargs,
     ) -> typing.Self:
         '''Create a new chatbot with an ollama model.
@@ -89,7 +85,6 @@ class ChatBot:
             model = model,
             system_prompt = system_prompt,
             tools = cls._resolve_tools(model, tools, tool_callable),
-            rag = rag
         )
     
     @classmethod
@@ -112,7 +107,6 @@ class ChatBot:
         model: BaseChatModel, 
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
-        rag: typing.Optional[bool] = False
     ) -> typing.Self:
         '''Create a new chatbot with any subtype of BaseChatModel.
         Args:
@@ -136,7 +130,6 @@ class ChatBot:
             model = model,
             history = history,
             toolset = toolset,
-            rag=rag
         )
 
     def chat_stream(self, 
@@ -182,18 +175,11 @@ class ChatBot:
             new_message: message to send to the chatbot. If None is entered, a new message will not be added to history..
             show_tools: whether to show tool calls in the response.
         '''
-
-        if self.rag:
-            if new_message is not None:
-                # new_message = new_message
-                new_message = RagPrompt().apply_rag(new_message)
         
         if new_message is not None:
             self.history.add_human_message(new_message)
 
-        print(f"\nInput:\n{self.history.messages[-1]}\n")
         response = self.model.invoke(self.history.messages)
-        # print(f"Output:\n{response}\n")
 
         self.history.add_message(response)
         results = self._handle_tool_calls(response, verbose_callback=tool_verbose_callback)
