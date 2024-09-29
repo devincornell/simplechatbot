@@ -1,27 +1,33 @@
+from __future__ import annotations
+import typing
+
 import dataclasses
 import bs4
 from langchain import hub
 from langchain_community.document_loaders import WebBaseLoader
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 import getpass
 import os
 from langchain_chroma import Chroma
 
+if typing.TYPE_CHECKING:
+    import langchain_core.documents
+
 @dataclasses.dataclass
-class RagPrompt:
+class RAG:
+    splitter: RecursiveCharacterTextSplitter
+    splits: list[langchain_core.documents.Document]
+    vectorstore: Chroma
 
-    def apply_rag(self, input_message: str) -> str:
-
-        if not os.environ.get("NVIDIA_API_KEY", "").startswith("nvapi-"):
-            print("Valid NVIDIA_API_KEY needed")
-            return 
-
+    @classmethod
+    def from_web_pages(cls,
+        web_paths: tuple[str],
+        nvidia_api_key: str,
+    ) -> typing.Self:
         # Load, chunk and index the contents of the blog.
         loader = WebBaseLoader(
-            web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+            web_paths=web_paths,
             bs_kwargs=dict(
                 parse_only=bs4.SoupStrainer(
                     class_=("post-content", "post-title", "post-header")
@@ -30,13 +36,37 @@ class RagPrompt:
         )
         docs = loader.load()
 
-        # Create splitter, split documents into 1000 character chunks with 200 character overlap, create vectorstore 
+        return cls.from_docs(
+            docs = docs, 
+            nvidia_api_key=nvidia_api_key,
+        )
+
+    @classmethod
+    def from_docs(cls, 
+        docs: list[langchain_core.documents.Document],
+        nvidia_api_key: str,
+    ) -> typing.Self:
+        '''Create a new vectorstore for working with docs.'''
+        # now they just use a text splitter to make embeddings and chunk up the doc
+
+        # should parameterize a bunch of this
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
-        vectorstore = Chroma.from_documents(documents=splits, embedding=NVIDIAEmbeddings(model="NV-Embed-QA"))
-
-        docs = vectorstore.similarity_search(input_message)
-
-        parsed_docs = "\n\n".join([doc.page_content for doc in docs])
-
-        return f"question:{input_message}\n\ncontext{parsed_docs}"
+        vectorstore = Chroma.from_documents(
+            documents=splits, 
+            embedding=NVIDIAEmbeddings(
+                model="NV-Embed-QA", 
+                api_key=nvidia_api_key
+            )
+        )
+        
+        # return the new RAG object
+        return cls(
+            splitter=text_splitter,
+            splits=splits,
+            vectorstore=vectorstore
+        )
+    
+    def search(self, input_message: str) -> list[langchain_core.documents.Document]:
+        '''Search for a query in the vectorstore.'''
+        return self.vectorstore.similarity_search(input_message)
