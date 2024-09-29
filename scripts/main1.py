@@ -15,6 +15,10 @@ from langchain_community.tools import DuckDuckGoSearchResults
 import sys
 sys.path.append('..')
 
+
+import importlib
+import simplechatbot.v4
+importlib.reload(simplechatbot.v4)
 import simplechatbot.v4 as simplechatbot
 
 # stores notes in memory
@@ -111,12 +115,13 @@ if __name__ == '__main__':
             model_name = 'llama3.1', 
             system_prompt=system_prompt,
             tools=get_tools(model = ChatOllama),
+            rag=True
         )
     
 
     print('=============== Starting Chat ===================\n')
     
-    chatbot.ui.start_interactive(stream=False, show_intro=True, tool_verbose_callback=print)
-    
+    chatbot.ui.start_interactive(stream=False, show_intro=True, tool_verbose_callback=None)
+
     print('=============== Chat Ended ===================')
 
