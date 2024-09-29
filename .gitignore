@@ -161,3 +161,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 scripts/keys.json
+
+.DS_Store
+Simplechatbot/.DS_Store
+
+keys.json
+
