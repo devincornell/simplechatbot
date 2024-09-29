@@ -10,9 +10,13 @@ from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 import getpass
 import os
 from langchain_chroma import Chroma
+import langchain_core.tools
+import langchain_core.retrievers
 
 if typing.TYPE_CHECKING:
     import langchain_core.documents
+
+
 
 @dataclasses.dataclass
 class RAG:
@@ -67,6 +71,30 @@ class RAG:
             vectorstore=vectorstore
         )
     
+    def as_tool(self, name: str, description: str) -> langchain_core.tools.BaseTool:
+        '''Return this RAG object as a tool based on name and description.'''
+        return langchain_core.tools.create_retriever_tool(
+            retriever=RAGRetriever(self.vectorstore),
+            description=description,
+            name=name,
+        )
+    
     def search(self, input_message: str) -> list[langchain_core.documents.Document]:
         '''Search for a query in the vectorstore.'''
         return self.vectorstore.similarity_search(input_message)
+
+
+# could be a dataclass but avoiding that in case it interacts with BaseRetriever
+class RAGRetriever(langchain_core.retrievers.BaseRetriever):
+    '''Implementation of BaseRetriever to use for .create_retriever_tool().
+    Description:
+        See documentation for BaseRetriever here:
+        https://python.langchain.com/v0.2/api_reference/core/retrievers/langchain_core.retrievers.BaseRetriever.html
+    '''
+    def __init__(self, vectorstore: Chroma):
+        self.vectorstore = vectorstore
+
+    def _get_relevant_documents(self, query: str) -> list[langchain_core.documents.Document]:
+            """All BaseRetriever subclasses must implement this method."""
+            self.vectorstore.similarity_search(query)
+
