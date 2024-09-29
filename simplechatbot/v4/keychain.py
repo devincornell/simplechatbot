@@ -26,4 +26,8 @@ class APIKeyChain:
     def __getitem__(self, key_name: str) -> str:
         '''Get the desired api key.'''
         return self.keys[key_name]
+    
+    def __contains__(self, key_name: str) -> bool:
+        '''Check if the desired api key exists.'''
+        return key_name in self.keys
 
