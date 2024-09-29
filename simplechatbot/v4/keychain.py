@@ -1,14 +1,12 @@
 
 import typing
-import dataclasses
 import json
 import pathlib
 
-@dataclasses.dataclass
-class APIKeyChain:
-    '''Manage API keys loaded from json files.'''
-    fp: pathlib.Path
-    keys: dict[str,str]
+class APIKeyChain(typing.Dict[str,str]):
+    '''Subclass dict with sfcm from_json_file(), so works as regular dict.
+    Description: Manages API keys loaded from json files.
+    '''
 
     @classmethod
     def from_json_file(cls, fname: str|pathlib.Path) -> dict[str,str]:
@@ -17,17 +15,5 @@ class APIKeyChain:
         with fp.open('r') as f:
             keys = json.load(f)
         
-        return cls(
-            fp = fp,
-            keys = keys,
-        )
-
-
-    def __getitem__(self, key_name: str) -> str:
-        '''Get the desired api key.'''
-        return self.keys[key_name]
-    
-    def __contains__(self, key_name: str) -> bool:
-        '''Check if the desired api key exists.'''
-        return key_name in self.keys
+        return cls(keys)
 
