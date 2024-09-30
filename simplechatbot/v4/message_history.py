@@ -17,7 +17,6 @@ class MessageHistory(list[BaseMessage]):
         It's pretty much just a list of System/AI/Human messages used to generate model predictions.
         Full interface over messsage types from langchain_core.messages so the client doesn't need to use them.
     '''
-    messages: list[BaseMessage] = dataclasses.field(default_factory=list)
     
     ############################# Constructors #############################
     @classmethod
