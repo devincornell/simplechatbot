@@ -72,7 +72,11 @@ class RAG:
         )
     
     def as_tool(self, name: str, description: str) -> langchain_core.tools.BaseTool:
-        '''Return this RAG object as a tool based on name and description.'''
+        '''Return this RAG object as a tool based on name and description.
+        Note:
+            I learned about this here:
+            https://api.python.langchain.com/en/latest/tools/langchain.tools.retriever.create_retriever_tool.html
+        '''
         return langchain_core.tools.create_retriever_tool(
             retriever=RAGRetriever(self.vectorstore),
             description=description,
