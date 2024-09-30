@@ -34,6 +34,7 @@ class ChatBot:
     history: MessageHistory = dataclasses.field(default_factory=MessageHistory)
     toolset: typing.Optional[ToolSet] = dataclasses.field(default_factory=None)
 
+    ############################# Model-specific Constructors #############################
     @classmethod
     def from_openai(cls,
         model_name: str = "gpt-4o-mini", 
@@ -92,7 +93,7 @@ class ChatBot:
         tools: typing.Optional[list[BaseTool]], 
         tool_callable: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]],
     ) -> list[BaseTool]:
-        '''Resolve the tools to use in the chatbot.'''
+        '''Resolve arguments to identify tools to use in the chatbot.'''
         if tool_callable is not None:
             if tools is None:
                 return tool_callable(model)
@@ -100,7 +101,7 @@ class ChatBot:
                 return tool_callable(model) + tools
         return tools
         
-
+    ############################# Generic Constructors #############################
     @classmethod
     def from_model(cls,
         model: BaseChatModel, 
@@ -131,6 +132,7 @@ class ChatBot:
             toolset = toolset,
         )
 
+    ############################# Chat interface #############################
     def chat_stream(self, 
         new_message: typing.Optional[str], 
         tool_verbose_callback: typing.Callable[[str],None]|None = None,
@@ -149,7 +151,7 @@ class ChatBot:
         
         full_message = None
         results = list()
-        for chunk in self.model.stream(self.history.messages):            
+        for chunk in self.model.stream(self.history):            
             # concatenate chunks as it goes
             if full_message is None:
                 full_message = chunk
@@ -181,8 +183,7 @@ class ChatBot:
         new_messages = [new_message] if new_message is not None else []
         
         # call the model
-        response = self.model.invoke(self.history.messages + new_messages)
-
+        response = self.model.invoke(self.history + new_messages)
 
         # add new message and response to history
         if new_message is not None and add_to_history:
@@ -207,7 +208,17 @@ class ChatBot:
             self.history.add_tool_message(result, result.id)
             results[result.tool.name] = result
         return results
-        
+
+    ############################# wrappers over model calls #############################
+    def stream(self, *args, **kwargs) -> typing.Iterator[AIMessageChunk]:
+        '''Wrapper for model.stream.'''
+        return self.model.stream(*args, **kwargs)
+    
+    def invoke(self, *args, **kwargs) -> AIMessage:
+        '''Wrapper for model.invoke.'''
+        return self.model.invoke(*args, **kwargs)
+    
+    ############################# method classes #############################
     @property
     def ui(self) -> ChatBotUI:
         '''Expose diffferent UI for the chatbot.'''
