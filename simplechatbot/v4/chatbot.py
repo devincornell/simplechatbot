@@ -23,7 +23,7 @@ if typing.TYPE_CHECKING:
 
 @dataclasses.dataclass
 class ChatBot:
-    '''Methods for working with a chatbot with history.
+    '''Stores a chat model (or runnable interface), tools, and chat history.
     Created mostly from following this tutorial:
         https://python.langchain.com/v0.2/docs/tutorials/chatbot/
 
