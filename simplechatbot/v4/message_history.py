@@ -11,8 +11,7 @@ from langchain_core.messages import (
     get_buffer_string,
 )
 
-@dataclasses.dataclass
-class MessageHistory:
+class MessageHistory(list[BaseMessage]):
     '''Maintains message history.
     LangChain actuall does provide convenient classes for this, but I found it easier to create my own.
         It's pretty much just a list of System/AI/Human messages used to generate model predictions.
@@ -26,26 +25,16 @@ class MessageHistory:
         o = cls()
         o.add_system_message(system_prompt)
         return o
-
-    ############################# Dunder #############################
-    def __getitem__(self, key: int | slice) -> BaseMessage:
-        return self.messages[key]
-    
-    def __len__(self) -> int:
-        return len(self.messages)
-    
-    def __iter__(self) -> typing.Iterator:
-        return iter(self.messages)
     
     ############################# Transformations #############################
     def get_buffer_string(self, *args, **kwargs) -> str:
         '''Get entire buffer as a string.'''
-        return get_buffer_string(self.messages, *args, **kwargs)
+        return get_buffer_string(self, *args, **kwargs)
     
     def render_streamlit(self, streamlit: typing.Any) -> str:
         '''Render the history in a streamlit friendly way.'''
         # Render the chat history.
-        for msg in self.messages:
+        for msg in self:
             streamlit.chat_message(msg.type).write(msg.content)
         return self.get_buffer_string()
 
@@ -86,27 +75,27 @@ class MessageHistory:
         '''Add a AIMessage to the history.
             Looks like they implemented the __add__ method to chunks so I'll just use that.
         '''
-        self.messages.append(sum(chunks[1:], start=chunks[0]))
+        self.append(sum(chunks[1:], start=chunks[0]))
 
     def add_ai_message(self, content: str) -> None:
         '''Add a AIMessage to the history.'''
-        self.messages.append(AIMessage(content=content))
+        self.append(AIMessage(content=content))
 
     def add_system_message(self, content: str) -> None:
         '''Add a SystemMessage to the history.'''
-        self.messages.append(SystemMessage(content=content))
+        self.append(SystemMessage(content=content))
 
     def add_human_message(self, content: str) -> None:
         '''Add a HumanMessage to the history.'''
-        self.messages.append(HumanMessage(content=content))
+        self.append(HumanMessage(content=content))
 
     def add_tool_message(self, content: str, tool_call_id: str) -> None:
         '''Add a ToolMessage to the history.'''
-        self.messages.append(ToolMessage(content=content, tool_call_id=tool_call_id))
+        self.append(ToolMessage(content=content, tool_call_id=tool_call_id))
     
     def add_message(self, message: BaseMessage) -> None:
         '''Add any subtype of BaseMessage to the history.'''
-        self.messages.append(message)
+        self.append(message)
 
 
 
