@@ -1,6 +1,8 @@
 # Introduction
 
-Welcome to the simplechatbot Python package!
+Welcome to the `simplechatbot` Python package!
+
+See the examples in the navbar to the left!
 
 ## Installation
 
