@@ -48,6 +48,10 @@ class ChatResult(ChatResultBase):
             message=self.message, 
             add_to_history=add_to_history, 
         )
+    @property
+    def tool_calls(self) -> list[str]:
+        '''Get the names of the tools called.'''
+        return self.message.tool_calls
 
 
 
@@ -89,3 +93,8 @@ class ChatStream(ChatResultBase):
             add_to_history=add_to_history, 
         )
     
+    @property
+    def tool_calls(self) -> list[str]:
+        '''Get the names of the tools called.'''
+        return self.full_message.tool_calls
+
