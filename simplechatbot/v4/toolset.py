@@ -12,14 +12,23 @@ from .util import format_tool_text
 @dataclasses.dataclass
 class ToolCallResult:
     '''Result of a tool call.'''
-    id: ToolCallID
-    tool: langchain_core.tools.BaseTool
-    value: typing.Any
     tool_info: dict[str, str|dict]
+    tool: langchain_core.tools.BaseTool
+    return_value: typing.Any
+
+    @property
+    def id(self) -> ToolCallID:
+        return self.tool_info['id']
 
     @property
     def tool_name(self) -> str:
         return self.tool.name
+    
+    @property
+    def tool_info_str(self) -> str:
+        '''Get tool call as a string.'''
+        return format_tool_text(self.tool_info)
+    
 
 @dataclasses.dataclass
 class ToolSet:
@@ -40,31 +49,19 @@ class ToolSet:
     
     def call_tool(self, 
         tool_info: dict[str, str|dict], 
-        verbose_callback: typing.Optional[typing.Callable[[str],None]] = lambda x: None
     ) -> ToolCallResult:
         '''Extracts tool information and executes tool.'''
-        name = tool_info['name']
-        tool = self[name] # raises UnidentifiedToolError if tool isn't found
-
-        # actually execute tool call!
-        # NOTE: This happens outside the LLM, so can do anything with Python
+        tool = self[tool_info['name']] # NOTE: raises UnidentifiedToolError if tool isn't found
         args = tool_info['args']
-
         try:
-            value = tool.invoke(args)
+            return_value = tool.invoke(args)
         except Exception as e:
             raise ToolRaisedExceptionError.from_exception(tool_info, tool, e) from e
         
-        # print tool output?
-        if verbose_callback is not None:
-            verbose_callback(f'\n==== {tool_info["name"]} ====\n{format_tool_text(tool_info)} -> \n{value}\n^^^^ {tool_info["name"]} ^^^^\n')
-            #verbose_callback(f'tool call: {format_tool_text(tool_info)}')
-        
         return ToolCallResult(
-            id=tool_info['id'],
-            value = value, 
-            tool = tool,
             tool_info = tool_info, 
+            tool = tool,
+            return_value = return_value, 
         )
 
     def __getitem__(self, name: str) -> langchain_core.tools.BaseTool:
@@ -88,5 +85,3 @@ class ToolSet:
     def names(self) -> list[str]:
         return list(self.tools.keys())
     
-
-

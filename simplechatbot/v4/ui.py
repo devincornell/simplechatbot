@@ -4,8 +4,10 @@ import typing
 from .toolset import UknownToolError, ToolRaisedExceptionError
 if typing.TYPE_CHECKING:
     from .chatbot import ChatBot
+    from .chatresult import ChatResult
 else:
     ChatBot = typing.TypeVar('ChatBot')
+    ChatResult = typing.TypeVar('ChatResult')
 
 @dataclasses.dataclass
 class ChatBotUI:
@@ -14,7 +16,7 @@ class ChatBotUI:
     def start_interactive(self, 
         stream: bool = False,
         show_intro: bool = False,
-        tool_verbose_callback: typing.Callable[[str],None]|None = None,
+        show_tools: bool = False,
     ) -> None:
         if show_intro:
             try:
@@ -42,18 +44,38 @@ class ChatBotUI:
             if user_text in ('/exit', '/e'):
                 break
             else:
-                try:
-                    if stream:
-                        for chunk in self.chatbot.chat_stream(user_text, tool_verbose_callback=tool_verbose_callback):
-                            print(chunk, end="", flush=True)
-                    else:
-                        print(self.chatbot.chat(user_text, tool_verbose_callback=tool_verbose_callback))
-                
-                except UknownToolError as e:
-                    print(f'UNKOWN TOOL CALL: {e.tool_name}')
+                self._do_chat_call(user_text, stream, show_tools)
 
-                except ToolRaisedExceptionError as e:
-                    print(f'TOOL RAISED EXCEPTION: {e.text}\n{e.tool_info}\n{e.e}')
+            #print(self.chatbot.history.get_buffer_string())
+
+    def _do_chat_call(self, user_text: str|None, stream: bool, show_tools: bool) -> dict[str,ChatResult]:
+        '''Handle a single chat. Recursive if tools are called.'''
+        print(f'AI Response: ', end="", flush=True)
+        if stream:
+            result = self.chatbot.chat_stream(user_text, add_to_history=True)
+            for chunk in result:
+                print(chunk.content, end="", flush=True)
+        else:
+            result = self.chatbot.chat(user_text, add_to_history=True)
+            print(result.message.content)
+
+        try:
+            tool_results = result.call_tools()
+        except UknownToolError as e:
+            print(f'UNKOWN TOOL CALL: {e.tool_name}')
+
+        except ToolRaisedExceptionError as e:
+            print(f'TOOL RAISED EXCEPTION: {e.text}\n{e.tool_info}\n{e.e}')
+
+        # if tools were called, do this recursively
+        if len(tool_results):
+            print('\n[Tool Results]')
+            for tool_result in tool_results.values():
+                print(f'{tool_result.tool_info_str} -> {tool_result.return_value}')
+            print('[END Tool Results]')
+
+            # recursively call chat if tools were called
+            self._do_chat_call(None, stream, show_tools)
 
     def start_streamlit(self, streamlit: typing.Any, show_intro: bool = False) -> None:
         user = lambda m: streamlit.chat_message("user").write(m)
@@ -81,7 +103,7 @@ class ChatBotUI:
             #self.chatbot.history.render_streamlit(streamlit)
             #print(len(self.chatbot.history))
 
-            # print past istory
+            # print past history
             for msg in self.chatbot.history:
                 streamlit.chat_message(msg.type).write(msg.content)
 
@@ -89,7 +111,7 @@ class ChatBotUI:
             #msgs.add_user_message(input)
             # Invoke chain to get reponse.
             #response = chain.invoke({'input': input})
-            response = self.chatbot.chat(user_text, tool_verbose_callback=assistant)
+            response = self.chatbot.chat(user_text)
 
             # Display AI assistant response and save to message history.
             assistant(str(response))

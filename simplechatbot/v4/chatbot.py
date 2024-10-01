@@ -12,9 +12,9 @@ from .message_history import MessageHistory
 from .toolset import ToolSet, ToolCallResult
 
 from .ui import ChatBotUI
+from .chatresult import ChatResult, ChatStream
 
-#if typing.TYPE_CHECKING:
-from langchain_core.messages import AIMessageChunk, AIMessage
+from langchain_core.messages import AIMessageChunk, AIMessage, BaseMessage, HumanMessage
 
 if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
@@ -135,52 +135,43 @@ class ChatBot:
     ############################# Chat interface #############################
     def chat_stream(self, 
         new_message: typing.Optional[str], 
-        tool_verbose_callback: typing.Callable[[str],None]|None = None,
-    ) -> typing.Generator:
-        '''Stream the chat. NOTE: CANNOT USE WITH TOOL CALLING! Need to raise better exception in the future.
-        Description: calls model.stream() and yields the content of each chunk.
-            I did this as a generator so I could append full response to end of message history.
-            Mostly followed this tutorial:
-                https://python.langchain.com/v0.1/docs/modules/model_io/llms/streaming_llm/
+        add_to_history: bool = True,
+    ) -> ChatStream:
+        '''Return a ChatStream that can be iterated over to get the chat messages.
         Args:
-            new_message: message to send to the chatbot. If None is entered, a new message will not be added to history..
-            show_tools: whether to show tool calls in the response.
+            new_message: message to send to the chatbot. If None is entered, a new message will not be added to history.
         '''
-        if new_message is not None:
-            self.history.add_human_message(new_message)
-        
-        full_message = None
-        results = list()
-        for chunk in self.model.stream(self.history):            
-            # concatenate chunks as it goes
-            if full_message is None:
-                full_message = chunk
-            else:
-                full_message += chunk
+        use_messages = self._handle_new_message(new_message, add_to_history)
 
-            # NOTE: tool calling doesn't really work in streaming, so not sure what to do?
-            # now we handle any tool calls that happen
-            results.append(self._handle_tool_calls(chunk, verbose_callback=tool_verbose_callback))
-            
-            # yield only the content to the user. Any metadata is stored in the history
-            yield chunk.content
-
-        self.history.add_message(full_message)
+        # result won't be ready until the stream is iterated over
+        return ChatStream(
+            chatbot = self,
+            message_iter = self.model.stream(use_messages),
+            add_reply_to_history = add_to_history,
+        )
 
     def chat(self, 
         new_message: typing.Optional[str], 
         add_to_history: bool = True,
-        tool_verbose_callback: typing.Callable[[str],None]|None = None,
-    ) -> str:
+    ) -> ChatResult:
         '''Send a message to the chatbot and return the response.
         Args:
             new_message: message to send to the chatbot. If None is entered, a new message will not be added to history..
             show_tools: whether to show tool calls in the response.
             add_to_history: whether to add the message to the history after the response is received.
         '''
-        # if new_message is None, assume user didn't want to add a new message to the history
-        # use when re-calling chat after a tool call.
-        new_messages = [new_message] if new_message is not None else []
+        use_messages = self._handle_new_message(new_message, add_to_history)
+        result: AIMessage = self.model.invoke(use_messages)
+        chatresult = ChatResult(
+            chatbot = self,
+            message = result,
+        )
+
+        # result is already available in this case, so just add to history now
+        if add_to_history:
+            self.history.add_message(result)
+
+        return chatresult
         
         # call the model
         response = self.model.invoke(self.history + new_messages)
@@ -191,22 +182,36 @@ class ChatBot:
         self.history.add_message(response)
 
         # handle any tool calls that happened. if tools were called, follow up with new chat
-        results = self._handle_tool_calls(response, verbose_callback=tool_verbose_callback)
-        if len(results) > 0:
-            return self.chat(None)
-        
+        results = self._handle_tool_calls(response, result_callback=lambda: self.chat(None))        
         return response.content
+    
+    def _handle_new_message(self, new_message: str | HumanMessage, add_to_history: bool) -> list[BaseMessage]:
+        '''Get messages for this chat and add the new message to the history if needed.'''
+        if new_message is None:
+            use_messages = self.history
+        else:
+            use_messages = self.history + [new_message]
+            if add_to_history:
+                self.history.add_human_message(new_message)
+        return use_messages
     
     def _handle_tool_calls(self, 
         message: AIMessage, 
-        verbose_callback: typing.Callable[[str],None]
+        result_callback: typing.Callable[[],str | typing.Generator[str]],
+        verbose: bool = True,
     ) -> dict[str, ToolCallResult]:
-        results = dict()
+        results: dict[str,ToolCallResult] = dict()
         for tool_info in message.tool_calls:
-            #result, tool, tool_id = self.toolset.call_tool(tool_info, verbose=True)
-            result = self.toolset.call_tool(tool_info, verbose_callback=verbose_callback)
-            self.history.add_tool_message(result, result.id)
+            result = self.toolset.call_tool(tool_info)
+            self.history.add_tool_message(result.return_value, result.id)
             results[result.tool.name] = result
+        
+        if len(results) > 0:
+            if verbose:
+                for result in results.values():
+                    print(f'{result.tool_info_str} -> {result.return_value}')
+            return result_callback()
+
         return results
 
     ############################# wrappers over model calls #############################
@@ -224,4 +229,8 @@ class ChatBot:
         '''Expose diffferent UI for the chatbot.'''
         return ChatBotUI(self)
         
-    
+    ############################# dunder #############################
+    def __repr__(self) -> str:
+        model_name = getattr(self.model, 'model_name', 'Unknown')
+        return f'{self.__class__.__name__}(model_type={type(self.model).__name__}, model_name="{model_name}", tools={self.toolset.names() if self.toolset is not None else None})'
+

@@ -88,9 +88,9 @@ class MessageHistory(list[BaseMessage]):
         '''Add a HumanMessage to the history.'''
         self.append(HumanMessage(content=content))
 
-    def add_tool_message(self, content: str, tool_call_id: str) -> None:
+    def add_tool_message(self, return_value: typing.Any, tool_call_id: str) -> None:
         '''Add a ToolMessage to the history.'''
-        self.append(ToolMessage(content=content, tool_call_id=tool_call_id))
+        self.append(ToolMessage(content=return_value, tool_call_id=tool_call_id))
     
     def add_message(self, message: BaseMessage) -> None:
         '''Add any subtype of BaseMessage to the history.'''
