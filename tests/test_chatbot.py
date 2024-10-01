@@ -9,12 +9,13 @@ import sys
 sys.path.append('..')
 import simplechatbot.v4 as simplechatbot
 
-def test_tools():
+def get_tools():
     @langchain_core.tools.tool
     def message_tool(text: str) -> str:
         '''Send a message to the system.'''
         return 'Message sent: ' + text
     return [message_tool]
+
 
 if __name__ == '__main__':
     keychain = simplechatbot.APIKeyChain.from_json_file('../scripts/keys.json')
@@ -26,7 +27,7 @@ if __name__ == '__main__':
         model_name = 'gpt-4o-mini', 
         api_key=keychain['openai'],
         system_prompt=system_prompt,
-        tools = test_tools(),
+        tools = get_tools(),
     )
     print(chatbot)
 
