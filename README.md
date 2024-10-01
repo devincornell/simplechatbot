@@ -1,4 +1,7 @@
-# simplechatbot
+# `simplechatbot` Python Package
+
+See the [`simplechatbot` package website](https://devincornell.github.io/simplechatbot)!
+
 Basic chatbot built on langchain.
 
 ## Installation
