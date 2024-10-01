@@ -22,11 +22,10 @@ You can also use `make`.
 
 To install: 
 
-```make install```
-
-To uninstall: 
-
-```make uninstall```
+```
+make install
+make uninstall
+```
 
 ## Importing
 
