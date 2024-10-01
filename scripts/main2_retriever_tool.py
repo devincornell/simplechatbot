@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
     print('=============== Starting Chat ===================\n')
     
-    chatbot.ui.start_interactive(stream=False, show_intro=True, tool_verbose_callback=None)
+    chatbot.ui.start_interactive(stream=True, show_intro=True, show_tools=True)
 
     print('=============== Chat Ended ===================')
 
