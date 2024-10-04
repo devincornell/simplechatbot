@@ -1,5 +1,5 @@
 
-# NOTE: not importing the RAG tool because it requires a lot of other packages
-#from .rag import *
+# esposing everything in rag as a tool
+from .rag import *
 
 
