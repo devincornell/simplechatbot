@@ -9,9 +9,9 @@ import langchain_core.tools
 # data stored behind the scenes at the module level
 
 @dataclasses.dataclass
-class WorkspacesToolkit(BaseToolkit):
+class WorkspacesToolkit:
     '''Represents a workspace where the user can insert and remove items.'''
-    workspace_data: dict[tuple[str,str]] = dataclasses.field(default_factory=dict)
+    workspace_data: dict[int,tuple[str,str]] = dataclasses.field(default_factory=dict)
     ctr: int = 0
 
     def get_tools(self) -> list[BaseTool]:
@@ -40,7 +40,7 @@ class WorkspacesToolkit(BaseToolkit):
 
         class SaveWorkspaceInput(pydantic.BaseModel):
             """Inputs to the function to save text to the workspace."""
-            context: str = pydantic.Field(
+            summary: str = pydantic.Field(
                 description="Brief summary of the workspace data being saved."
             )
             description: str = pydantic.Field(
@@ -48,11 +48,11 @@ class WorkspacesToolkit(BaseToolkit):
             )
 
         @langchain_core.tools.tool("save_workspace", args_schema=SaveWorkspaceInput)
-        def save_workspace(title: str, description: str) -> str:
+        def save_workspace(summary: str, description: str) -> str:
             """Save a workspace. The workspace contains summary and full text information."""
-            self.workspace_data[self.ctr] = ((title, description))
+            self.workspace_data[self.ctr] = ((summary, description))
             self.ctr += 1
-            return f"Workspace saved with id {self.ctr}."
+            return f"Workspace saved with id {self.ctr} with summary: '{summary}'."
         
         return save_workspace
         
@@ -74,34 +74,3 @@ class WorkspacesToolkit(BaseToolkit):
 
     
     
-
-# stores notes in memory
-fake_note_db = list()
-
-
-def note_db_tools() -> list[langchain_core.tools.BaseTool]:
-    '''These tools are for saving and listing notes.'''
-    class SaveNoteInput(pydantic.BaseModel):
-        """Inputs to the function to save notes."""
-        title: str = pydantic.Field(
-            description="Brief title of the note."
-        )
-        description: str = pydantic.Field(
-            description="Full text of note to store."
-        )
-
-    @langchain_core.tools.tool("save_note", args_schema=SaveNoteInput)
-    def save_note(title: str, description: str) -> str:
-        """Save a note to the database."""
-        return fake_note_db.append((title, description))
-
-    @langchain_core.tools.tool("list_available_notes")
-    def list_available_notes(title: str, description: str) -> str:
-        """Get a list of all available notes."""
-        return '\n'.join([f'{i+1}. title="{title}"; description="{desc}"' for i, (title,desc) in enumerate(fake_note_db)])
-    
-    return [
-        save_note,
-        list_available_notes,
-    ]
-
