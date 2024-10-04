@@ -23,7 +23,7 @@ import simplechatbot.v4
 importlib.reload(simplechatbot.v4)
 import simplechatbot.v4 as simplechatbot
 
-from simplechatbot.v4.tools.rag import RAG
+from simplechatbot.tools.rag.rag import RAG
 
     
 if __name__ == '__main__':
