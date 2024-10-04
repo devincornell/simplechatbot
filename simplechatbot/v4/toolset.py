@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import dataclasses
 import typing
-import langchain_core.tools
+#import langchain_core.tools
+from langchain_core.tools import BaseTool, BaseToolkit, render_text_description
+from langchain_core.language_models import BaseChatModel
 
 from .errors import ToolRaisedExceptionError, UknownToolError
 from .types import ToolCallID
@@ -13,7 +15,7 @@ from .util import format_tool_text
 class ToolCallResult:
     '''Result of a tool call.'''
     tool_info: dict[str, str|dict]
-    tool: langchain_core.tools.BaseTool
+    tool: BaseTool
     return_value: typing.Any
 
     @property
@@ -39,14 +41,38 @@ class ToolSet:
     LangChain also includes a bunch of built-in tools. See them here:
         https://python.langchain.com/v0.2/docs/integrations/tools/
     '''
-    tools: dict[str, langchain_core.tools.BaseTool]
-
+    tools: dict[str, BaseTool] = dataclasses.field(default_factory=dict)
+    
     @classmethod
-    def from_list(cls, tool_list: list[langchain_core.tools.BaseTool]) -> typing.Self:
-        return cls(
-            tools = {t.name:t for t in tool_list},
+    def from_tools(cls,
+        model: BaseChatModel,
+        tool_constructor: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]],
+        tools: typing.Optional[list[BaseTool]], 
+        toolkits: typing.Optional[list[BaseToolkit]],
+    ) -> typing.Self:
+        '''Create a toolset from a list of tools or a callable that returns a list of tools.'''
+        return cls.from_list(
+            tool_list=tools + (tool_constructor(model) if tool_constructor is not None else []),
+            toolkits = toolkits,
         )
     
+    @classmethod
+    def from_list(cls, 
+        tool_list: typing.Optional[list[BaseTool]],
+        toolkits: typing.Optional[list[BaseToolkit]],
+    ) -> typing.Self:
+        '''Create toolset from a list of tools and toolkits.'''
+        tool_list = list(tool_list) if tool_list is not None else []
+
+        if toolkits is not None:
+            toolkit_tools = [tool for toolkit in toolkits for tool in toolkit.get_tools()]
+        else:
+            toolkit_tools = []
+
+        return cls(
+            tools = {t.name:t for t in tool_list + toolkit_tools},
+        )
+
     def call_tool(self, 
         tool_info: dict[str, str|dict], 
     ) -> ToolCallResult:
@@ -64,7 +90,23 @@ class ToolSet:
             return_value = return_value, 
         )
 
-    def __getitem__(self, name: str) -> langchain_core.tools.BaseTool:
+    
+    def get_tools(self) -> list[BaseTool]:
+        '''Get a list of tools.'''
+        return list(self.tools.values())
+
+    def render(self) -> str:
+        '''Gets description of toolset using the render method.'''
+        return render_text_description(self.as_list())
+    
+    def names(self) -> list[str]:
+        return list(self.tools.keys())
+    
+    ##################### dunder methods #####################
+    def __len__(self) -> int:
+        return len(self.tools)
+    
+    def __getitem__(self, name: str) -> BaseTool:
         '''Get a tool by name.'''
         try:
             return self.tools[name]
@@ -73,15 +115,3 @@ class ToolSet:
                 tool_name = name,
                 available_tools = self.names(),
             ) from e
-    
-    def as_list(self) -> list[langchain_core.tools.BaseTool]:
-        '''Get a list of tools.'''
-        return list(self.tools.values())
-
-    def render(self) -> str:
-        '''Gets description of toolset using the render method.'''
-        return langchain_core.tools.render.render_text_description(self.as_list())
-    
-    def names(self) -> list[str]:
-        return list(self.tools.keys())
-    

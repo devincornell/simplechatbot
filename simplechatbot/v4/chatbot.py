@@ -18,7 +18,7 @@ from langchain_core.messages import AIMessageChunk, AIMessage, BaseMessage, Huma
 
 if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
-    from langchain_core.tools import BaseTool
+    from langchain_core.tools import BaseTool, BaseToolkit
 
 
 @dataclasses.dataclass
@@ -32,7 +32,7 @@ class ChatBot:
     '''
     model: BaseChatModel
     history: MessageHistory = dataclasses.field(default_factory=MessageHistory)
-    toolset: typing.Optional[ToolSet] = dataclasses.field(default_factory=None)
+    toolset: ToolSet = dataclasses.field(default_factory=ToolSet)
 
     ############################# Model-specific Constructors #############################
     @classmethod
@@ -40,7 +40,8 @@ class ChatBot:
         model_name: str = "gpt-4o-mini", 
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
-        tool_callable: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
+        toolkits: typing.Optional[list[BaseToolkit]] = None,
+        tool_constructor: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
         **model_kwargs,
     ) -> typing.Self:
         '''Create a new chatbot with a chatgpt model.
@@ -58,7 +59,9 @@ class ChatBot:
         return cls.from_model(
             model = model,
             system_prompt = system_prompt,
-            tools = cls._resolve_tools(model, tools, tool_callable),
+            tools = tools,
+            toolkits = toolkits,
+            tool_constructor = tool_constructor,
         )
 
     @classmethod
@@ -66,7 +69,8 @@ class ChatBot:
         model_name: str = "llama3.1", 
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
-        tool_callable: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
+        toolkits: typing.Optional[list[BaseToolkit]] = None,
+        tool_constructor: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
         **model_kwargs,
     ) -> typing.Self:
         '''Create a new chatbot with an ollama model.
@@ -84,22 +88,11 @@ class ChatBot:
         return cls.from_model(
             model = model,
             system_prompt = system_prompt,
-            tools = cls._resolve_tools(model, tools, tool_callable),
+            tools = tools,
+            toolkits = toolkits,
+            tool_constructor = tool_constructor,
         )
     
-    @classmethod
-    def _resolve_tools(cls, 
-        model: BaseChatModel,
-        tools: typing.Optional[list[BaseTool]], 
-        tool_callable: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]],
-    ) -> list[BaseTool]:
-        '''Resolve arguments to identify tools to use in the chatbot.'''
-        if tool_callable is not None:
-            if tools is None:
-                return tool_callable(model)
-            else:
-                return tool_callable(model) + tools
-        return tools
         
     ############################# Generic Constructors #############################
     @classmethod
@@ -107,6 +100,8 @@ class ChatBot:
         model: BaseChatModel, 
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
+        toolkits: typing.Optional[list[BaseToolkit]] = None,
+        tool_constructor: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
     ) -> typing.Self:
         '''Create a new chatbot with any subtype of BaseChatModel.
         Args:
@@ -115,16 +110,23 @@ class ChatBot:
             tools: tools to be bound to the model using model.bind_tools(tools)
         '''
         
+        # I'd like to think my MessageHistory does somethign that the langchain MessageHistory
+        #   does not, but really it was just because I didn't know it was a thing before I implemented
+        #   it. I'm not sure if I should keep it or not.
         if system_prompt is not None:
             history = MessageHistory.from_system_prompt(system_prompt)
         else:
             history = MessageHistory()
 
-        if tools is not None:
-            model = model.bind_tools(tools)
-            toolset = ToolSet.from_list(tools)
-        else:
-            toolset = None
+        # make toolset from toolkits and tools and tool_callable
+        toolset = ToolSet.from_tools(
+            model = model,
+            tools = tools,
+            toolkits = toolkits,
+            tool_constructor = tool_constructor,
+        )
+        if len(toolset) > 0:
+            model = model.bind_tools(toolset.get_tools())
         
         return cls(
             model = model,
@@ -232,5 +234,5 @@ class ChatBot:
     ############################# dunder #############################
     def __repr__(self) -> str:
         model_name = getattr(self.model, 'model_name', 'Unknown')
-        return f'{self.__class__.__name__}(model_type={type(self.model).__name__}, model_name="{model_name}", tools={self.toolset.names() if self.toolset is not None else None})'
+        return f'{self.__class__.__name__}(model_type={type(self.model).__name__}, model_name="{model_name}", tools={self.toolset.names() if len(self.toolset) else None})'
 
