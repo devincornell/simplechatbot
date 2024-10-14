@@ -1,10 +1,14 @@
 
-# whichever chatbot is here will be imported into 
-#   the simplechatbot primary namespace
-from .v4 import *
 
-# importing any other module here will dump it 
-#   into the primary namespace
 
-from .tools import *
 
+# so this places everything from the tools module into the tools namespace. Access it like this:
+# import simplechatbot
+# simplechatbot.tools.WhateverTool
+from . import tools
+
+# We could alternatively dump tools into the primary namespace like this:
+#from .tools import *
+
+
+from . import devin
