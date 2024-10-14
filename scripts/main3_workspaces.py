@@ -19,23 +19,21 @@ sys.path.append('..')
 
 
 import importlib
-import simplechatbot.v4
-importlib.reload(simplechatbot.v4)
+#import simplechatbot.v4
+#importlib.reload(simplechatbot.v4)
 import simplechatbot
 
     
 if __name__ == '__main__':
 
     # keychain is now just a dict subclass
-    keychain = simplechatbot.APIKeyChain.from_json_file('keys.json')
-
-
+    keychain = simplechatbot.devin.APIKeyChain.from_json_file('keys.json')
 
     system_prompt = '''
     You are designed to answer any question the user has.
     For every question, you should retrieve test from Lilian Wengs blog.
     '''
-    chatbot = simplechatbot.ChatBot.from_openai(
+    chatbot = simplechatbot.devin.ChatBot.from_openai(
         model_name = 'gpt-4o-mini', 
         api_key=keychain['openai'],
         system_prompt=system_prompt,

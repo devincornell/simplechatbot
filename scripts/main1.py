@@ -17,9 +17,10 @@ sys.path.append('..')
 
 
 import importlib
-import simplechatbot.v4
-importlib.reload(simplechatbot.v4)
-import simplechatbot.v4 as simplechatbot
+#import simplechatbot.v4
+#importlib.reload(simplechatbot.v4)
+#import simplechatbot.v4 as simplechatbot
+import simplechatbot
 
 # stores notes in memory
 fake_note_db = list()
@@ -102,16 +103,16 @@ if __name__ == '__main__':
 
     if keys["openai"] != "":
 
-        chatbot = simplechatbot.ChatBot.from_openai(
+        chatbot = simplechatbot.devin.ChatBot.from_openai(
             model_name = 'gpt-4o-mini', 
-            api_key=simplechatbot.APIKeyChain.from_json_file('keys.json')['openai'],
+            api_key=simplechatbot.devin.APIKeyChain.from_json_file('keys.json')['openai'],
             system_prompt=system_prompt,
             tools = builtin_tools() + note_db_tools(),
         )
 
     else:
 
-        chatbot = simplechatbot.ChatBot.from_ollama(
+        chatbot = simplechatbot.devin.ChatBot.from_ollama(
             model_name = 'llama3.1', 
             system_prompt=system_prompt,
             tools=get_tools(model = ChatOllama),

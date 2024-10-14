@@ -18,10 +18,11 @@ import sys
 sys.path.append('..')
 
 
-import importlib
-import simplechatbot.v4
-importlib.reload(simplechatbot.v4)
-import simplechatbot.v4 as simplechatbot
+#import importlib
+#import simplechatbot.v4
+#importlib.reload(simplechatbot.v4)
+#import simplechatbot.v4 as simplechatbot
+import simplechatbot
 
 from simplechatbot.tools.rag.rag import RAG
 
@@ -29,7 +30,7 @@ from simplechatbot.tools.rag.rag import RAG
 if __name__ == '__main__':
 
     # keychain is now just a dict subclass
-    keychain = simplechatbot.APIKeyChain.from_json_file('keys.json')
+    keychain = simplechatbot.devin.APIKeyChain.from_json_file('keys.json')
 
 
     # I put all the RAG state in this object
@@ -49,14 +50,14 @@ if __name__ == '__main__':
     For every question, you should retrieve test from Lilian Wengs blog.
     '''
     if "openai" in keychain:
-        chatbot = simplechatbot.ChatBot.from_openai(
+        chatbot = simplechatbot.devin.ChatBot.from_openai(
             model_name = 'gpt-4o-mini', 
             api_key=keychain['openai'],
             system_prompt=system_prompt,
             tools = [rag_tool], # just includes the rag tool from above
         )
     else:
-        chatbot = simplechatbot.ChatBot.from_ollama(
+        chatbot = simplechatbot.devin.ChatBot.from_ollama(
             model_name = 'llama3.1', 
             system_prompt=system_prompt,
             tools = [rag_tool],
