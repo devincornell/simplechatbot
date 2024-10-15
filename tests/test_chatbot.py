@@ -7,7 +7,7 @@ import langchain_core.tools
 
 import sys
 sys.path.append('..')
-import simplechatbot.v4 as simplechatbot
+import simplechatbot
 
 def get_tools():
     @langchain_core.tools.tool
@@ -18,12 +18,12 @@ def get_tools():
 
 
 if __name__ == '__main__':
-    keychain = simplechatbot.APIKeyChain.from_json_file('../scripts/keys.json')
+    keychain = simplechatbot.devin.APIKeyChain.from_json_file('../scripts/keys.json')
 
     system_prompt = '''
     You are designed to answer any question the user has.
     '''
-    chatbot = simplechatbot.ChatBot.from_openai(
+    chatbot = simplechatbot.devin.ChatBot.from_openai(
         model_name = 'gpt-4o-mini', 
         api_key=keychain['openai'],
         system_prompt=system_prompt,
@@ -31,6 +31,6 @@ if __name__ == '__main__':
     )
     print(chatbot)
 
-    chatbot.ui.start_interactive(stream=True)
+    chatbot.ui.start_interactive(stream=True, show_tools=False)
 
 

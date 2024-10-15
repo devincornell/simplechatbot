@@ -41,7 +41,7 @@ class ChatBot:
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
         toolkits: typing.Optional[list[BaseToolkit]] = None,
-        tool_constructor: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
+        tool_factory: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
         **model_kwargs,
     ) -> typing.Self:
         '''Create a new chatbot with a chatgpt model.
@@ -61,7 +61,7 @@ class ChatBot:
             system_prompt = system_prompt,
             tools = tools,
             toolkits = toolkits,
-            tool_constructor = tool_constructor,
+            tool_factory = tool_factory,
         )
 
     @classmethod
@@ -70,7 +70,7 @@ class ChatBot:
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
         toolkits: typing.Optional[list[BaseToolkit]] = None,
-        tool_constructor: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
+        tool_factory: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
         **model_kwargs,
     ) -> typing.Self:
         '''Create a new chatbot with an ollama model.
@@ -90,7 +90,7 @@ class ChatBot:
             system_prompt = system_prompt,
             tools = tools,
             toolkits = toolkits,
-            tool_constructor = tool_constructor,
+            tool_factory = tool_factory,
         )
     
         
@@ -101,7 +101,7 @@ class ChatBot:
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
         toolkits: typing.Optional[list[BaseToolkit]] = None,
-        tool_constructor: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
+        tool_factory: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
     ) -> typing.Self:
         '''Create a new chatbot with any subtype of BaseChatModel.
         Args:
@@ -123,7 +123,7 @@ class ChatBot:
             model = model,
             tools = tools,
             toolkits = toolkits,
-            tool_constructor = tool_constructor,
+            tool_factory = tool_factory,
         )
         if len(toolset) > 0:
             model = model.bind_tools(toolset.get_tools())

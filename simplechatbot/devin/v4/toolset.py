@@ -46,14 +46,14 @@ class ToolSet:
     @classmethod
     def from_tools(cls,
         model: BaseChatModel,
-        tool_constructor: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]],
+        tool_factory: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]],
         tools: typing.Optional[list[BaseTool]], 
         toolkits: typing.Optional[list[BaseToolkit]],
     ) -> typing.Self:
         '''Create a toolset from a list of tools or a callable that returns a list of tools.'''
         tools = tools if tools is not None else []
         return cls.from_list(
-            tool_list=tools + (tool_constructor(model) if tool_constructor is not None else []),
+            tool_list=tools + (tool_factory(model) if tool_factory is not None else []),
             toolkits = toolkits,
         )
     
