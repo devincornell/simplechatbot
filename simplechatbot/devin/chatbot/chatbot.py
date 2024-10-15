@@ -35,64 +35,7 @@ class ChatBot:
     toolset: ToolSet = dataclasses.field(default_factory=ToolSet)
 
     ############################# Model-specific Constructors #############################
-    @classmethod
-    def from_openai(cls,
-        model_name: str = "gpt-4o-mini", 
-        system_prompt: typing.Optional[str] = None,
-        tools: typing.Optional[list[BaseTool]] = None,
-        toolkits: typing.Optional[list[BaseToolkit]] = None,
-        tool_factory: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
-        **model_kwargs,
-    ) -> typing.Self:
-        '''Create a new chatbot with a chatgpt model.
-        Args:
-            model_name: name of the model to use
-            system_prompt: first system message for the chat.
-            tools: tools to be bound to the model using model.bind_tools(tools).
-            tool_callable: function to get tools to use. Here so that the tools can access a reference to the model.
-            model_kwargs: any additional arguments to pass to the model constructor.
-        '''
-        model = ChatOpenAI(
-            model=model_name, 
-            **model_kwargs
-        )
-        return cls.from_model(
-            model = model,
-            system_prompt = system_prompt,
-            tools = tools,
-            toolkits = toolkits,
-            tool_factory = tool_factory,
-        )
 
-    @classmethod
-    def from_ollama(cls,
-        model_name: str = "llama3.1", 
-        system_prompt: typing.Optional[str] = None,
-        tools: typing.Optional[list[BaseTool]] = None,
-        toolkits: typing.Optional[list[BaseToolkit]] = None,
-        tool_factory: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
-        **model_kwargs,
-    ) -> typing.Self:
-        '''Create a new chatbot with an ollama model.
-        Args:
-            model_name: name of the model to use
-            system_prompt: first system message for the chat.
-            tools: tools to be bound to the model using model.bind_tools(tools).
-            tool_callable: function to get tools to use. Here so that the tools can access a reference to the model.
-            model_kwargs: any additional arguments to pass to the model constructor.
-        '''
-        model = ChatOllama(
-            model=model_name, 
-            **model_kwargs
-        )
-        return cls.from_model(
-            model = model,
-            system_prompt = system_prompt,
-            tools = tools,
-            toolkits = toolkits,
-            tool_factory = tool_factory,
-        )
-    
         
     ############################# Generic Constructors #############################
     @classmethod
