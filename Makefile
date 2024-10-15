@@ -8,6 +8,13 @@ uninstall:
 	pip uninstall simplechatbot
 
 
+############### Doc Update Instructions ################
+# if you want to update the documentation in the local docs, you can do these commands
+
+# 1. make example_notebooks: will compile notebooks into markdown files and place them in "docs/examples"
+# 2. (OPTIONAL) make serve_mkdocs: will serve the mkdocs documentation locally to allow you to see the new files
+# 3. make build_mkdocs: will build the mkdocs documentation (markdown -> html)
+# 4. make deploy_mkdocs: will deploy the mkdocs documentation to the gh-pages branch. publishes to the live site!
 
 
 ############### mkdocs-material documentation generator ################
