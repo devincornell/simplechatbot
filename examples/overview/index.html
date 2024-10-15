@@ -324,14 +324,71 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="ChatBot Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#instantiate-with-ollama-or-openai-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instantiate with Ollama or OpenAI Models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-system-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setting System Prompt
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding Tools
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#chatresult-and-chatstream-objects" class="md-nav__link">
+  <a href="#chat-methods" class="md-nav__link">
     <span class="md-ellipsis">
-      ChatResult and ChatStream Objects
+      Chat Methods
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Chat Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chatresult-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      ChatResult Objects
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chatstream-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      ChatStream Objects
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -393,14 +450,71 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="ChatBot Objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#instantiate-with-ollama-or-openai-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instantiate with Ollama or OpenAI Models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-system-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setting System Prompt
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding Tools
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#chatresult-and-chatstream-objects" class="md-nav__link">
+  <a href="#chat-methods" class="md-nav__link">
     <span class="md-ellipsis">
-      ChatResult and ChatStream Objects
+      Chat Methods
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Chat Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chatresult-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      ChatResult Objects
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chatstream-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      ChatStream Objects
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -436,7 +550,7 @@
 <pre><code class="language-python">import sys
 sys.path.append('..')
 
-import simplechatbot.v4 as simplechatbot
+import simplechatbot
 </code></pre>
 <h2 id="chatbot-objects"><code>ChatBot</code> Objects</h2>
 <p><code>ChatBot</code> instances maintain the three things that define a chatbot: a chat model (or runnable), chat history, and available tools / functions.</p>
@@ -444,35 +558,38 @@ import simplechatbot.v4 as simplechatbot
 <p>Optional: you can use <code>APIKeyChain</code> to retrive API keys from a json file. It is a <code>dict</code> subclass with the <code>from_json_file</code> method that will simply read a json file as a dict.</p>
 <pre><code class="language-python">from langchain_openai import ChatOpenAI
 
-keychain = simplechatbot.APIKeyChain.from_json_file('../scripts/keys.json')
+keychain = simplechatbot.devin.APIKeyChain.from_json_file('../scripts/keys.json')
 
 model = ChatOpenAI(model='gpt-4o-mini', api_key=keychain['openai'])
-chatbot = simplechatbot.ChatBot.from_model(model=model)
+chatbot = simplechatbot.devin.ChatBot.from_model(model=model)
 print(chatbot)
 </code></pre>
 <pre><code>ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=None)
 </code></pre>
+<h3 id="instantiate-with-ollama-or-openai-models">Instantiate with Ollama or OpenAI Models</h3>
 <p>If you have an ollama instance running on your machine, you can use the <code>from_ollama</code> constructor. You only need the model name and the <code>ChatOllma</code> constructor will identify the model API endpoint location as long as it is local.</p>
-<pre><code class="language-python">chatbot = simplechatbot.ChatBot.from_ollama(
+<pre><code class="language-python">chatbot = simplechatbot.devin.ChatBot.from_ollama(
     model_name = 'llama3.1', 
 )
 </code></pre>
 <p>You may do the same for <code>ChatOpenAI</code> using <code>from_openai</code>.</p>
-<pre><code class="language-python">chatbot = simplechatbot.ChatBot.from_openai(
+<pre><code class="language-python">chatbot = simplechatbot.devin.ChatBot.from_openai(
     model_name = 'gpt-4o-mini', 
     api_key=keychain['openai'],
 )
 </code></pre>
+<h3 id="setting-system-prompt">Setting System Prompt</h3>
 <p>Use the <code>system_prompt</code> parameter to initialize the chatbot with instructions.</p>
 <pre><code class="language-python">system_prompt = '''
 You are a creative designer who has been tasked with creating a new slogan for a company.
 The user will describe the company, and you will need to generate three slogan ideas for them.
 '''
-chatbot = simplechatbot.ChatBot.from_ollama(
+chatbot = simplechatbot.devin.ChatBot.from_ollama(
     model_name = 'llama3.1', 
     system_prompt=system_prompt,
 )
 </code></pre>
+<h3 id="adding-tools">Adding Tools</h3>
 <p>The <code>tools</code> parameter allows you to pass any <a href="https://python.langchain.com/v0.1/docs/modules/tools/">langchain tools</a> you want your chatbot to be able to use. You can use one of <a href="https://python.langchain.com/v0.1/docs/integrations/tools/">Langchain's built-in tools</a> (such as <code>DuckDuckGoSearchResults</code>) or <a href="https://python.langchain.com/v0.1/docs/modules/tools/custom_tools/">define your own custom tools</a>.</p>
 <pre><code class="language-python">from langchain_community.tools import DuckDuckGoSearchResults
 
@@ -484,7 +601,7 @@ tools = [
     ),
 ]
 
-chatbot = simplechatbot.ChatBot.from_ollama(
+chatbot = simplechatbot.devin.ChatBot.from_ollama(
     model_name = 'llama3.1', 
     tools=tools,
 )
@@ -493,7 +610,7 @@ chatbot = simplechatbot.ChatBot.from_ollama(
 <pre><code class="language-python">system_prompt = '''
 Your job is to answer any questions the user has.
 '''
-chatbot = simplechatbot.ChatBot.from_openai(
+chatbot = simplechatbot.devin.ChatBot.from_openai(
     model_name = 'gpt-4o-mini', 
     api_key=keychain['openai'],
     system_prompt=system_prompt,
@@ -505,8 +622,15 @@ reply.message.content
 </code></pre>
 <pre><code>'The capital of France is Paris.'
 </code></pre>
-<h2 id="chatresult-and-chatstream-objects"><code>ChatResult</code> and <code>ChatStream</code> Objects</h2>
-<p>Calls to <code>chat</code> return <code>ChatResult</code> objects, which contain the message reply (<code>message</code>) and means with which to call any tools (<code>call_tools</code>).</p>
+<h2 id="chat-methods">Chat Methods</h2>
+<p>The methods <code>chat</code> and <code>chat_stream</code> both send the provided message with history to the LLM for prediction.</p>
+<ul>
+<li><code>chat</code>: returns <code>ChatResult</code> instance with the AI message and ability to call tool functions with provided parameters.</li>
+<li><code>chat_stream</code>: returns <code>ChatStream</code> instance which allows you to iterate over responses from the LLM and call tools once all of the parameters have been provided.</li>
+</ul>
+<p>Of the two, <code>ChatResult</code> is the most straightforward, so I will discuss that first.</p>
+<h3 id="chatresult-objects"><code>ChatResult</code> Objects</h3>
+<p>These are returned from calls to <code>chat</code>. Most importantly, access the <code>message</code> property to see the response directly.</p>
 <pre><code class="language-python">reply.message.usage_metadata
 </code></pre>
 <pre><code>{'input_tokens': 104, 'output_tokens': 8, 'total_tokens': 112}
@@ -523,7 +647,8 @@ reply.message.content
  'finish_reason': 'stop',
  'logprobs': None}
 </code></pre>
-<p>See available tool calls using <code>tool_calls</code>. See how the question about the weather in Rome results in a tool call.</p>
+<p>See available tool calls using <code>tool_calls</code>. This is a thin wrapper over the <code>AIMessage.tool_calls</code> property.</p>
+<p>See how the question about the weather in Rome results in a tool call.</p>
 <pre><code class="language-python">chatbot.chat('What is the capital of France?').tool_calls
 </code></pre>
 <pre><code>[]
@@ -536,18 +661,21 @@ reply.tool_calls
   'id': 'call_wF7eMhgRjPAR3CNmlXQyuJZW',
   'type': 'tool_call'}]
 </code></pre>
-<pre><code class="language-python">for tool_name, result in reply.call_tools().items():
+<p>Make a call to <code>call_tools()</code> to actually execute the tools. The results are returned as dicts with tool names as keys pointing to return values.</p>
+<pre><code class="language-python">tool_call_results = reply.call_tools()
+for tool_name, result in tool_call_results.items():
     print(result.tool_info_str)
 </code></pre>
 <pre><code>duckduckgo_results_json(query=current weather in Rome)
 </code></pre>
-<p>Calls to <code>chat_stream</code> are very similar but instead return <code>ChatStream</code> objects. These objects are iterators and must be iterated over before you can call any tools.</p>
+<h3 id="chatstream-objects"><code>ChatStream</code> Objects</h3>
+<p>Calls to <code>chat_stream</code> are very similar but instead return <code>ChatStream</code> objects. These objects are iterators and must be iterated over before you can call any tools. If you are not expecting any tool calls, you can call <code>chat_stream</code> directly in the loop.</p>
 <pre><code class="language-python">for r in chatbot.chat_stream(f'What is the capital of France?'):
     print(r.content, end='', flush=True)
 </code></pre>
 <pre><code>The capital of France is Paris.
 </code></pre>
-<p>After exhausting the iterable, you can call <code>tool_calls</code> and <code>call_tools</code> to see and execute the requested tools.</p>
+<p>If you want to be able to call tools, iterate through the reply chunks before calling the tools. After exhausting the iterable, you can call <code>call_tools</code> to see and execute the requested tools. You can also use the <code>tool_calls</code> property to see if there are any tools to be called.</p>
 <pre><code class="language-python">reply_stream = chatbot.chat_stream(f'What is the weather in Rome?')
 for r in reply_stream:
     print(r.content, end='', flush=True)
