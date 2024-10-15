@@ -30,8 +30,9 @@ if __name__ == '__main__':
     keychain = simplechatbot.devin.APIKeyChain.from_json_file('keys.json')
 
     system_prompt = '''
-    You are designed to answer any question the user has.
-    For every question, you should retrieve test from Lilian Wengs blog.
+    You are designed to answer any question the user has, to the best of your ability.
+    At some point, the user may ask you to save or retrieve text to or from a workspace.
+    You should ONLY do this if the user explicitly asks you to do so.
     '''
     chatbot = simplechatbot.devin.ChatBot.from_openai(
         model_name = 'gpt-4o-mini', 
