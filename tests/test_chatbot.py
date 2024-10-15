@@ -31,6 +31,16 @@ if __name__ == '__main__':
     )
     print(chatbot)
 
-    chatbot.ui.start_interactive(stream=True, show_tools=False)
+    reply_stream = chatbot.chat_stream(f'Send the following message: "Hello, how are you?"')
+    for r in reply_stream:
+        print(r.content, end='', flush=True)
+
+    assert(len(reply_stream.tool_calls) == 1)
+    results = reply_stream.call_tools()
+    print(results['message_tool'].return_value)
+
+    for r in chatbot.chat_stream(new_message=None):
+        print(r.content, end='', flush=True)
+    #chatbot.ui.start_interactive(stream=True, show_tools=False)
 
 

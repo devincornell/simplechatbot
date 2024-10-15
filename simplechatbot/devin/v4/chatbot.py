@@ -174,20 +174,8 @@ class ChatBot:
             self.history.add_message(result)
 
         return chatresult
-        
-        # call the model
-        response = self.model.invoke(self.history + new_messages)
-
-        # add new message and response to history
-        if new_message is not None and add_to_history:
-            self.history.add_human_message(new_message)
-        self.history.add_message(response)
-
-        # handle any tool calls that happened. if tools were called, follow up with new chat
-        results = self._handle_tool_calls(response, result_callback=lambda: self.chat(None))        
-        return response.content
     
-    def _handle_new_message(self, new_message: str | HumanMessage, add_to_history: bool) -> list[BaseMessage]:
+    def _handle_new_message(self, new_message: typing.Optional[str | HumanMessage], add_to_history: bool) -> list[BaseMessage]:
         '''Get messages for this chat and add the new message to the history if needed.'''
         if new_message is None:
             use_messages = self.history
