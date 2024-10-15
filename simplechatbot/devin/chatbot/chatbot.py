@@ -4,10 +4,6 @@ import typing
 import dataclasses
 
 
-# BaseChatModel
-from langchain_ollama import ChatOllama
-from langchain_openai import ChatOpenAI
-
 from .message_history import MessageHistory
 from .toolset import ToolSet, ToolCallResult
 

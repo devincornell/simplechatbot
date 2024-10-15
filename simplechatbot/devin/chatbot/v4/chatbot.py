@@ -5,8 +5,6 @@ import dataclasses
 
 
 # BaseChatModel
-from langchain_ollama import ChatOllama
-from langchain_openai import ChatOpenAI
 
 from .message_history import MessageHistory
 from .toolset import ToolSet, ToolCallResult
@@ -52,6 +50,7 @@ class ChatBot:
             tool_callable: function to get tools to use. Here so that the tools can access a reference to the model.
             model_kwargs: any additional arguments to pass to the model constructor.
         '''
+        from langchain_openai import ChatOpenAI # workaround - newer version has separate imports
         model = ChatOpenAI(
             model=model_name, 
             **model_kwargs
@@ -81,6 +80,7 @@ class ChatBot:
             tool_callable: function to get tools to use. Here so that the tools can access a reference to the model.
             model_kwargs: any additional arguments to pass to the model constructor.
         '''
+        from langchain_ollama import ChatOllama # workaround - newer version has separate imports
         model = ChatOllama(
             model=model_name, 
             **model_kwargs
