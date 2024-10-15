@@ -13,7 +13,7 @@ from .chatbot import ChatBot
 class OpenAIChatBot(ChatBot):
     '''Chatbot created from an OpenAI model. Only separate so that it can be imported separately for dependency reasons.'''
     @classmethod
-    def from_openai(cls,
+    def new(cls,
         model_name: str = "gpt-4o-mini", 
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,

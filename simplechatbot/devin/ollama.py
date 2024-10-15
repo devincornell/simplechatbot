@@ -14,10 +14,10 @@ if typing.TYPE_CHECKING:
 from .chatbot import ChatBot
 
 
-class OpenAIChatBot(ChatBot):
+class OllamaChatBot(ChatBot):
     '''Chatbot created from an Ollama model. Only separate so that it can be imported separately for dependency reasons.'''
     @classmethod
-    def from_ollama(cls,
+    def new(cls,
         model_name: str = "llama3.1", 
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
