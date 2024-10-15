@@ -9,6 +9,8 @@ import sys
 sys.path.append('..')
 import simplechatbot
 
+from simplechatbot.devin.ollama import OllamaChatBot
+
 def get_tools():
     @langchain_core.tools.tool
     def message_tool(text: str) -> str:

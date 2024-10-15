@@ -8,7 +8,6 @@ import dataclasses
 import langchain_core.tools
 from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
-from langchain_mistralai import ChatMistralAI
 import pydantic
 import json
 
