@@ -30,7 +30,7 @@ from simplechatbot.tools.rag.rag import RAG
 if __name__ == '__main__':
 
     # keychain is now just a dict subclass
-    keychain = simplechatbot.devin.APIKeyChain.from_json_file('keys.json')
+    keychain = simplechatbot.devin.APIKeyChain.from_json_file('../keys.json')
 
 
     # I put all the RAG state in this object

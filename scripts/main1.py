@@ -92,7 +92,7 @@ def builtin_tools() -> list[langchain_core.tools.BaseTool]:
     ]
 
 # Read keys.json file
-with open("keys.json") as file:
+with open("../keys.json") as file:
     keys = json.load(file)
     
 if __name__ == '__main__':
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
         chatbot = simplechatbot.devin.ChatBot.from_openai(
             model_name = 'gpt-4o-mini', 
-            api_key=simplechatbot.devin.APIKeyChain.from_json_file('keys.json')['openai'],
+            api_key=simplechatbot.devin.APIKeyChain.from_json_file('../keys.json')['openai'],
             system_prompt=system_prompt,
             tools = builtin_tools() + note_db_tools(),
         )
