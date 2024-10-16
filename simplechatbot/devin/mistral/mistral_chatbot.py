@@ -11,7 +11,7 @@ if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool, BaseToolkit
 
-from .chatbot import ChatBot
+from ..chatbot import ChatBot
 
 
 class MistralChatBot(ChatBot):

@@ -8,7 +8,7 @@ if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool, BaseToolkit
 
-from .chatbot import ChatBot
+from ..chatbot import ChatBot
 
 class OpenAIChatBot(ChatBot):
     '''Chatbot created from an OpenAI model. Only separate so that it can be imported separately for dependency reasons.'''
