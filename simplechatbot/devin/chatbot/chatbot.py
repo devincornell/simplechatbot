@@ -138,7 +138,7 @@ class ChatBot:
         if len(results) > 0:
             if verbose:
                 for result in results.values():
-                    print(f'{result.tool_info_str} -> {result.return_value}')
+                    print(f'{result.tool_info_str()} -> {result.return_value}')
             return result_callback()
 
         return results

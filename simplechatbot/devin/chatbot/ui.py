@@ -75,7 +75,7 @@ class ChatBotUI:
         if len(tool_results):
             print('\n[Tool Results]')
             for tool_result in tool_results.values():
-                print(f'{tool_result.tool_info_str} -> {tool_result.return_value}')
+                print(f'{tool_result.tool_info_str()} -> {tool_result.return_value}')
             print('[END Tool Results]')
 
             # recursively call chat if tools were called

@@ -14,22 +14,42 @@ from .util import format_tool_text
 @dataclasses.dataclass
 class ToolCallResult:
     '''Result of a tool call.'''
-    tool_info: dict[str, str|dict]
+    id: ToolCallID
+    name: str
+    type: str
+    args: dict[str, str|int|bool|float|list|dict]
     tool: BaseTool
     return_value: typing.Any
+    tool_call_args: dict[str, str|int|bool|float|list|dict] = dataclasses.field(repr=False)
 
-    @property
-    def id(self) -> ToolCallID:
-        return self.tool_info['id']
+    @classmethod
+    def from_tool_info(cls, 
+        tool_info: dict[str, str|dict],
+        tool: BaseTool,
+        return_value: typing.Any,
+    ) -> typing.Self:
+        '''Create a tool call result from tool info, tool, and return value.'''
+        return cls(
+            id = tool_info['id'],
+            name = tool_info['name'],
+            type = tool_info['type'],
+            args = tool_info['args'],
+            tool_call_args = tool_info,
+            tool = tool,
+            return_value = return_value,
+        )
 
-    @property
-    def tool_name(self) -> str:
-        return self.tool.name
+    #@property
+    #def id(self) -> ToolCallID:
+    #    return self.tool_info['id']
+
+    #@property
+    #def tool_name(self) -> str:
+    #    return self.tool.name
     
-    @property
     def tool_info_str(self) -> str:
         '''Get tool call as a string.'''
-        return format_tool_text(self.tool_info)
+        return format_tool_text(self.tool_call_args)
     
 
 @dataclasses.dataclass
@@ -85,7 +105,7 @@ class ToolSet:
         except Exception as e:
             raise ToolRaisedExceptionError.from_exception(tool_info, tool, e) from e
         
-        return ToolCallResult(
+        return ToolCallResult.from_tool_info(
             tool_info = tool_info, 
             tool = tool,
             return_value = return_value, 
