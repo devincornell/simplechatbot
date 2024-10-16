@@ -8,8 +8,7 @@ import langchain_core.tools
 import sys
 sys.path.append('..')
 import simplechatbot
-
-from simplechatbot.devin.ollama import OllamaChatBot
+from simplechatbot.devin.openai import OpenAIChatBot
 
 def get_tools():
     @langchain_core.tools.tool
@@ -25,7 +24,7 @@ if __name__ == '__main__':
     system_prompt = '''
     You are designed to answer any question the user has.
     '''
-    chatbot = simplechatbot.devin.ChatBot.from_openai(
+    chatbot = OpenAIChatBot.new(
         model_name = 'gpt-4o-mini', 
         api_key=keychain['openai'],
         system_prompt=system_prompt,
