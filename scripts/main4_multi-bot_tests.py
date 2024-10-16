@@ -16,12 +16,8 @@ from langchain_community.tools import DuckDuckGoSearchResults
 
 import sys
 sys.path.append('..')
-
-
-import importlib
-#import simplechatbot.v4
-#importlib.reload(simplechatbot.v4)
 import simplechatbot
+from simplechatbot.devin.openai import OpenAIChatBot
 
 
 def tool_factory(model: ChatOpenAI) -> list[str]:
@@ -33,7 +29,7 @@ def tool_factory(model: ChatOpenAI) -> list[str]:
     You should ONLY do this if the user explicitly asks you to do so.
     '''
 
-    get_website_chatbot = simplechatbot.devin.ChatBot.from_openai(
+    get_website_chatbot = OpenAIChatBot(
         model_name = 'gpt-4o-mini', 
         api_key=keychain['openai'],
         system_prompt=system_prompt,
@@ -49,7 +45,7 @@ if __name__ == '__main__':
     At some point, the user may ask you to save or retrieve text to or from a workspace.
     You should ONLY do this if the user explicitly asks you to do so.
     '''
-    chatbot = simplechatbot.devin.ChatBot.from_openai(
+    chatbot = OpenAIChatBot.new(
         model_name = 'gpt-4o-mini', 
         api_key=keychain['openai'],
         system_prompt=system_prompt,
