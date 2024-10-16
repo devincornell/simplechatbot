@@ -167,3 +167,5 @@ Simplechatbot/.DS_Store
 
 keys.json
 
+scripts/credentials.json
+scripts/token.json
