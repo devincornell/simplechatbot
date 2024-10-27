@@ -18,7 +18,6 @@ class OpenAIChatBot(ChatBot):
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
         toolkits: typing.Optional[list[BaseToolkit]] = None,
-        tool_factory: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
         **model_kwargs,
     ) -> typing.Self:
         '''Create a new chatbot with a chatgpt model.
@@ -38,6 +37,5 @@ class OpenAIChatBot(ChatBot):
             system_prompt = system_prompt,
             tools = tools,
             toolkits = toolkits,
-            tool_factory = tool_factory,
         )
 

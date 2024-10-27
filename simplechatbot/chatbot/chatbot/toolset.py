@@ -62,28 +62,14 @@ class ToolSet:
         https://python.langchain.com/v0.2/docs/integrations/tools/
     '''
     tools: dict[str, BaseTool] = dataclasses.field(default_factory=dict)
-    
+        
     @classmethod
-    def from_tools(cls,
-        model: BaseChatModel,
-        tool_factory: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]],
-        tools: typing.Optional[list[BaseTool]], 
-        toolkits: typing.Optional[list[BaseToolkit]],
-    ) -> typing.Self:
-        '''Create a toolset from a list of tools or a callable that returns a list of tools.'''
-        tools = tools if tools is not None else []
-        return cls.from_list(
-            tool_list=tools + (tool_factory(model) if tool_factory is not None else []),
-            toolkits = toolkits,
-        )
-    
-    @classmethod
-    def from_list(cls, 
-        tool_list: typing.Optional[list[BaseTool]],
-        toolkits: typing.Optional[list[BaseToolkit]],
+    def from_tools(cls, 
+        tools: typing.Optional[list[BaseTool]] = None,
+        toolkits: typing.Optional[list[BaseToolkit]] = None,
     ) -> typing.Self:
         '''Create toolset from a list of tools and toolkits.'''
-        tool_list = list(tool_list) if tool_list is not None else []
+        tools = list(tools) if tools is not None else []
 
         if toolkits is not None:
             toolkit_tools = [tool for toolkit in toolkits for tool in toolkit.get_tools()]
@@ -91,13 +77,16 @@ class ToolSet:
             toolkit_tools = []
 
         return cls(
-            tools = {t.name:t for t in tool_list + toolkit_tools},
+            tools = {t.name:t for t in (tools + toolkit_tools)},
         )
 
     def call_tool(self, 
         tool_info: dict[str, str|dict], 
     ) -> ToolCallResult:
-        '''Extracts tool information and executes tool.'''
+        '''Extracts tool information and executes tool.
+        Args:
+            tool_info is the dict returned from the chat model that includes tool name and arguments.
+        '''
         tool = self[tool_info['name']] # NOTE: raises UnidentifiedToolError if tool isn't found
         args = tool_info['args']
         try:
@@ -111,7 +100,6 @@ class ToolSet:
             return_value = return_value, 
         )
 
-    
     def get_tools(self) -> list[BaseTool]:
         '''Get a list of tools.'''
         return list(self.tools.values())
@@ -123,7 +111,13 @@ class ToolSet:
     def names(self) -> list[str]:
         return list(self.tools.keys())
     
+    def merge(self, other: typing.Self) -> typing.Self:
+        return ToolSet.from_tools(tools=self.get_tools() + other.get_tools())
+    
     ##################### dunder methods #####################
+    def __or__(self, other: typing.Self) -> typing.Self:
+        return self.merge(other)
+
     def __len__(self) -> int:
         return len(self.tools)
     
