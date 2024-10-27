@@ -12,5 +12,5 @@ from .toolset import ToolSet, UknownToolError, ToolRaisedExceptionError, ToolCal
 from .message_history import MessageHistory
 
 # import old stuff into separate namespace
-from . import v4
+#from . import v4
 
