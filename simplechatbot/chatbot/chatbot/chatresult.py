@@ -13,24 +13,6 @@ if typing.TYPE_CHECKING:
 class ChatResultBase:
     '''Base class for chat results.'''
 
-    def _handle_tool_calls(self, 
-        chatbot: ChatBot,
-        message: AIMessage,
-        add_to_history: bool = True,
-    ) -> dict[str, ToolCallResult]:
-        '''Handle the actual calling of tools.'''
-        results: dict[str,ToolCallResult] = dict()
-        for tool_info in message.tool_calls:
-            result = chatbot.toolset.call_tool(tool_info)
-            results[result.tool.name] = result
-
-            if add_to_history:
-                chatbot.history.add_tool_message(result.return_value, result.id)
-
-            #if verbose:
-            #    print(f'{result.tool_info_str} -> {result.return_value}')
-        
-        return results
 
 
 @dataclasses.dataclass
@@ -43,7 +25,7 @@ class ChatResult(ChatResultBase):
         add_to_history: bool = True, 
     ) -> dict[str, ToolCallResult]:
         '''Call tools on the full message.'''
-        return self._handle_tool_calls(
+        return _handle_tool_calls(
             chatbot=self.chatbot, 
             message=self.message, 
             add_to_history=add_to_history, 
@@ -87,7 +69,7 @@ class ChatStream(ChatResultBase):
         if not self.exhausted:
             raise ValueError('Cannot call tools until the stream is exhausted.')
 
-        return self._handle_tool_calls(
+        return _handle_tool_calls(
             chatbot=self.chatbot, 
             message=self.full_message, 
             add_to_history=add_to_history, 
@@ -98,3 +80,21 @@ class ChatStream(ChatResultBase):
         '''Get the names of the tools called.'''
         return self.full_message.tool_calls
 
+def _handle_tool_calls(
+    chatbot: ChatBot,
+    message: AIMessage,
+    add_to_history: bool = True,
+) -> dict[str, ToolCallResult]:
+    '''Handle the actual calling of tools.'''
+    results: dict[str,ToolCallResult] = dict()
+    for tool_info in message.tool_calls:
+        result = chatbot.toolset.call_tool(tool_info)
+        results[result.tool.name] = result
+
+        if add_to_history:
+            chatbot.history.add_tool_message(result.return_value, result.id)
+
+        #if verbose:
+        #    print(f'{result.tool_info_str} -> {result.return_value}')
+    
+    return results
