@@ -19,7 +19,7 @@ def get_tools():
 
 
 if __name__ == '__main__':
-    keychain = simplechatbot.devin.APIKeyChain.from_json_file('../keys.json')
+    keychain = simplechatbot.util.APIKeyChain.from_json_file('../keys.json')
 
     system_prompt = '''
     You are designed to answer any question the user has.

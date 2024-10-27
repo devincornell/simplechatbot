@@ -72,7 +72,7 @@ if __name__ == '__main__':
     
 
     # now they just use a text splitter to make embeddings and chunk up the doc
-    keychain = simplechatbot.APIKeyChain.from_json_file('keys.json')
+    keychain = simplechatbot.util.APIKeyChain.from_json_file('keys.json')
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     splits = text_splitter.split_documents(docs)
     vectorstore = Chroma.from_documents(documents=splits, embedding=NVIDIAEmbeddings(model="NV-Embed-QA", api_key=keychain["nvidia"]))

@@ -38,7 +38,7 @@ def tool_factory(model: ChatOpenAI) -> list[str]:
 if __name__ == '__main__':
 
     # keychain is now just a dict subclass
-    keychain = simplechatbot.devin.APIKeyChain.from_json_file('../keys.json')
+    keychain = simplechatbot.util.APIKeyChain.from_json_file('../keys.json')
 
     system_prompt = '''
     You are designed to answer any question the user has, to the best of your ability.
