@@ -8,7 +8,7 @@ import langchain_core.tools
 import sys
 sys.path.append('..')
 import simplechatbot
-from simplechatbot.devin.openai import OpenAIChatBot
+from simplechatbot.chatbot.openai import OpenAIChatBot
 
 def get_tools():
     @langchain_core.tools.tool
@@ -43,5 +43,5 @@ if __name__ == '__main__':
     for r in chatbot.chat_stream(new_message=None):
         print(r.content, end='', flush=True)
     #chatbot.ui.start_interactive(stream=True, show_tools=False)
-
+    print()
 
