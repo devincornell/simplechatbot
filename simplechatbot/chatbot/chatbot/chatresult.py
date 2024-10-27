@@ -79,6 +79,12 @@ class ChatStreamResult(ChatResultBase):
     def tool_calls(self) -> list[str]:
         '''Get the names of the tools called.'''
         return self.full_message.tool_calls
+    
+    def collect(self) -> typing.Self:
+        '''Collect all results from server and return results.'''
+        for _ in self:
+            pass
+        return self
 
 def _handle_tool_calls(
     chatbot: ChatBot,
