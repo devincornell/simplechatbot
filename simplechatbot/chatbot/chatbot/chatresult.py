@@ -38,7 +38,7 @@ class ChatResult(ChatResultBase):
 
 
 @dataclasses.dataclass
-class ChatStream(ChatResultBase):
+class ChatStreamResult(ChatResultBase):
     '''Returned from chat_stream so that user can collect results of streamed chat and tool calls.'''
     chatbot: ChatBot
     message_iter: typing.Iterator[AIMessageChunk]

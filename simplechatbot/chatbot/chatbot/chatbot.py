@@ -8,7 +8,7 @@ from .message_history import MessageHistory
 from .toolset import ToolSet, ToolCallResult
 
 from .ui import ChatBotUI
-from .chatresult import ChatResult, ChatStream
+from .chatresult import ChatResult, ChatStreamResult
 
 from langchain_core.messages import AIMessageChunk, AIMessage, BaseMessage, HumanMessage
 
@@ -71,15 +71,15 @@ class ChatBot:
         add_to_history: bool = True,
         tools: typing.Optional[list[BaseTool]] = None,
         toolkits: typing.Optional[list[BaseToolkit]] = None,
-    ) -> ChatStream:
-        '''Return a ChatStream that can be iterated over to get the chat messages.
+    ) -> ChatStreamResult:
+        '''Return a ChatStreamResult that can be iterated over to get the chat messages.
         Args:
             new_message: message to send to the chatbot. If None is entered, a new message will not be added to history.
         '''
         use_messages = self._handle_new_message(new_message, add_to_history)
 
         # result won't be ready until the stream is iterated over
-        return ChatStream(
+        return ChatStreamResult(
             chatbot = self,
             message_iter = self.get_tool_model(tools=tools, toolkits=toolkits).stream(use_messages),
             add_reply_to_history = add_to_history,
