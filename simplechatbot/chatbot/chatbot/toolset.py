@@ -112,7 +112,8 @@ class ToolSet:
         return list(self.tools.keys())
     
     def merge(self, other: typing.Self) -> typing.Self:
-        return ToolSet.from_tools(tools=self.get_tools() + other.get_tools())
+        '''Merge the two toolsets. Other tools take priority over these.'''
+        return ToolSet(tools={**self.tools, **other.tools})
     
     ##################### dunder methods #####################
     def __or__(self, other: typing.Self) -> typing.Self:
