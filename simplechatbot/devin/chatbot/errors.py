@@ -1,8 +1,13 @@
+from __future__ import annotations
+
 import typing
 import langchain_core.tools
 
 from .types import ToolCallID
 from .util import format_tool_text
+
+if typing.TYPE_CHECKING:
+    from .toolset import ToolCallInfo
 
 class UknownToolError(Exception):
     tool_name: str
@@ -16,17 +21,12 @@ class UknownToolError(Exception):
         return o
 
 class ToolRaisedExceptionError(Exception):
+    tool_info: ToolCallInfo
     e: Exception
-    tool: langchain_core.tools.BaseTool
-    text: str
-    tool_info: dict[str,str|dict]
 
     @classmethod
-    def from_exception(cls, tool_info: dict, tool: langchain_core.tools.BaseTool, e: Exception) -> typing.Self:
-        #o = cls(f'The "{tool.name}" tool raised an exception: {e}: {tool_info}')
-        o = cls(f'{format_tool_text(tool_info)} raised an exception: {e}')
-        o.e = e
-        o.tool = tool
-        o.text = format_tool_text(tool_info)
+    def from_exception(cls, tool_info: ToolCallInfo, e: Exception) -> typing.Self:
+        o = cls(f'{tool_info.tool_info_str()} raised an exception: {e}')
         o.tool_info = tool_info
+        o.e = e
         return o

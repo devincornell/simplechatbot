@@ -15,6 +15,7 @@ from langchain_core.messages import AIMessageChunk, AIMessage, BaseMessage, Huma
 if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool, BaseToolkit
+    from .toolset import ToolFactoryType
 
 
 @dataclasses.dataclass
@@ -26,12 +27,9 @@ class ChatBot:
     Note that I'm only using a subset of the features there since I thought it'd be easier
         to just use the basic chat history rather than connect it to everything else.
     '''
-    model: BaseChatModel
+    _model: BaseChatModel
     history: MessageHistory = dataclasses.field(default_factory=MessageHistory)
     toolset: ToolSet = dataclasses.field(default_factory=ToolSet)
-
-    ############################# Model-specific Constructors #############################
-
         
     ############################# Generic Constructors #############################
     @classmethod
@@ -40,7 +38,7 @@ class ChatBot:
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
         toolkits: typing.Optional[list[BaseToolkit]] = None,
-        tool_factory: typing.Optional[typing.Callable[[BaseChatModel],list[BaseTool]]] = None,
+        tool_factories: ToolFactoryType | None = None,
     ) -> typing.Self:
         '''Create a new chatbot with any subtype of BaseChatModel.
         Args:
@@ -57,43 +55,47 @@ class ChatBot:
         else:
             history = MessageHistory()
 
-        # make toolset from toolkits and tools and tool_callable
-        toolset = ToolSet.from_tools(
-            model = model,
+        # NOTE: ChatBot is in a partially initialized state here, so maybe fix that in the future.
+        new_chatbot = cls(
+            _model = model,
+            history = history,
+            toolset = ToolSet.empty(),
+        )
+        new_chatbot.toolset = ToolSet.from_tools(
+            chatbot=new_chatbot,
             tools = tools,
             toolkits = toolkits,
-            tool_factory = tool_factory,
+            tool_factories = tool_factories,
         )
-        if len(toolset) > 0:
-            model = model.bind_tools(toolset.get_tools())
-        
-        return cls(
-            model = model,
-            history = history,
-            toolset = toolset,
-        )
+
+        return new_chatbot
 
     ############################# Chat interface #############################
     def chat_stream(self, 
         new_message: typing.Optional[str], 
         add_to_history: bool = True,
+        tools: typing.Optional[list[BaseTool]] = None,
+        toolkits: typing.Optional[list[BaseToolkit]] = None,
+        tool_factories: ToolFactoryType | None = None,
     ) -> ChatStream:
         '''Return a ChatStream that can be iterated over to get the chat messages.
         Args:
             new_message: message to send to the chatbot. If None is entered, a new message will not be added to history.
         '''
-        use_messages = self._handle_new_message(new_message, add_to_history)
-
-        # result won't be ready until the stream is iterated over
-        return ChatStream(
-            chatbot = self,
-            message_iter = self.model.stream(use_messages),
-            add_reply_to_history = add_to_history,
+        use_messages = self._get_message_history(new_message, add_to_history)
+        return self.stream(
+            messages = use_messages,
+            tools = tools,
+            toolkits = toolkits,
+            tool_factories = tool_factories,
         )
 
     def chat(self, 
         new_message: typing.Optional[str], 
         add_to_history: bool = True,
+        tools: list[BaseTool] | None = None,
+        toolkits: list[BaseToolkit] | None = None,
+        tool_factories: ToolFactoryType | None = None,
     ) -> ChatResult:
         '''Send a message to the chatbot and return the response.
         Args:
@@ -101,20 +103,15 @@ class ChatBot:
             show_tools: whether to show tool calls in the response.
             add_to_history: whether to add the message to the history after the response is received.
         '''
-        use_messages = self._handle_new_message(new_message, add_to_history)
-        result: AIMessage = self.model.invoke(use_messages)
-        chatresult = ChatResult(
-            chatbot = self,
-            message = result,
+        use_messages = self._get_message_history(new_message, add_to_history=add_to_history)
+        return self.invoke(
+            messages = use_messages,
+            tools = tools,
+            toolkits = toolkits,
+            tool_factories = tool_factories,
         )
-
-        # result is already available in this case, so just add to history now
-        if add_to_history:
-            self.history.add_message(result)
-
-        return chatresult
     
-    def _handle_new_message(self, new_message: typing.Optional[str | HumanMessage], add_to_history: bool) -> list[BaseMessage]:
+    def _get_message_history(self, new_message: typing.Optional[str | HumanMessage], add_to_history: bool) -> list[BaseMessage]:
         '''Get messages for this chat and add the new message to the history if needed.'''
         if new_message is None:
             use_messages = self.history
@@ -144,14 +141,69 @@ class ChatBot:
         return results
 
     ############################# wrappers over model calls #############################
-    def stream(self, *args, **kwargs) -> typing.Iterator[AIMessageChunk]:
+    def stream(
+        self, 
+        messages: BaseMessage | str | list[BaseMessage] | list[str],
+        tools: list[BaseTool] | None = None,
+        toolkits: list[BaseToolkit] | None = None,
+        tool_factories: ToolFactoryType | None = None,
+        **kwargs,
+    ) -> ChatStream:
         '''Wrapper for model.stream.'''
-        return self.model.stream(*args, **kwargs)
-    
-    def invoke(self, *args, **kwargs) -> AIMessage:
+        model, toolset = self.get_model_with_tools(
+            tools = tools,
+            toolkits = toolkits,
+            tool_factories = tool_factories,
+        )
+        
+        return ChatStream.from_message_iter(
+            message_iter = model.stream(messages, **kwargs),
+            chatbot = self,
+            toolset=toolset,
+            add_reply_to_history = False,
+        )
+
+    def invoke(
+        self, 
+        messages: BaseMessage | str | list[BaseMessage] | list[str],
+        tools: list[BaseTool] | None = None,
+        toolkits: list[BaseToolkit] | None = None,
+        tool_factories: ToolFactoryType | None = None,
+        **kwargs,
+    ) -> AIMessage:
         '''Wrapper for model.invoke.'''
-        return self.model.invoke(*args, **kwargs)
+        model, toolset = self.get_model_with_tools(
+            tools = tools,
+            toolkits = toolkits,
+            tool_factories = tool_factories,
+        )
+        return ChatResult(
+            chatbot = self,
+            message = model.invoke(messages, **kwargs),
+            toolset=toolset,
+        )
+
     
+    ############################# access model with tools #############################
+    @property
+    def model(self) -> BaseChatModel:
+        '''Get the model with the tools bound to it.'''
+        return self.get_model_with_tools()[0]
+
+    def get_model_with_tools(
+        self, 
+        tools: list[BaseTool] | None = None,
+        toolkits: list[BaseToolkit] | None = None,
+        tool_factories: ToolFactoryType | None = None,
+    ) -> tuple[BaseChatModel, ToolSet]:
+        '''Bind tools to the model and return the resulting chain.'''
+        toolset = self.toolset.merge_new_tools(
+            tools = tools,
+            toolkits = toolkits,
+            tool_factories = tool_factories,
+        )
+        return toolset.bind_tools(self._model), toolset
+            
     ############################# method classes #############################
     @property
     def ui(self) -> ChatBotUI:
@@ -160,6 +212,6 @@ class ChatBot:
         
     ############################# dunder #############################
     def __repr__(self) -> str:
-        model_name = getattr(self.model, 'model_name', 'Unknown')
-        return f'{self.__class__.__name__}(model_type={type(self.model).__name__}, model_name="{model_name}", tools={self.toolset.names() if len(self.toolset) else None})'
+        model_name = getattr(self._model, 'model_name', 'Unknown')
+        return f'{self.__class__.__name__}(model_type={type(self._model).__name__}, model_name="{model_name}", tools={self.toolset.names() if len(self.toolset) else None})'
 
