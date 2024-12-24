@@ -85,6 +85,7 @@ class ChatBot:
         use_messages = self._get_message_history(new_message, add_to_history)
         return self.stream(
             messages = use_messages,
+            add_reply_to_history=add_to_history,
             tools = tools,
             toolkits = toolkits,
             tool_factories = tool_factories,
@@ -106,6 +107,7 @@ class ChatBot:
         use_messages = self._get_message_history(new_message, add_to_history=add_to_history)
         return self.invoke(
             messages = use_messages,
+            add_reply_to_history=add_to_history,
             tools = tools,
             toolkits = toolkits,
             tool_factories = tool_factories,
@@ -135,7 +137,7 @@ class ChatBot:
         if len(results) > 0:
             if verbose:
                 for result in results.values():
-                    print(f'{result.tool_info_str()} -> {result.return_value}')
+                    print(f'{result.info.tool_info_str()} -> {result.return_value}')
             return result_callback()
 
         return results
@@ -144,6 +146,7 @@ class ChatBot:
     def stream(
         self, 
         messages: BaseMessage | str | list[BaseMessage] | list[str],
+        add_reply_to_history: bool = False,
         tools: list[BaseTool] | None = None,
         toolkits: list[BaseToolkit] | None = None,
         tool_factories: ToolFactoryType | None = None,
@@ -160,12 +163,13 @@ class ChatBot:
             message_iter = model.stream(messages, **kwargs),
             chatbot = self,
             toolset=toolset,
-            add_reply_to_history = False,
+            add_reply_to_history = add_reply_to_history,
         )
 
     def invoke(
         self, 
         messages: BaseMessage | str | list[BaseMessage] | list[str],
+        add_reply_to_history: bool = False,
         tools: list[BaseTool] | None = None,
         toolkits: list[BaseToolkit] | None = None,
         tool_factories: ToolFactoryType | None = None,
@@ -177,10 +181,11 @@ class ChatBot:
             toolkits = toolkits,
             tool_factories = tool_factories,
         )
-        return ChatResult(
-            chatbot = self,
+        return ChatResult.from_message(
             message = model.invoke(messages, **kwargs),
+            chatbot = self,
             toolset=toolset,
+            add_reply_to_history = add_reply_to_history,
         )
 
     

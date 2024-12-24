@@ -192,7 +192,7 @@ class ToolCallInfo:
             raise ToolRaisedExceptionError.from_exception(self, e) from e
         
         return ToolCallResult.from_tool_info(
-            tool_info = self, 
+            info = self, 
             return_value = return_value, 
         )
 

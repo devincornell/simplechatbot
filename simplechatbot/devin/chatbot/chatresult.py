@@ -17,7 +17,7 @@ class ChatResultBase:
         chatbot: ChatBot,
         toolset: ToolSet,
         message: AIMessage,
-        add_to_history: bool = True,
+        add_reply_to_history: bool = True,
     ) -> dict[str, ToolCallResult]:
         '''Handle the actual calling of tools.'''
         results: dict[str,ToolCallResult] = dict()
@@ -25,7 +25,7 @@ class ChatResultBase:
             tool_info = toolset.get_tool_info(tool_info_dict)
             result = tool_info.execute()
 
-            if add_to_history:
+            if add_reply_to_history:
                 chatbot.history.add_tool_message(result.return_value, result.id)
 
             #if verbose:
@@ -35,21 +35,42 @@ class ChatResultBase:
         return results
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(repr=False)
 class ChatResult(ChatResultBase):
     '''AI reply and results of any tool calls.'''
-    chatbot: ChatBot
     message: AIMessage
+    chatbot: ChatBot
     toolset: ToolSet
+    add_reply_to_history: bool
+
+    @classmethod
+    def from_message(
+        cls,
+        message: AIMessage,
+        chatbot: ChatBot,
+        toolset: ToolSet,
+        add_reply_to_history: bool,
+    ) -> ChatStream:
+        '''Create a chat stream from a message iterator.'''
+        if add_reply_to_history:
+            chatbot.history.add_message(message)
+
+        return cls(
+            message=message,
+            chatbot=chatbot,
+            toolset = toolset,
+            add_reply_to_history=add_reply_to_history,
+        )
+
 
     def execute_tools(self, 
-        add_to_history: bool = True, 
     ) -> dict[str, ToolCallResult]:
         '''Call tools on the full message.'''
         return self._handle_tool_calls(
             chatbot=self.chatbot, 
+            toolset = self.toolset,
             message=self.message, 
-            add_to_history=add_to_history, 
+            add_reply_to_history=self.add_reply_to_history, 
         )
     
     @property
@@ -61,6 +82,13 @@ class ChatResult(ChatResultBase):
     def content(self) -> str:
         '''Get the content of the message.'''
         return self.message.content
+    
+    def __repr__(self) -> str:
+        return f'ChatResult(content={self.content}, tool_calls={self.tool_calls})'
+    
+    def has_tool_calls(self) -> bool:
+        '''Return whether the message has tool calls.'''
+        return len(self.message.tool_calls) > 0
 
 
 
@@ -70,9 +98,9 @@ class ChatStream(ChatResultBase):
     message_iter: typing.Iterator[AIMessageChunk]
     chatbot: ChatBot
     toolset: ToolSet
-    add_reply_to_history: bool = True
-    full_message: AIMessage = dataclasses.field(default_factory=lambda: AIMessageChunk(content=''))
-    exhausted: bool = False
+    add_reply_to_history: bool
+    full_message: AIMessage
+    exhausted: bool
 
     @classmethod
     def from_message_iter(
@@ -80,7 +108,7 @@ class ChatStream(ChatResultBase):
         message_iter: typing.Iterator[AIMessageChunk],
         chatbot: ChatBot,
         toolset: ToolSet,
-        add_reply_to_history: bool = True,
+        add_reply_to_history: bool,
     ) -> ChatStream:
         '''Create a chat stream from a message iterator.'''
         return cls(
@@ -109,7 +137,6 @@ class ChatStream(ChatResultBase):
             raise StopIteration
     
     def execute_tools(self, 
-        add_to_history: bool = True, 
     ) -> dict[str, ToolCallResult]:
         '''Call tools on the full message.'''
         if not self.exhausted:
@@ -117,8 +144,9 @@ class ChatStream(ChatResultBase):
 
         return self._handle_tool_calls(
             chatbot=self.chatbot, 
+            toolset = self.toolset,
             message=self.full_message, 
-            add_to_history=add_to_history, 
+            add_reply_to_history=self.add_reply_to_history, 
         )
     
     @property
@@ -128,4 +156,21 @@ class ChatStream(ChatResultBase):
             raise ValueError('Cannot get tool calls until the stream is exhausted.')
         return [self.toolset.get_tool_info(tc) for tc in self.full_message.tool_calls]
     
+    def has_tool_calls(self) -> bool:
+        '''Return whether the message has tool calls.'''
+        return len(self.full_message.tool_calls) > 0
+    
+    def result(self) -> ChatResult:
+        '''Get the full chat result after accumulating all messages.'''
+        if not self.exhausted:
+            #raise ValueError('Cannot get chat result until the stream is exhausted.')
+            for _ in self:
+                pass
 
+        return ChatResult.from_message(
+            message=self.full_message,
+            chatbot=self.chatbot,
+            toolset=self.toolset,
+            add_reply_to_history=self.add_reply_to_history
+        )
+    
