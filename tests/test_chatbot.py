@@ -13,7 +13,7 @@ import tempfile #python standard library
 import sys
 sys.path.append('..')
 import simplechatbot
-from simplechatbot.devin.openai import OpenAIChatBot
+from simplechatbot.openai import OpenAIChatBot
 
 
 
@@ -45,7 +45,7 @@ def get_toolkits(wd: str):
 
 
 def test_tools():
-    keychain = simplechatbot.devin.APIKeyChain.from_json_file('../keys.json')
+    keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
 
     system_prompt = '''
     You are designed to answer any question the user has and send/check messages if needed.
@@ -119,7 +119,7 @@ def test_tools():
 
 
 def test_tools_chat():
-    keychain = simplechatbot.devin.APIKeyChain.from_json_file('../keys.json')
+    keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
 
     system_prompt = '''
     You are designed to answer any question the user has and send/check messages if needed.
@@ -193,7 +193,7 @@ def test_tools_chat():
 
 def test_chat():
 
-    keychain = simplechatbot.devin.APIKeyChain.from_json_file('../keys.json')
+    keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
 
     system_prompt = '''
     You are designed to work with the filesystem of this computer.
@@ -251,7 +251,7 @@ def test_chat():
         # fails bc last tool call was not executed
         try:
             r = chatbot.chat('List files in the directory.')
-        except simplechatbot.devin.ToolWasNotExecutedError as e:
+        except simplechatbot.ToolWasNotExecutedError as e:
             #print('exception')
             pass
 

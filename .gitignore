@@ -1,3 +1,5 @@
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -169,3 +171,4 @@ keys.json
 
 scripts/credentials.json
 scripts/token.json
+settings.json
