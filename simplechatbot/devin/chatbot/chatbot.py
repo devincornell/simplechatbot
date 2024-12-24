@@ -153,6 +153,7 @@ class ChatBot:
         **kwargs,
     ) -> ChatStream:
         '''Wrapper for model.stream.'''
+        self.history.check_tools_were_executed()
         model, toolset = self.get_model_with_tools(
             tools = tools,
             toolkits = toolkits,
@@ -176,6 +177,7 @@ class ChatBot:
         **kwargs,
     ) -> AIMessage:
         '''Wrapper for model.invoke.'''
+        self.history.check_tools_were_executed()
         model, toolset = self.get_model_with_tools(
             tools = tools,
             toolkits = toolkits,

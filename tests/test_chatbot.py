@@ -15,6 +15,8 @@ sys.path.append('..')
 import simplechatbot
 from simplechatbot.devin.openai import OpenAIChatBot
 
+
+
 TEST_NUMBER = '324'
 
 def get_tools():
@@ -173,7 +175,6 @@ def test_tools_chat():
             for r in stream:
                 pass
             assert(len(stream.tool_calls) == 1)
-            print(stream.tool_calls[0].name)
             assert(stream.tool_calls[0].name == 'list_directory')
             stream.execute_tools()
             pbar.update()
@@ -198,14 +199,14 @@ def test_chat():
     You are designed to work with the filesystem of this computer.
     '''
 
-    with tempfile.TemporaryDirectory() as working_directory:
+    with tempfile.TemporaryDirectory() as wd, tqdm.tqdm() as pbar:
         fname = 'myname.txt'
 
-        with open(working_directory + f'/{fname}', 'w') as f:
+        with open(wd + f'/{fname}', 'w') as f:
             f.write('My name is Devin!')
 
         toolkit = FileManagementToolkit(
-            root_dir=str(working_directory)
+            root_dir=str(wd)
         )
 
         chatbot = OpenAIChatBot.new(
@@ -221,23 +222,42 @@ def test_chat():
             print(r.content, end='', flush=True)
         results = stream.execute_tools()
         print(results)
-        #print(stream.full_message)
-        #print(chatbot.history.get_buffer_string())
         text = chatbot.chat(None).content
-        #print(text)
         assert(fname in text)
-        
-        return
-        print(chatbot.history.get_buffer_string())
+        pbar.update()
 
-        stream = chatbot.chat_stream('Write a text file called "hello.txt" to disk with the content "Hello, world!"')
+        # test writing file and reading it back.
+        fname = 'hello.txt'
+        stream = chatbot.chat_stream(f'Write a text file called "{fname}" to disk with the content "Hello, world!"')
         for r in stream:
             print(r.content, end='', flush=True)
+        print(stream.tool_calls[0].name)
+        assert(stream.tool_calls[0].name == 'write_file')
         print(stream.execute_tools())
-        print()
+        pbar.update()
+
+        stream = chatbot.chat_stream('List files in the directory.')
+        for r in stream:
+            print(r.content, end='', flush=True)
+        assert(stream.tool_calls[0].name == 'list_directory')
+        stream.execute_tools()
+        assert(fname in chatbot.chat(None).content)
+        pbar.update()
+        
+
+        r = chatbot.chat('List files in the directory.')
+        assert(r.tool_calls[0].name == 'list_directory')
+
+        # fails bc last tool call was not executed
+        try:
+            r = chatbot.chat('List files in the directory.')
+        except simplechatbot.devin.ToolWasNotExecutedError as e:
+            #print('exception')
+            pass
 
 
 if __name__ == '__main__':
     test_tools()
     test_tools_chat()
     test_chat()
+    

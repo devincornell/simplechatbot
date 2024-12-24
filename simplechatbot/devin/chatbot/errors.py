@@ -30,3 +30,9 @@ class ToolRaisedExceptionError(Exception):
         o.tool_info = tool_info
         o.e = e
         return o
+
+class ToolWasNotExecutedError(Exception):
+    pass
+
+
+

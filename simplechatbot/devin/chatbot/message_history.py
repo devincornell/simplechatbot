@@ -11,7 +11,9 @@ from langchain_core.messages import (
     get_buffer_string,
 )
 
-class MessageHistory(list[BaseMessage]):
+from .errors import ToolWasNotExecutedError
+
+class MessageHistory(list[BaseMessage]): 
     '''Maintains message history.
     LangChain actuall does provide convenient classes for this, but I found it easier to create my own.
         It's pretty much just a list of System/AI/Human messages used to generate model predictions.
@@ -25,6 +27,19 @@ class MessageHistory(list[BaseMessage]):
         o.add_system_message(system_prompt)
         return o
     
+    ############################# Checking message history #############################
+    def check_tools_were_executed(self) -> None:
+        '''Make sure there are no outstanding tool calls.
+        Raises:
+            ToolWasNotExecutedError: If the tool was not executed.
+        '''
+        for i in range(len(self)):
+            if isinstance(self[i], AIMessage) and len(self[i].tool_calls) and not isinstance(self[i+1], ToolMessage):
+                raise ToolWasNotExecutedError(
+                    f'Previous tool call must be executed to retain consistent message history.'
+                    f'Call execute_tools() on the ChatResult or ChatStream objects to execute the tool calls.'
+                )
+        
     ############################# Transformations #############################
     def get_buffer_string(self, *args, **kwargs) -> str:
         '''Get entire buffer as a string.'''
