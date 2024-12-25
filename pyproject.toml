@@ -20,3 +20,5 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/devincornell/simplechatbot"
 
+[tool.setuptools.packages.find]
+where = ["simplechatbot"]
