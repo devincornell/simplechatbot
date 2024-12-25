@@ -1,5 +1,5 @@
 # Introduction
-Brief overview of using ```simplechatbot``` package.
+This is a brief introduction to the ```simplechatbot``` package.
 
 
 ```python
