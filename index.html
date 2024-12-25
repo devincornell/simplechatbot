@@ -12,7 +12,7 @@
       
       
       
-        <link rel="next" href="examples/overview/">
+        <link rel="next" href="examples/a-overview/">
       
       
       <link rel="icon" href="assets/images/favicon.png">
@@ -261,6 +261,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#upcoming-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Upcoming Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
       Installation
@@ -339,7 +348,9 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -367,11 +378,53 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/overview/" class="md-nav__link">
+      <a href="examples/a-overview/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Overview
+    Introduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples/b-tool_calling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tool Calling
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples/c-model_specific_chatbots/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Model-specific ChatBots
   </span>
   
 
@@ -413,6 +466,15 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#upcoming-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Upcoming Features
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
@@ -490,8 +552,13 @@
 
 
 <h1 id="introduction">Introduction</h1>
-<p>Welcome to the <code>simplechatbot</code> Python package!</p>
+<p>Welcome to the <code>simplechatbot</code> Python package! This package provides tools for working with LLM agents - in particular, chatbots that track tools and conversation history.</p>
 <p>See the examples in the navbar to the left!</p>
+<h2 id="upcoming-features">Upcoming Features</h2>
+<ul>
+<li>Adding clone methods.</li>
+<li>Update <strong>repr</strong> on <code>StreamResult</code>.</li>
+</ul>
 <h2 id="installation">Installation</h2>
 <pre><code>pip install git+ssh://git@github.com/devincornell/simplechatbot.git@main
 </code></pre>
@@ -507,8 +574,6 @@ make uninstall
 <h2 id="importing">Importing</h2>
 <p>Basic importing works as you would expect.</p>
 <p><code>import simplechatbot</code></p>
-<p>To support backwards compatibility, I also keep old versions in the main module titled <code>vN</code> where <code>N</code> is the version number. You can change the imports to look like the following.</p>
-<p><code>import simplechatbot.v4 as simplechatbot</code></p>
 <h2 id="generating-documentation">Generating Documentation</h2>
 <p>The Makefile has most of these commands, but including them here jsut in case.</p>
 <pre><code>pip install mkdocs
@@ -579,7 +644,7 @@ example_notebooks:
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.expand"], "search": "assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="assets/javascripts/bundle.525ec568.min.js"></script>

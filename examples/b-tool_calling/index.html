@@ -1,0 +1,768 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://devincornell.github.io/simplechatbot/examples/b-tool_calling/">
+      
+      
+        <link rel="prev" href="../a-overview/">
+      
+      
+        <link rel="next" href="../c-model_specific_chatbots/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Tool Calling - simplechatbot</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tool-calling" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="simplechatbot" class="md-header__button md-logo" aria-label="simplechatbot" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            simplechatbot
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Tool Calling
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/devincornell/simplechatbot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    devincornell/simplechatbot
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="simplechatbot" class="md-nav__button md-logo" aria-label="simplechatbot" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    simplechatbot
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/devincornell/simplechatbot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    devincornell/simplechatbot
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../a-overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Tool Calling
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Tool Calling
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#enabling-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enabling Tools
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#executing-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Executing Tools
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#toolkits-and-tool-factories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Toolkits and Tool Factories
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Toolkits and Tool Factories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#toolkit-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      ToolKit Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tool-factory-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tool Factory Examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conclusions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../c-model_specific_chatbots/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Model-specific ChatBots
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#enabling-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enabling Tools
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#executing-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Executing Tools
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#toolkits-and-tool-factories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Toolkits and Tool Factories
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Toolkits and Tool Factories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#toolkit-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      ToolKit Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tool-factory-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tool Factory Examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conclusions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="tool-calling">Tool Calling</h1>
+<p><code>simplechatbot</code> empowers chatbot agents with the ability to produce arguments for arbitrary user functions instead of providing a text response to the user's prompt. Using this interface you can enable features such as web searching, email sending/checking, file browsing, image creation, or any other functionality that can be accessed through Python. The LLM will "decide" whether and which tools/functions should be executed based on a given prompt, so the key is to use tools with clear and concise instructions.</p>
+<p>Under the hood, <code>ChatBot</code> instances maintain a collection of <a href="https://python.langchain.com/docs/how_to/#tools">langchain tools</a> which can be extracted from toolkits or even factory methods that accept the chatbot itself as a parameter. Tools may also be added at the time of LLM execution to enable dynamic systems of available tools.</p>
+<p>You can create your own <a href="https://python.langchain.com/docs/how_to/custom_tools/">custom tools</a> or choose from <a href="https://python.langchain.com/docs/integrations/tools/">Langchain's built-in tools</a>. I will use <code>FileManagementToolkit</code> for demonstration purposes here.</p>
+<pre><code class="language-python">import sys
+sys.path.append('..')
+
+import simplechatbot
+from simplechatbot.openai import OpenAIChatBot
+</code></pre>
+<h2 id="enabling-tools">Enabling Tools</h2>
+<p>Start by creating a new example tool that can enables the LLM to check email for the user. We create this tool using the <code>@langchain_core.tools.tool</code> decorator.</p>
+<pre><code class="language-python">import langchain_core.tools
+
+@langchain_core.tools.tool
+def check_new_messages() -&gt; str:
+    '''Check messages.'''
+    return f'No new messages.'
+</code></pre>
+<p>We include this tool as part of the chatbot by passing the function through the <code>tools</code> argument.</p>
+<pre><code class="language-python">keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
+
+system_prompt = '''
+You are designed to answer any question the user has and send/check messages if needed.
+When the user requests you to check your messages, you should display the retrieved messages
+ to the user.
+'''
+
+chatbot = OpenAIChatBot.new(
+    model_name = 'gpt-4o-mini', 
+    api_key=keychain['openai'],
+    system_prompt=system_prompt,
+    tools = [check_new_messages],
+)
+</code></pre>
+<p>Now the LLM will have access to these tools. While the chatbot instance stores the LLM object in the <code>_model</code> attribute, you can use <code>model</code> to get the LLM with bound tools.</p>
+<pre><code class="language-python">chatbot.model
+</code></pre>
+<pre><code>RunnableBinding(bound=ChatOpenAI(client=&lt;openai.resources.chat.completions.Completions object at 0x106927860&gt;, async_client=&lt;openai.resources.chat.completions.AsyncCompletions object at 0x12c19f7d0&gt;, root_client=&lt;openai.OpenAI object at 0x12bcd5a60&gt;, root_async_client=&lt;openai.AsyncOpenAI object at 0x12c19da90&gt;, model_name='gpt-4o-mini', model_kwargs={}, openai_api_key=SecretStr('**********')), kwargs={'tools': [{'type': 'function', 'function': {'name': 'check_new_messages', 'description': 'Check messages.', 'parameters': {'properties': {}, 'type': 'object'}}}]}, config={}, config_factories=[])
+</code></pre>
+<p>You can also use the method <code>get_model_with_tools</code> to get the tool-bound model with any additional tools. The <code>invoke</code>, <code>stream</code>, <code>chat</code>, and <code>chat_stream</code> methods all use this under-the hood so you can add any tools, toolkits, or tool factories to the model at invokation.</p>
+<pre><code class="language-python">chatbot.get_model_with_tools(tools=None)
+</code></pre>
+<pre><code>(RunnableBinding(bound=ChatOpenAI(client=&lt;openai.resources.chat.completions.Completions object at 0x106927860&gt;, async_client=&lt;openai.resources.chat.completions.AsyncCompletions object at 0x12c19f7d0&gt;, root_client=&lt;openai.OpenAI object at 0x12bcd5a60&gt;, root_async_client=&lt;openai.AsyncOpenAI object at 0x12c19da90&gt;, model_name='gpt-4o-mini', model_kwargs={}, openai_api_key=SecretStr('**********')), kwargs={'tools': [{'type': 'function', 'function': {'name': 'check_new_messages', 'description': 'Check messages.', 'parameters': {'properties': {}, 'type': 'object'}}}]}, config={}, config_factories=[]),
+ ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x12c0dcea0&gt;)}))
+</code></pre>
+<p>Tools will be automatically used when we call any of the invoke or stream methods.</p>
+<p>Notice that the LLM behaves normally if the user's prompts are unrelated to the tool.</p>
+<pre><code class="language-python">chatbot.invoke('Hello world!')
+</code></pre>
+<pre><code>ChatResult(content=Hello! How can I assist you today?, tool_calls=[])
+</code></pre>
+<p>If the LLM "decides" that the user needs to execute a tool, it returns a tool call as the response instead of returning content.</p>
+<pre><code class="language-python">result = chatbot.invoke('Check my messages.')
+result
+</code></pre>
+<pre><code>ChatResult(content=, tool_calls=[ToolCallInfo(id='call_ihfaGlFUvSl8OM0VQH4TkO9G', name='check_new_messages', type='tool_call', args={}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x12c0dcea0&gt;))])
+</code></pre>
+<p>The tool call information can be accessed through the <code>ChatResult.tool_calls</code> attribute, which is simply a list supertype. Use <code>tool_info_str</code> to clearly show the arguments being passed to the function.</p>
+<pre><code class="language-python">for tc in result.tool_calls:
+    print(tc.tool_info_str())
+</code></pre>
+<pre><code>check_new_messages()
+</code></pre>
+<p>You may also provide additional tools at the time of invoking the LLM, and it will be treated as if it was part of the chatbot. </p>
+<p>In this example, we create a new tool with two arguments that must be provided by the LLM.</p>
+<pre><code class="language-python">@langchain_core.tools.tool
+def send_message(recipient: str, text: str) -&gt; str:
+    '''Send messages to others.'''
+    return f'Message sent!'
+
+result = chatbot.invoke('Send a message to Bob saying &quot;Hello!&quot;', tools=[send_message])
+result
+</code></pre>
+<pre><code>ChatResult(content=, tool_calls=[ToolCallInfo(id='call_uXbyuViXTXHVO1zVohqydcW7', name='send_message', type='tool_call', args={'recipient': 'Bob', 'text': 'Hello!'}, tool=StructuredTool(name='send_message', description='Send messages to others.', args_schema=&lt;class 'langchain_core.utils.pydantic.send_message'&gt;, func=&lt;function send_message at 0x12c744720&gt;))])
+</code></pre>
+<p>You can see that the LLM provided the <code>recipient</code> and <code>text</code> arguments which were passed to the function call information.</p>
+<pre><code class="language-python">result.tool_calls[0].tool_info_str()
+</code></pre>
+<pre><code>'send_message(recipient=Bob, text=Hello!)'
+</code></pre>
+<p>You can adjust behavior using the <code>tool_choice</code> argument in the chatbot constructor or at invokation. The value <code>'any'</code> means that a tool MUST be called, but all tools are candidates. The value <code>'auto'</code> (the default) allows the LLM to reply with normal content rather than a tool call, and you can also pass the name of a specific function as well.</p>
+<pre><code class="language-python">result = chatbot.invoke('Go to the store for me!', tool_choice='any')
+result.tool_calls[0].tool_info_str()
+</code></pre>
+<pre><code>'check_new_messages()'
+</code></pre>
+<h2 id="executing-tools">Executing Tools</h2>
+<p>Tools allow the LLM to determine if and when to execute tools and also provides parameters for the tool call based on conversation history, but the user containing function is responsible for actually executing the tool with the arguments from the LLM.</p>
+<p>Use the <code>execute_tools</code> method to actually execute the tool, which returns a mapping of tool names to <code>ToolCallResult</code> objects.</p>
+<pre><code class="language-python">result = chatbot.invoke('Check my messages.')
+result.tool_calls[0].tool_info_str()
+</code></pre>
+<pre><code>'check_new_messages()'
+</code></pre>
+<pre><code class="language-python">tr = result.execute_tools()
+tr
+</code></pre>
+<pre><code>{'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_2KihzJGsgJ2Y0Qxy6r7920x6', name='check_new_messages', type='tool_call', args={}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x12c0dcea0&gt;)), return_value='No new messages.')}
+</code></pre>
+<p>Get the return value from the tool through the <code>return_value</code> property.</p>
+<pre><code class="language-python">tr['check_new_messages'].return_value
+</code></pre>
+<pre><code>'No new messages.'
+</code></pre>
+<p>Extracting tool calls from a <code>StreamResult</code> is a little more complicated because the stream must be exhausted before executing tools. This happens because the tool call information replaces the text response, so the streamer is essentially receiving chunks of the function call information until exhaustion.</p>
+<p>The calling function must handle both the streamed output and tool calls.</p>
+<pre><code class="language-python">stream = chatbot.stream('Check my messages.')
+for r in stream:
+    print(r, end='', flush=True)
+if len(stream.tool_calls) &gt; 0:
+    stream.execute_tools()
+</code></pre>
+<pre><code>content='' additional_kwargs={'tool_calls': [{'index': 0, 'id': 'call_Fq2o50ejL69YZjZugGxRrycv', 'function': {'arguments': '', 'name': 'check_new_messages'}, 'type': 'function'}]} response_metadata={} id='run-18230eaa-b7ab-4104-a231-eb30688ab393' tool_calls=[{'name': 'check_new_messages', 'args': {}, 'id': 'call_Fq2o50ejL69YZjZugGxRrycv', 'type': 'tool_call'}] tool_call_chunks=[{'name': 'check_new_messages', 'args': '', 'id': 'call_Fq2o50ejL69YZjZugGxRrycv', 'index': 0, 'type': 'tool_call_chunk'}]content='' additional_kwargs={'tool_calls': [{'index': 0, 'id': None, 'function': {'arguments': '{}', 'name': None}, 'type': None}]} response_metadata={} id='run-18230eaa-b7ab-4104-a231-eb30688ab393' tool_calls=[{'name': '', 'args': {}, 'id': None, 'type': 'tool_call'}] tool_call_chunks=[{'name': None, 'args': '{}', 'id': None, 'index': 0, 'type': 'tool_call_chunk'}]content='' additional_kwargs={} response_metadata={'finish_reason': 'tool_calls', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_0aa8d3e20b'} id='run-18230eaa-b7ab-4104-a231-eb30688ab393'
+</code></pre>
+<p>A <code>ValueError</code> will be raised if the caller tries to execute tools before the stream is exhausted.</p>
+<pre><code class="language-python">stream = chatbot.stream('Check my messages.')
+for r in stream:
+    print(r.content, end='', flush=True)
+    break
+try:
+    stream.execute_tools()
+except ValueError as e:
+    print('Exception was caught!')
+</code></pre>
+<pre><code>Exception was caught!
+</code></pre>
+<h2 id="toolkits-and-tool-factories">Toolkits and Tool Factories</h2>
+<p>Aside from providing a list of tools, you may also bind tools from toolkits and tool factories.</p>
+<ul>
+<li>
+<p><code>ToolKit</code>: class with a <code>get_tools() -&gt; list[BaseTool]</code> method. <code>ToolKit</code>s are part of the langchain interface, and the built-in tools often come as a subtype. Passed through the <code>toolkits: list[BaseToolkit]</code> argument.</p>
+</li>
+<li>
+<p><strong><em>Tool Factories</em></strong>: functions that accept a chatbot as an argument and return tools. Useful when writing tools that interact with the original LLM because otherwise it would require partial initialization. Passed through the <code>tool_factories: ToolFactoryType</code> argument.</p>
+</li>
+</ul>
+<p>Note that these too may be provided at instantiation or at invokation.</p>
+<h4 id="toolkit-example"><code>ToolKit</code> Example</h4>
+<p>In this example, I enable the built-in Langchain <code>FileManagementToolkit</code> toolkit to allow the chatbot to list, read, and write files.</p>
+<pre><code class="language-python">import tempfile
+from langchain_community.agent_toolkits import FileManagementToolkit
+with tempfile.TemporaryDirectory() as wd:
+    file_tk = FileManagementToolkit(root_dir=str(wd))
+    result = chatbot.invoke('List the files in this directory.', toolkits=[file_tk])
+    print(result.tool_calls[0].tool_info_str())
+</code></pre>
+<pre><code>list_directory()
+</code></pre>
+<h4 id="tool-factory-examples">Tool Factory Examples</h4>
+<p>Now I create a tool factory that can be passed to the chatbot. This tool uses the chatbot reference to invoke the LLM with access to all of the same tools.</p>
+<pre><code class="language-python">
+def my_tool_factory(chatbot: simplechatbot.ChatBot) -&gt; list[langchain_core.tools.Tool]:
+    @langchain_core.tools.tool
+    def story_generator(topic: str) -&gt; str:
+        '''Generate a story absed on a particular topic.'''
+        result = chatbot.invoke(
+            f'Generate a story about {topic}. Your response should only include the text of the story and make it short but engaging.',
+        )
+        return result.content
+
+    return [story_generator]
+
+result = chatbot.invoke('Generate a story about western cowboys.', tool_factories=[my_tool_factory])
+tc_result = result.execute_tools()
+tc_result['story_generator'].return_value
+</code></pre>
+<pre><code>'In the heart of the Wild West, where the sun kissed the rugged plains, a small town named Dusty Gulch thrived amidst the dust and the grit. The townsfolk revered their sheriff, a grizzled cowboy named Hank "Six-Shooter" McGraw, known for his quick draw and even quicker wit.\n\nOne fateful afternoon, a notorious outlaw gang, led by the infamous Red Jack, rode into town, stirring trouble and fear. With a band of rowdy gunslingers, they demanded the townspeople hand over their gold or face the consequences. The saloon doors swung open, and the townsfolk watched, hearts pounding, as Hank stepped out, his spurs jingling like a warning bell.\n\n“Now hold on there, Red Jack,” Hank called, his voice steady as the mountains. “You can’t just waltz into Dusty Gulch and expect to take what ain\'t yours.”\n\nRed Jack smirked, his hand twitching above his holster. “You think you can stop us, McGraw? You’re just one man against my crew.”\n\nWith a confident grin, Hank replied, “One man with a little courage can make a mighty stand.” The tension crackled like lightning in the summer air.\n\nAs the sun began to set, casting long shadows across the dirt street, a showdown loomed. Hank’s hand hovered over his revolver, eyes locked on Red Jack. The town held its breath.\n\nIn a flash of movement, gunfire erupted, echoing through the canyon like thunder. Dust flew, and the air was thick with the smell of gunpowder. One by one, Hank outmaneuvered the outlaws, his sharpshooting a testament to years of practice. With a final, decisive shot, Red Jack crumpled to the ground.\n\nSilence fell over Dusty Gulch. The townspeople erupted in cheers as Hank stood tall, the hero of the day. They surrounded him, gratitude shining in their eyes, as he tipped his hat. In that moment, the spirit of the West thrived, a reminder that courage and honor could still prevail in a world of chaos.'
+</code></pre>
+<h2 id="conclusions">Conclusions</h2>
+<p>That is all! Now you know how to enable and disable tools that your LLM can use to do anything!</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.expand"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+    
+  </body>
+</html>
