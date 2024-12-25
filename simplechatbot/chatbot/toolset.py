@@ -12,7 +12,7 @@ from .util import format_tool_text
 
 if typing.TYPE_CHECKING:
     from .chatbot import ChatBot
-    ToolFactoryType = list[typing.Callable[[ChatBot],list[BaseTool]]]
+    ToolFactoryType = typing.Callable[[ChatBot],list[BaseTool]]
     
 
 @dataclasses.dataclass
@@ -32,7 +32,7 @@ class ToolSet:
         tools: list[BaseTool] | None = None, 
         toolkits: list[BaseToolkit] | None = None,
         chatbot: ChatBot | None = None,
-        tool_factories: ToolFactoryType | None = None,
+        tool_factories: list[ToolFactoryType] | None = None,
     ) -> typing.Self:
         '''Create a toolset from a list of toolkits.
         Args:
@@ -48,7 +48,13 @@ class ToolSet:
         else:
             toolkit_tools = []
 
-        tool_factories = list(tool_factories) if tool_factories is not None else []
+        if tool_factories is not None:
+            tool_factories = list(tool_factories)
+            if chatbot is None:
+                raise ValueError('chatbot must be provided if tool factories are provided')
+        else:
+            tool_factories = []
+
         factory_tools = [tool for factory in tool_factories for tool in factory(chatbot)]
 
         return cls(
@@ -83,10 +89,14 @@ class ToolSet:
         return ToolCallInfo.from_dict(tool_info=tool_info_dict, tool=self[tool_info_dict['name']])
     
     ################################# accessing tools #################################
-    def bind_tools(self, model: BaseChatModel) -> BaseChatModel:
+    def bind_tools(
+        self, 
+        model: BaseChatModel,
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
+    ) -> BaseChatModel:
         '''Bind tools to a model.'''
         if len(self.tools) > 0:
-            return model.bind_tools(self.tool_list())
+            return model.bind_tools(self.tool_list(), tool_choice=tool_choice)
         else:
             return model
         
@@ -104,7 +114,7 @@ class ToolSet:
         tools: list[BaseTool] | None = None, 
         toolkits: list[BaseToolkit] | None = None,
         chatbot: ChatBot | None = None,
-        tool_factories: ToolFactoryType | None = None,
+        tool_factories: list[ToolFactoryType] | None = None,
     ) -> typing.Self:
         '''Merge new tools into the toolset and return a new instance.'''
         other = self.from_tools(

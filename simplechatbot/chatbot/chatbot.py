@@ -16,6 +16,7 @@ if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool, BaseToolkit
     from .toolset import ToolFactoryType
+    from .types import ToolName, ToolCallID
 
 
 @dataclasses.dataclass
@@ -30,7 +31,8 @@ class ChatBot:
     _model: BaseChatModel
     history: MessageHistory = dataclasses.field(default_factory=MessageHistory)
     toolset: ToolSet = dataclasses.field(default_factory=ToolSet)
-        
+    tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None
+    
     ############################# Generic Constructors #############################
     @classmethod
     def from_model(cls,
@@ -39,6 +41,7 @@ class ChatBot:
         tools: typing.Optional[list[BaseTool]] = None,
         toolkits: typing.Optional[list[BaseToolkit]] = None,
         tool_factories: ToolFactoryType | None = None,
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
     ) -> typing.Self:
         '''Create a new chatbot with any subtype of BaseChatModel.
         Args:
@@ -60,6 +63,7 @@ class ChatBot:
             _model = model,
             history = history,
             toolset = ToolSet.empty(),
+            tool_choice = tool_choice,
         )
         new_chatbot.toolset = ToolSet.from_tools(
             chatbot=new_chatbot,
@@ -150,6 +154,7 @@ class ChatBot:
         tools: list[BaseTool] | None = None,
         toolkits: list[BaseToolkit] | None = None,
         tool_factories: ToolFactoryType | None = None,
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
         **kwargs,
     ) -> ChatStream:
         '''Wrapper for model.stream.'''
@@ -174,14 +179,16 @@ class ChatBot:
         tools: list[BaseTool] | None = None,
         toolkits: list[BaseToolkit] | None = None,
         tool_factories: ToolFactoryType | None = None,
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
         **kwargs,
-    ) -> AIMessage:
+    ) -> ChatResult:
         '''Wrapper for model.invoke.'''
         self.history.check_tools_were_executed()
         model, toolset = self.get_model_with_tools(
             tools = tools,
             toolkits = toolkits,
             tool_factories = tool_factories,
+            tool_choice=tool_choice,
         )
         return ChatResult.from_message(
             message = model.invoke(messages, **kwargs),
@@ -202,15 +209,25 @@ class ChatBot:
         tools: list[BaseTool] | None = None,
         toolkits: list[BaseToolkit] | None = None,
         tool_factories: ToolFactoryType | None = None,
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
     ) -> tuple[BaseChatModel, ToolSet]:
         '''Bind tools to the model and return the resulting chain.'''
         toolset = self.toolset.merge_new_tools(
             tools = tools,
             toolkits = toolkits,
+            chatbot = self,
             tool_factories = tool_factories,
         )
-        return toolset.bind_tools(self._model), toolset
-            
+
+        if tool_choice is not None:
+            model = toolset.bind_tools(self._model, tool_choice = tool_choice)
+        elif self.tool_choice is not None:
+            model = toolset.bind_tools(self._model, tool_choice = self.tool_choice)
+        else:
+            model = toolset.bind_tools(self._model)
+        
+        return model, toolset
+
     ############################# method classes #############################
     @property
     def ui(self) -> ChatBotUI:
