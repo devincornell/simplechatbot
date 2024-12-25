@@ -1,8 +1,14 @@
 # Introduction
 
-Welcome to the `simplechatbot` Python package!
+Welcome to the `simplechatbot` Python package! This package provides tools for working with LLM agents - in particular, chatbots that track tools and conversation history.
 
 See the examples in the navbar to the left!
+
+## Upcoming Features
+
++ Adding clone methods.
++ Update __repr__ on `StreamResult`.
+
 
 ## Installation
 
