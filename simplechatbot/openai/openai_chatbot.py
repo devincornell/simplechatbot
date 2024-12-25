@@ -9,7 +9,7 @@ from ..chatbot import ChatBot
 if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool, BaseToolkit
-    from ..chatbot.toolset import ToolFactoryType
+    from ..chatbot.toolset import ToolFactoryType, ToolName
 
 
 class OpenAIChatBot(ChatBot):
@@ -20,7 +20,8 @@ class OpenAIChatBot(ChatBot):
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
         toolkits: typing.Optional[list[BaseToolkit]] = None,
-        tool_factories: ToolFactoryType | None = None,
+        tool_factories: list[ToolFactoryType] | None = None,
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
         **model_kwargs,
     ) -> typing.Self:
         '''Create a new chatbot with a chatgpt model.
@@ -41,5 +42,6 @@ class OpenAIChatBot(ChatBot):
             tools = tools,
             toolkits = toolkits,
             tool_factories=tool_factories,
+            tool_choice = tool_choice,
         )
 

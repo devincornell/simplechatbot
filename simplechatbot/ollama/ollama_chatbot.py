@@ -10,7 +10,7 @@ from langchain_ollama import ChatOllama
 if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool, BaseToolkit
-    from ..chatbot.toolset import ToolFactoryType
+    from ..chatbot.toolset import ToolFactoryType, ToolName
 
 from ..chatbot import ChatBot
 
@@ -23,7 +23,8 @@ class OllamaChatBot(ChatBot):
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
         toolkits: typing.Optional[list[BaseToolkit]] = None,
-        tool_factories: ToolFactoryType | None = None,
+        tool_factories: list[ToolFactoryType] | None = None,
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
         **model_kwargs,
     ) -> typing.Self:
         '''Create a new chatbot with an ollama model.
@@ -44,5 +45,6 @@ class OllamaChatBot(ChatBot):
             tools = tools,
             toolkits = toolkits,
             tool_factories=tool_factories,
+            tool_choice = tool_choice,
         )
     
