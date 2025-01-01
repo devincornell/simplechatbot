@@ -256,7 +256,43 @@ def test_chat():
             pass
 
 
+def test_cloning():
+    keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
+
+    system_prompt = '''
+    Answer any question the user has.
+    '''
+    chatbot = OpenAIChatBot.new(
+        model_name = 'gpt-4o-mini', 
+        api_key=keychain['openai'],
+        system_prompt=system_prompt,
+        tools = get_tools(),
+    )
+    chatbot.chat('hello world')
+    c = chatbot.clone()
+    assert(len(c.history) == len(chatbot.history))
+    assert(len(c.toolset) == len(chatbot.toolset))
+
+    c = chatbot.empty(keep_system_prompt=True, keep_tools=True)
+    assert(len(c.history) == 1)
+    assert(len(c.toolset) == len(c.toolset))
+
+    c = chatbot.empty(keep_system_prompt=False, keep_tools=False)
+    assert(len(c.history) == 0)
+    assert(len(c.toolset) == 0)
+
+    c = chatbot.empty(keep_system_prompt=True, keep_tools=False)
+    assert(len(c.history) == 1)
+    assert(len(c.toolset) == 0)
+
+    c = chatbot.empty(keep_system_prompt=False, keep_tools=True)
+    assert(len(c.history) == 0)
+    assert(len(c.toolset) == len(chatbot.toolset))
+
+
+
 if __name__ == '__main__':
+    test_cloning()
     test_tools()
     test_tools_chat()
     test_chat()

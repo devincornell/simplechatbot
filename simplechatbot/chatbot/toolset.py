@@ -65,6 +65,10 @@ class ToolSet:
     def empty(cls) -> typing.Self:
         '''Create an empty toolset.'''
         return cls(tools = {})
+    
+    def clone(self) -> typing.Self:
+        '''Clone the toolset.'''
+        return self.__class__(tools = dict(self.tools))
 
     ################################# function calling #################################
     #def call_tool(self, 
@@ -138,7 +142,11 @@ class ToolSet:
         return self.__class__(
             tools = {**self.tools, **other.tools},
         )
-
+    
+    def __len__(self) -> int:
+        '''Get the number of tools in the toolset.'''
+        return len(self.tools)
+    
     ################################# accessing other aspects of tools #################################
     def render(self) -> str:
         '''Gets description of toolset using the render method.'''

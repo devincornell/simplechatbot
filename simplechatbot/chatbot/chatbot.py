@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import typing
 import dataclasses
+import copy
 
+from langchain_core.messages import AIMessageChunk, AIMessage, BaseMessage, HumanMessage
 
 from .message_history import MessageHistory
 from .toolset import ToolSet, ToolCallResult
@@ -10,7 +12,6 @@ from .toolset import ToolSet, ToolCallResult
 from .ui import ChatBotUI
 from .chatresult import ChatResult, ChatStream
 
-from langchain_core.messages import AIMessageChunk, AIMessage, BaseMessage, HumanMessage
 
 if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
@@ -73,6 +74,24 @@ class ChatBot:
         )
 
         return new_chatbot
+    ############################# cloning #############################
+    def clone(self) -> typing.Self:
+        '''Clone the chatbot, keeping the system prompt if desired.'''
+        return self.__class__(
+            _model = self._model,
+            history = self.history.clone(),
+            toolset = self.toolset.clone(),
+            tool_choice = self.tool_choice,
+        )
+
+    def empty(self, keep_system_prompt: bool = False, keep_tools: bool = False) -> typing.Self:
+        '''Create an empty chatbot, keeping the system prompt if desired.'''
+        return self.__class__(
+            _model = self._model,
+            history = self.history.empty(keep_system_prompt=keep_system_prompt),
+            toolset = self.toolset.clone() if keep_tools else self.toolset.empty(),
+            tool_choice = self.tool_choice,
+        )
 
     ############################# Chat interface #############################
     def chat_stream(self, 

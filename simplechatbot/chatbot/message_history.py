@@ -11,7 +11,7 @@ from langchain_core.messages import (
     get_buffer_string,
 )
 
-from .errors import ToolWasNotExecutedError
+from .errors import ToolWasNotExecutedError, NoSystemPromptError
 
 class MessageHistory(list[BaseMessage]): 
     '''Maintains message history.
@@ -26,6 +26,19 @@ class MessageHistory(list[BaseMessage]):
         o = cls()
         o.add_system_message(system_prompt)
         return o
+    
+    ############################# Cloning #############################
+    def empty(self, keep_system_prompt: bool = False) -> typing.Self:
+        '''Clone the message history, keeping the system prompt if desired.'''
+        if keep_system_prompt:
+            return self.__class__([self.system_prompt])
+        else:
+            return self.__class__()
+        
+    def clone(self) -> typing.Self:
+        '''Clone the message history.'''
+        return self.__class__(self)
+    
     
     ############################# Checking message history #############################
     def check_tools_were_executed(self) -> None:
@@ -53,6 +66,13 @@ class MessageHistory(list[BaseMessage]):
         return self.get_buffer_string()
 
     ############################# Accessors #############################
+    @property
+    def system_prompt(self) -> list[AIMessage]:
+        '''Get all ai messages.'''
+        if len(self) == 0 or not isinstance(self[0], SystemMessage):
+            raise NoSystemPromptError('There is no system prompt in the history.')
+        return self[0]
+
     @property
     def first_system(self) -> SystemMessage:
         '''Get the first system message.'''
