@@ -12,7 +12,7 @@ from .toolset import ToolSet, ToolCallResult
 from .message_history import MessageHistory
 from .keychain import APIKeyChain
 from .errors import UknownToolError, ToolRaisedExceptionError, ToolWasNotExecutedError
-
+from .chatresult import ChatResult, ChatStream
 # import old stuff into separate namespace
 #from . import v4
 

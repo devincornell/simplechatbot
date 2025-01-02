@@ -160,6 +160,10 @@ class ChatStream(ChatResultBase):
         return len(self.full_message.tool_calls) > 0
     
     def result(self) -> ChatResult:
+        '''DEPRICATED. USE .collect() instead. Gets the full chat result after accumulating all messages.'''
+        return self.collect()
+
+    def collect(self) -> ChatResult:
         '''Get the full chat result after accumulating all messages.'''
         if not self.exhausted:
             #raise ValueError('Cannot get chat result until the stream is exhausted.')
