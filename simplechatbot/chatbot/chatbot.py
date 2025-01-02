@@ -20,6 +20,9 @@ if typing.TYPE_CHECKING:
     from .types import ToolName, ToolCallID
 
 
+class UNSPECIFIED:
+    pass
+
 @dataclasses.dataclass
 class ChatBot:
     '''Stores a chat model (or runnable interface), tools, and chat history.
@@ -74,25 +77,8 @@ class ChatBot:
         )
 
         return new_chatbot
-    ############################# cloning #############################
-    def clone(self) -> typing.Self:
-        '''Clone the chatbot, keeping the system prompt if desired.'''
-        return self.__class__(
-            _model = self._model,
-            history = self.history.clone(),
-            toolset = self.toolset.clone(),
-            tool_choice = self.tool_choice,
-        )
-
-    def empty(self, keep_system_prompt: bool = False, keep_tools: bool = False) -> typing.Self:
-        '''Create an empty chatbot, keeping the system prompt if desired.'''
-        return self.__class__(
-            _model = self._model,
-            history = self.history.empty(keep_system_prompt=keep_system_prompt),
-            toolset = self.toolset.clone() if keep_tools else self.toolset.empty(),
-            tool_choice = self.tool_choice,
-        )
-
+    
+    
     ############################# Chat interface #############################
     def chat_stream(self, 
         new_message: typing.Optional[str], 
@@ -182,6 +168,7 @@ class ChatBot:
             tools = tools,
             toolkits = toolkits,
             tool_factories = tool_factories,
+            tool_choice=tool_choice,
         )
         
         return ChatStream.from_message_iter(
@@ -221,7 +208,8 @@ class ChatBot:
     @property
     def model(self) -> BaseChatModel:
         '''Get the model with the tools bound to it.'''
-        return self.get_model_with_tools()[0]
+        m, ts = self.get_model_with_tools()
+        return m
 
     def get_model_with_tools(
         self, 
@@ -231,6 +219,7 @@ class ChatBot:
         tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
     ) -> tuple[BaseChatModel, ToolSet]:
         '''Bind tools to the model and return the resulting chain.'''
+        tool_choice = tool_choice if tool_choice is not None else self.tool_choice
         toolset = self.toolset.merge_new_tools(
             tools = tools,
             toolkits = toolkits,
@@ -238,14 +227,60 @@ class ChatBot:
             tool_factories = tool_factories,
         )
 
-        if tool_choice is not None:
-            model = toolset.bind_tools(self._model, tool_choice = tool_choice)
-        elif self.tool_choice is not None:
-            model = toolset.bind_tools(self._model, tool_choice = self.tool_choice)
-        else:
-            model = toolset.bind_tools(self._model)
+        model = toolset.bind_tools(self._model, tool_choice = tool_choice)
         
         return model, toolset
+
+    ############################# cloning #############################    
+    def empty(self, keep_system_prompt: bool = False, clear_tools: bool = True) -> typing.Self:
+        '''Create an empty chatbot, keeping the system prompt if desired.'''
+        return self.clone(
+            clear_history=True,
+            keep_system_prompt=keep_system_prompt,
+            clear_tools=clear_tools,
+        )
+
+    def clone(
+        self, 
+        model_factory: typing.Callable[[BaseChatModel],BaseChatModel] = lambda m: m,
+        clear_history: bool = False,
+        keep_system_prompt: bool | typing.Type[UNSPECIFIED] = UNSPECIFIED,
+        clear_tools: bool = False,
+        tools: list[BaseTool] | None = None,
+        toolkits: list[BaseToolkit] | None = None,
+        tool_factories: ToolFactoryType | None = None,
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | None | typing.Type[UNSPECIFIED] = UNSPECIFIED,
+    ) -> typing.Self:
+        '''Clone this instance, keeping some aspects the same and changing others.
+        Args:
+            model_factory: function to create a new model from the old one. Use to bind tools, etc.
+            clear_history: whether to clear the history
+            keep_system_prompt: whether to keep the system prompt
+            clear_tools: whether to clear the tools
+            tools: tools to add to the toolset
+            toolkits: toolkits to add to the toolset
+            tool_factories: tool factories to add to the toolset
+            tool_choice: tool to use for the model
+        '''
+        if clear_history and keep_system_prompt is UNSPECIFIED:
+            raise ValueError('keep_system_prompt must be specified if clear_history is True')
+        if not clear_history and keep_system_prompt is not UNSPECIFIED:
+            raise ValueError('keep_system_prompt can only be specified if clear_history is True')
+
+        toolset = self.toolset.empty() if clear_tools else self.toolset.clone()
+        toolset = toolset.merge_new_tools(
+            tools = tools,
+            toolkits = toolkits,
+            chatbot = self,
+            tool_factories = tool_factories,
+        )
+        return self.__class__(
+            _model = model_factory(self._model),
+            history = self.history.empty(keep_system_prompt=keep_system_prompt) if clear_history else self.history.clone(),
+            toolset = toolset,
+            tool_choice = tool_choice if tool_choice is not UNSPECIFIED else self.tool_choice,
+        )
+
 
     ############################# method classes #############################
     @property

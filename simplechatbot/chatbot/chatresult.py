@@ -13,7 +13,8 @@ from .toolset import ToolCallInfo, ToolCallResult, ToolSet
 class ChatResultBase:
     '''Base class for chat results.'''
 
-    def _handle_tool_calls(self, 
+    @staticmethod
+    def _handle_tool_calls(
         chatbot: ChatBot,
         toolset: ToolSet,
         message: AIMessage,
@@ -33,7 +34,6 @@ class ChatResultBase:
             results[tool_info.name] = result
         
         return results
-
 
 @dataclasses.dataclass(repr=False)
 class ChatResult(ChatResultBase):
@@ -62,7 +62,6 @@ class ChatResult(ChatResultBase):
             add_reply_to_history=add_reply_to_history,
         )
 
-
     def execute_tools(self, 
     ) -> dict[str, ToolCallResult]:
         '''Call tools on the full message.'''
@@ -84,7 +83,7 @@ class ChatResult(ChatResultBase):
         return self.message.content
     
     def __repr__(self) -> str:
-        return f'ChatResult(content={self.content}, tool_calls={self.tool_calls})'
+        return f'{self.__class__.__name__}(content={self.content}, tool_calls={self.tool_calls})'
     
     def has_tool_calls(self) -> bool:
         '''Return whether the message has tool calls.'''

@@ -100,7 +100,10 @@ class ToolSet:
     ) -> BaseChatModel:
         '''Bind tools to a model.'''
         if len(self.tools) > 0:
-            return model.bind_tools(self.tool_list(), tool_choice=tool_choice)
+            if tool_choice is None:
+                return model.bind_tools(self.tool_list())
+            else:
+                return model.bind_tools(self.tool_list(), tool_choice=tool_choice)
         else:
             return model
         
