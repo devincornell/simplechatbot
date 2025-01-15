@@ -213,7 +213,32 @@ class ChatBot:
         
         return model, tool_lookup
 
-    ############################# cloning #############################    
+    ############################# cloning #############################
+    def fresh(
+        self, 
+        system_prompt: typing.Optional[str] = None,
+        tools: typing.Optional[list[BaseTool]] = None,
+        toolkits: typing.Optional[list[BaseToolkit]] = None,
+        tool_factories: ToolFactoryType | None = None,
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
+    ) -> typing.Self:
+        '''Create a fresh chatbot using the model from this instance.
+        Args:
+            system_prompt: system prompt to use.
+            tools: tools to bind to the model.
+            toolkits: toolkits to bind to the model.
+            tool_factories: tool factories to bind to the model.
+            tool_choice: how to choose the tools to bind to the model.
+        '''
+        return self.from_model(
+            model = self._model,
+            system_prompt = system_prompt,
+            tools = tools,
+            toolkits = toolkits,
+            tool_factories = tool_factories,
+            tool_choice=tool_choice,
+        )
+    
     def empty(
         self, 
         keep_system_prompt: bool = False, 
@@ -232,39 +257,60 @@ class ChatBot:
     def clone(
         self, 
         model_transform: typing.Callable[[BaseChatModel],BaseChatModel] = lambda m: m,
+        system_prompt: str | None = None,
         history: MessageHistory | None = None,
         toolset: ToolSet | None = None,
     ) -> typing.Self:
         '''Clone this instance, keeping some aspects the same and changing others.
+        Description: Makes a copy of this chatbot. If toolset or history is specified,
+            a clone of them will replace the old instances. If system_prompt is specified, it will 
+            create a new history with ONLY the system prompt. system_prompt cannot be used
+            with history.
+
+            If you want to completely clear history, use the empty() method first.
+
         Args:
             model_transform: function to create a new model from the old one. Use to bind tools, etc.
-            history: new history to use. If None, the old history is used.
-            toolset: new toolset to use. If None, the old toolset is used.
+            system_prompt: if specified, will create a new history with only the system prompt.
+            history: new history to use. If None, a clone of the old history is used.
+            toolset: new toolset to use. If None, a clone of the old toolset is used.
         '''
+        if system_prompt is not None:
+            if history is not None:
+                raise ValueError("Cannot specify both system_prompt and history.")
+            else:
+                history = MessageHistory.from_system_prompt(system_prompt)
+        else:
+            if history is not None:
+                history = history.clone()
+            else:
+                history = self.history.clone()
+            
         return self.__class__(
             _model = model_transform(self._model),
-            history = history.clone() if history is not None else self.history.clone(),
+            history = history,
             toolset = toolset.clone() if toolset is not None else self.toolset.clone(),
         )
 
     ############################# method classes #############################
-    def structbot(
+    def structbot_from_model(
         self, 
         output_structure: pydantic.BaseModel,
         system_prompt: str | None = None,
-        keep_history: bool = True,
+        history: MessageHistory | None = None,
     ) -> StructBot:
-        '''Create a StructBot with the given output structure.
+        '''Create a StructBot from the model in this chatbot.
         Args:
             output_structure: the output structure to use.
             system_prompt: the system prompt to use.
-            keep_history: whether to keep the history.
+            history: history to add to structbot.
         '''
+
         return StructBot.from_model(
             model=self._model, 
             output_structure=output_structure,
             system_prompt=system_prompt,
-            history = self.history.clone() if keep_history else None,
+            history = history,
         )
     
     @property
