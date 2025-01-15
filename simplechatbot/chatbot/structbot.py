@@ -93,13 +93,30 @@ class StructBot(typing.Generic[T]):
             if add_to_history:
                 self.history.add_human_message(new_message)
         return use_messages
-
+    
     @property
     def model(self) -> BaseChatModel:
         '''Access the model with structured output.'''
         return self._model.with_structured_output(self.output_structure)
 
 
+    ############################### Transformations and History Management ###############################
+    def empty(self, keep_system_prompt: bool = False) -> typing.Self[T]:
+        '''Returns a clone of the current chatbot with clean history. Does NOT modify history in-place!'''
+        return self.clone(history=self.history.empty(keep_system_prompt=keep_system_prompt))
+
+    def clone(   
+        self, 
+        output_structure: typing.Type[T] | None = None,
+        model_transform: typing.Callable[[BaseChatModel],BaseChatModel] = lambda m: m,
+        history: MessageHistory | None = None,
+    ) -> StructBot[T]:
+        '''Clone the StructBot with specified modifications..'''
+        return self.__class__(
+            _model = model_transform(self._model),
+            output_structure = output_structure if output_structure is not None else self.output_structure,
+            history = self.history if history is None else history,
+        )
 
 
 
