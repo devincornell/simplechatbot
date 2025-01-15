@@ -16,3 +16,4 @@ from .chatresult import ChatResult, ChatStream
 # import old stuff into separate namespace
 #from . import v4
 
+from .structbot import StructBot
