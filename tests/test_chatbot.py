@@ -273,19 +273,19 @@ def test_cloning():
     assert(len(c.history) == len(chatbot.history))
     assert(len(c.toolset) == len(chatbot.toolset))
 
-    c = chatbot.empty(keep_system_prompt=True, keep_tools=True)
+    c = chatbot.empty(keep_system_prompt=True, clear_tools=False)
     assert(len(c.history) == 1)
     assert(len(c.toolset) == len(c.toolset))
 
-    c = chatbot.empty(keep_system_prompt=False, keep_tools=False)
+    c = chatbot.empty(keep_system_prompt=False, clear_tools=True)
     assert(len(c.history) == 0)
     assert(len(c.toolset) == 0)
 
-    c = chatbot.empty(keep_system_prompt=True, keep_tools=False)
+    c = chatbot.empty(keep_system_prompt=True, clear_tools=True)
     assert(len(c.history) == 1)
     assert(len(c.toolset) == 0)
 
-    c = chatbot.empty(keep_system_prompt=False, keep_tools=True)
+    c = chatbot.empty(keep_system_prompt=False, clear_tools=False)
     assert(len(c.history) == 0)
     assert(len(c.toolset) == len(chatbot.toolset))
 

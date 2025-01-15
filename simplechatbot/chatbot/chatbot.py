@@ -5,23 +5,23 @@ import dataclasses
 import copy
 
 from langchain_core.messages import AIMessageChunk, AIMessage, BaseMessage, HumanMessage
+import pydantic
 
 from .message_history import MessageHistory
-from .toolset import ToolSet, ToolCallResult
+from .toolset import ToolSet, ToolCallResult, ToolLookup
 
 from .ui import ChatBotUI
 from .chatresult import ChatResult, ChatStream
-
+from .structbot import StructBot
 
 if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool, BaseToolkit
     from .toolset import ToolFactoryType
-    from .types import ToolName, ToolCallID
+
+from .types import ToolName, ToolCallID, UNSPECIFIED, UnspecifiedType
 
 
-class UNSPECIFIED:
-    pass
 
 @dataclasses.dataclass
 class ChatBot:
@@ -35,7 +35,6 @@ class ChatBot:
     _model: BaseChatModel
     history: MessageHistory = dataclasses.field(default_factory=MessageHistory)
     toolset: ToolSet = dataclasses.field(default_factory=ToolSet)
-    tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None
     
     ############################# Generic Constructors #############################
     @classmethod
@@ -66,16 +65,13 @@ class ChatBot:
         new_chatbot = cls(
             _model = model,
             history = history,
-            toolset = ToolSet.empty(),
-            tool_choice = tool_choice,
+            toolset = ToolSet.from_tools(
+                tools = tools,
+                toolkits = toolkits,
+                tool_factories = tool_factories,
+                tool_choice=tool_choice,
+            ),
         )
-        new_chatbot.toolset = ToolSet.from_tools(
-            chatbot=new_chatbot,
-            tools = tools,
-            toolkits = toolkits,
-            tool_factories = tool_factories,
-        )
-
         return new_chatbot
     
     
@@ -132,25 +128,6 @@ class ChatBot:
                 self.history.add_human_message(new_message)
         return use_messages
     
-    def _handle_tool_calls(self, 
-        message: AIMessage, 
-        result_callback: typing.Callable[[],str | typing.Generator[str]],
-        verbose: bool = True,
-    ) -> dict[str, ToolCallResult]:
-        results: dict[str,ToolCallResult] = dict()
-        for tool_info in message.tool_calls:
-            result = self.toolset.call_tool(tool_info)
-            self.history.add_tool_message(result.return_value, result.id)
-            results[result.tool.name] = result
-        
-        if len(results) > 0:
-            if verbose:
-                for result in results.values():
-                    print(f'{result.info.tool_info_str()} -> {result.return_value}')
-            return result_callback()
-
-        return results
-
     ############################# wrappers over model calls #############################
     def stream(
         self, 
@@ -159,12 +136,12 @@ class ChatBot:
         tools: list[BaseTool] | None = None,
         toolkits: list[BaseToolkit] | None = None,
         tool_factories: ToolFactoryType | None = None,
-        tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | UnspecifiedType | None = UNSPECIFIED,
         **kwargs,
     ) -> ChatStream:
         '''Wrapper for model.stream.'''
         self.history.check_tools_were_executed()
-        model, toolset = self.get_model_with_tools(
+        model, tool_lookup = self.get_model_with_tools(
             tools = tools,
             toolkits = toolkits,
             tool_factories = tool_factories,
@@ -174,7 +151,7 @@ class ChatBot:
         return ChatStream.from_message_iter(
             message_iter = model.stream(messages, **kwargs),
             chatbot = self,
-            toolset=toolset,
+            tool_lookup=tool_lookup,
             add_reply_to_history = add_reply_to_history,
         )
 
@@ -185,12 +162,12 @@ class ChatBot:
         tools: list[BaseTool] | None = None,
         toolkits: list[BaseToolkit] | None = None,
         tool_factories: ToolFactoryType | None = None,
-        tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | UnspecifiedType | None = UNSPECIFIED,
         **kwargs,
     ) -> ChatResult:
-        '''Wrapper for model.invoke.'''
+        '''Invoke the model and return a chatresult object.'''
         self.history.check_tools_were_executed()
-        model, toolset = self.get_model_with_tools(
+        model, tool_lookup = self.get_model_with_tools(
             tools = tools,
             toolkits = toolkits,
             tool_factories = tool_factories,
@@ -199,7 +176,7 @@ class ChatBot:
         return ChatResult.from_message(
             message = model.invoke(messages, **kwargs),
             chatbot = self,
-            toolset=toolset,
+            tool_lookup=tool_lookup,
             add_reply_to_history = add_reply_to_history,
         )
 
@@ -207,8 +184,8 @@ class ChatBot:
     ############################# access model with tools #############################
     @property
     def model(self) -> BaseChatModel:
-        '''Get the model with the tools bound to it.'''
-        m, ts = self.get_model_with_tools()
+        '''Access the model with tools bound to it.'''
+        m, tl = self.get_model_with_tools()
         return m
 
     def get_model_with_tools(
@@ -216,73 +193,80 @@ class ChatBot:
         tools: list[BaseTool] | None = None,
         toolkits: list[BaseToolkit] | None = None,
         tool_factories: ToolFactoryType | None = None,
-        tool_choice: ToolName | typing.Literal['auto', 'any'] | None = None,
-    ) -> tuple[BaseChatModel, ToolSet]:
-        '''Bind tools to the model and return the resulting chain.'''
-        tool_choice = tool_choice if tool_choice is not None else self.tool_choice
-        toolset = self.toolset.merge_new_tools(
+        tool_choice: ToolName | typing.Literal['auto', 'any'] | None | UnspecifiedType = UNSPECIFIED,
+    ) -> tuple[BaseChatModel, ToolLookup]:
+        '''Bind tools to the model and return the resulting chain.
+        Args:
+            tools: tools to bind to the model.
+            toolkits: toolkits to bind to the model.
+            tool_factories: tool factories to bind to the model.
+            tool_choice: how to choose the tools to bind to the model.
+        '''
+        toolset = self.toolset.merge_tools(
             tools = tools,
             toolkits = toolkits,
-            chatbot = self,
             tool_factories = tool_factories,
+            tool_choice=tool_choice,
         )
 
-        model = toolset.bind_tools(self._model, tool_choice = tool_choice)
+        model, tool_lookup = toolset.bind_tools(chatbot=self)
         
-        return model, toolset
+        return model, tool_lookup
 
     ############################# cloning #############################    
-    def empty(self, keep_system_prompt: bool = False, clear_tools: bool = True) -> typing.Self:
-        '''Create an empty chatbot, keeping the system prompt if desired.'''
+    def empty(
+        self, 
+        keep_system_prompt: bool = False, 
+        clear_tools: bool = True,
+    ) -> typing.Self:
+        '''Create an empty chatbot, keeping the system prompt if desired.
+        Args:
+            keep_system_prompt: whether to keep the system prompt.
+            clear_tools: whether to clear the tools.
+        '''
         return self.clone(
-            clear_history=True,
-            keep_system_prompt=keep_system_prompt,
-            clear_tools=clear_tools,
+            history = self.history.empty(keep_system_prompt=keep_system_prompt),
+            toolset=self.toolset.empty() if clear_tools else self.toolset.clone(),
         )
 
     def clone(
         self, 
-        model_factory: typing.Callable[[BaseChatModel],BaseChatModel] = lambda m: m,
-        clear_history: bool = False,
-        keep_system_prompt: bool | typing.Type[UNSPECIFIED] = UNSPECIFIED,
-        clear_tools: bool = False,
-        tools: list[BaseTool] | None = None,
-        toolkits: list[BaseToolkit] | None = None,
-        tool_factories: ToolFactoryType | None = None,
-        tool_choice: ToolName | typing.Literal['auto', 'any'] | None | typing.Type[UNSPECIFIED] = UNSPECIFIED,
+        model_transform: typing.Callable[[BaseChatModel],BaseChatModel] = lambda m: m,
+        history: MessageHistory | None = None,
+        toolset: ToolSet | None = None,
     ) -> typing.Self:
         '''Clone this instance, keeping some aspects the same and changing others.
         Args:
-            model_factory: function to create a new model from the old one. Use to bind tools, etc.
-            clear_history: whether to clear the history
-            keep_system_prompt: whether to keep the system prompt
-            clear_tools: whether to clear the tools
-            tools: tools to add to the toolset
-            toolkits: toolkits to add to the toolset
-            tool_factories: tool factories to add to the toolset
-            tool_choice: tool to use for the model
+            model_transform: function to create a new model from the old one. Use to bind tools, etc.
+            history: new history to use. If None, the old history is used.
+            toolset: new toolset to use. If None, the old toolset is used.
         '''
-        if clear_history and keep_system_prompt is UNSPECIFIED:
-            raise ValueError('keep_system_prompt must be specified if clear_history is True')
-        if not clear_history and keep_system_prompt is not UNSPECIFIED:
-            raise ValueError('keep_system_prompt can only be specified if clear_history is True')
-
-        toolset = self.toolset.empty() if clear_tools else self.toolset.clone()
-        toolset = toolset.merge_new_tools(
-            tools = tools,
-            toolkits = toolkits,
-            chatbot = self,
-            tool_factories = tool_factories,
-        )
         return self.__class__(
-            _model = model_factory(self._model),
-            history = self.history.empty(keep_system_prompt=keep_system_prompt) if clear_history else self.history.clone(),
-            toolset = toolset,
-            tool_choice = tool_choice if tool_choice is not UNSPECIFIED else self.tool_choice,
+            _model = model_transform(self._model),
+            history = history.clone() if history is not None else self.history.clone(),
+            toolset = toolset.clone() if toolset is not None else self.toolset.clone(),
         )
-
 
     ############################# method classes #############################
+    def structbot(
+        self, 
+        output_structure: pydantic.BaseModel,
+        system_prompt: str | None = None,
+        keep_history: bool = True,
+    ) -> StructBot:
+        '''Create a StructBot with the given output structure.
+        Args:
+            output_structure: the output structure to use.
+            system_prompt: the system prompt to use.
+            keep_history: whether to keep the history.
+        '''
+        return StructBot.from_model(
+            model=self._model, 
+            output_structure=output_structure,
+            system_prompt=system_prompt,
+            history = self.history.clone() if keep_history else None,
+        )
+    
     @property
     def ui(self) -> ChatBotUI:
         '''Expose diffferent UI for the chatbot.'''
@@ -291,5 +275,6 @@ class ChatBot:
     ############################# dunder #############################
     def __repr__(self) -> str:
         model_name = getattr(self._model, 'model_name', 'Unknown')
-        return f'{self.__class__.__name__}(model_type={type(self._model).__name__}, model_name="{model_name}", tools={self.toolset.names() if len(self.toolset) else None})'
+        tool_names = self.toolset.tool_lookup(chatbot=self)
+        return f'{self.__class__.__name__}(model_type={type(self._model).__name__}, model_name="{model_name}", tools={tool_names})'
 
