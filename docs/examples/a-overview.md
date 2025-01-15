@@ -27,7 +27,7 @@ chatbot = simplechatbot.ChatBot.from_model(model=openai_model)
 print(chatbot)
 ```
 
-    ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=None)
+    ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={}))
 
 
 The `tools` parameter allows you to pass any [langchain tools](https://python.langchain.com/v0.1/docs/modules/tools/) you want your chatbot to be able to use. You can use one of [Langchain's built-in tools](https://python.langchain.com/v0.1/docs/integrations/tools/) (such as `FileManagementToolkit`) or [define your own custom tools](https://python.langchain.com/v0.1/docs/modules/tools/custom_tools/). I will use `FileManagementToolkit` for demonstration purposes here.
@@ -57,7 +57,7 @@ chatbot.toolset
 
 
 
-    ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x12d08f600>)})
+    ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>)}, tool_factories=[], tool_choice=None)
 
 
 
@@ -134,7 +134,7 @@ chatbot.chat('My name is Devin.')
 
 
 
-    ChatResult(content=Hi Devin! How can I assist you today? Are you looking to create a slogan for a specific company or project?, tool_calls=[])
+    ChatResult(content=Nice to meet you, Devin! How can I assist you today? Are you looking for help with a company slogan? If so, please provide some details about the company., tool_calls=[])
 
 
 
@@ -146,7 +146,7 @@ chatbot.chat_stream('My name is Devin and I am a creative designer.')
 
 
 
-    ChatStream(message_iter=<generator object RunnableBindingBase.stream at 0x106f2d300>, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=['check_new_messages']), toolset=ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x12d08f600>)}), add_reply_to_history=True, full_message=AIMessageChunk(content='', additional_kwargs={}, response_metadata={}), exhausted=False)
+    ChatStream(message_iter=<generator object RunnableBindingBase.stream at 0x10b9a7790>, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>)})), tool_lookup=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>)}), add_reply_to_history=True, full_message=AIMessageChunk(content='', additional_kwargs={}, response_metadata={}), exhausted=False)
 
 
 
@@ -162,7 +162,7 @@ print(chatbot.history.get_buffer_string())
     The user will describe the company, and you will need to generate three slogan ideas for them.
     
     Human: My name is Devin.
-    AI: Hi Devin! How can I assist you today? Are you looking to create a slogan for a specific company or project?
+    AI: Nice to meet you, Devin! How can I assist you today? Are you looking for help with a company slogan? If so, please provide some details about the company.
     Human: My name is Devin and I am a creative designer.
 
 
@@ -206,7 +206,7 @@ chatbot.chat(None)
 
 
 
-    ChatResult(content=If there's anything specific you'd like to discuss or if you need help with a project, feel free to let me know!, tool_calls=[])
+    ChatResult(content=If you have any specific requests or questions, feel free to share! I'm here to help., tool_calls=[])
 
 
 
@@ -220,7 +220,7 @@ chatbot.chat('Hello world.', add_to_history=False)
 
 
 
-    ChatResult(content=Hello again, Devin! How can I help you today?, tool_calls=[])
+    ChatResult(content=Hello again, Devin! If there's anything specific you'd like to discuss or if you need assistance, just let me know!, tool_calls=[])
 
 
 
@@ -292,7 +292,7 @@ result.tool_calls
 
 
 
-    [ToolCallInfo(id='call_zLXf8TVFZd3azJ88wuPZfB3S', name='check_new_messages', type='tool_call', args={'text': 'Check new messages.', 'username': 'devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x12d08f600>))]
+    [ToolCallInfo(id='call_QqZ4mhbJaEcdKpoSrLrHLf6K', name='check_new_messages', type='tool_call', args={'text': 'Check new messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>))]
 
 
 
@@ -307,7 +307,7 @@ tool_results
 
 
 
-    {'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_zLXf8TVFZd3azJ88wuPZfB3S', name='check_new_messages', type='tool_call', args={'text': 'Check new messages.', 'username': 'devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x12d08f600>)), return_value='No new messages.')}
+    {'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_QqZ4mhbJaEcdKpoSrLrHLf6K', name='check_new_messages', type='tool_call', args={'text': 'Check new messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>)), return_value='No new messages.')}
 
 
 
@@ -344,7 +344,7 @@ stream
 
 
 
-    ChatStream(message_iter=<generator object RunnableBindingBase.stream at 0x12ce61b70>, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=['check_new_messages']), toolset=ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x12d08f600>)}), add_reply_to_history=True, full_message=AIMessageChunk(content='Your name is Devin!', additional_kwargs={}, response_metadata={'finish_reason': 'stop', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_d02d531b47'}), exhausted=True)
+    ChatStream(message_iter=<generator object RunnableBindingBase.stream at 0x10b9a7a60>, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>)})), tool_lookup=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>)}), add_reply_to_history=True, full_message=AIMessageChunk(content='Your name is Devin!', additional_kwargs={}, response_metadata={'finish_reason': 'stop', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_72ed7ab54c'}), exhausted=True)
 
 
 
@@ -367,7 +367,7 @@ stream
 
 
 
-    ChatStream(message_iter=<generator object RunnableBindingBase.stream at 0x12ce61f30>, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=['check_new_messages']), toolset=ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x12d08f600>)}), add_reply_to_history=True, full_message=AIMessageChunk(content='Your name is Devin!', additional_kwargs={}, response_metadata={'finish_reason': 'stop', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_d02d531b47'}), exhausted=True)
+    ChatStream(message_iter=<generator object RunnableBindingBase.stream at 0x10b9a7c40>, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>)})), tool_lookup=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>)}), add_reply_to_history=True, full_message=AIMessageChunk(content='Your name is Devin!', additional_kwargs={}, response_metadata={'finish_reason': 'stop', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_72ed7ab54c'}), exhausted=True)
 
 
 
@@ -384,7 +384,7 @@ stream.tool_calls
 
 
 
-    [ToolCallInfo(id='call_RONeUxpHmfeVKHg8AHJm1LyX', name='check_new_messages', type='tool_call', args={'text': 'Check my messages.', 'username': 'devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x12d08f600>))]
+    [ToolCallInfo(id='call_yOvYEvE90FcCnN0sEChUV7RC', name='check_new_messages', type='tool_call', args={'text': 'Check my messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>))]
 
 
 
@@ -398,7 +398,7 @@ stream.execute_tools()
 
 
 
-    {'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_RONeUxpHmfeVKHg8AHJm1LyX', name='check_new_messages', type='tool_call', args={'text': 'Check my messages.', 'username': 'devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x12d08f600>)), return_value='No new messages.')}
+    {'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_yOvYEvE90FcCnN0sEChUV7RC', name='check_new_messages', type='tool_call', args={'text': 'Check my messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>)), return_value='No new messages.')}
 
 
 
@@ -447,12 +447,10 @@ for r in stream:
 stream.execute_tools()
 ```
 
-    Please provide the text of the message and the username you want to check.
 
 
 
-
-    {}
+    {'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_4eW2NS9YLrqtEUZt2VmJC8SB', name='check_new_messages', type='tool_call', args={'text': 'Check messages.', 'username': 'User'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=<class 'langchain_core.utils.pydantic.check_new_messages'>, func=<function check_new_messages at 0x10c19e480>)), return_value='No new messages.')}
 
 
 

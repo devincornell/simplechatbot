@@ -16,14 +16,14 @@ I will use the keychain to manage API keys for OpenAI and Mistral.
 
 
 ```python
-keychain = simplechatbot.devin.APIKeyChain.from_json_file('../keys.json')
+keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
 ```
 
 Notice that we use a separate import statement to explicitly import the model-specific chatbots.
 
 
 ```python
-from simplechatbot.devin.ollama import OllamaChatBot
+from simplechatbot.ollama import OllamaChatBot
 
 chatbot = OllamaChatBot.new(
     model_name = 'llama3.1', 
@@ -32,7 +32,7 @@ chatbot = OllamaChatBot.new(
 
 
 ```python
-from simplechatbot.devin.openai import OpenAIChatBot
+from simplechatbot.openai import OpenAIChatBot
 
 chatbot = OpenAIChatBot.new(
     model_name = 'gpt-4o-mini', 
@@ -42,7 +42,7 @@ chatbot = OpenAIChatBot.new(
 
 
 ```python
-from simplechatbot.devin.mistral import MistralChatBot
+from simplechatbot.mistral import MistralChatBot
 
 chatbot = MistralChatBot.new(
     model_name = 'mistral-large-latest', 
