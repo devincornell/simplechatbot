@@ -2,22 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://devincornell.github.io/simplechatbot/</loc>
-         <lastmod>2025-01-02</lastmod>
+         <lastmod>2025-01-15</lastmod>
     </url>
     <url>
          <loc>https://devincornell.github.io/simplechatbot/examples/a-overview/</loc>
-         <lastmod>2025-01-02</lastmod>
+         <lastmod>2025-01-15</lastmod>
     </url>
     <url>
          <loc>https://devincornell.github.io/simplechatbot/examples/b-tool_calling/</loc>
-         <lastmod>2025-01-02</lastmod>
+         <lastmod>2025-01-15</lastmod>
     </url>
     <url>
          <loc>https://devincornell.github.io/simplechatbot/examples/c-model_specific_chatbots/</loc>
-         <lastmod>2025-01-02</lastmod>
+         <lastmod>2025-01-15</lastmod>
     </url>
     <url>
          <loc>https://devincornell.github.io/simplechatbot/examples/d_multi-agent_example/</loc>
-         <lastmod>2025-01-02</lastmod>
+         <lastmod>2025-01-15</lastmod>
     </url>
 </urlset>

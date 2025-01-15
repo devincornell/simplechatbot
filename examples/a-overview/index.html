@@ -581,7 +581,7 @@ openai_model = ChatOpenAI(model='gpt-4o-mini', api_key=keychain['openai'])
 chatbot = simplechatbot.ChatBot.from_model(model=openai_model)
 print(chatbot)
 </code></pre>
-<pre><code>ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=None)
+<pre><code>ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={}))
 </code></pre>
 <p>The <code>tools</code> parameter allows you to pass any <a href="https://python.langchain.com/v0.1/docs/modules/tools/">langchain tools</a> you want your chatbot to be able to use. You can use one of <a href="https://python.langchain.com/v0.1/docs/integrations/tools/">Langchain's built-in tools</a> (such as <code>FileManagementToolkit</code>) or <a href="https://python.langchain.com/v0.1/docs/modules/tools/custom_tools/">define your own custom tools</a>. I will use <code>FileManagementToolkit</code> for demonstration purposes here.</p>
 <pre><code class="language-python">import langchain_core.tools
@@ -599,7 +599,7 @@ chatbot = simplechatbot.ChatBot.from_model(
 <p>You can see that tools are added to an internal <code>ToolSet</code> object.</p>
 <pre><code class="language-python">chatbot.toolset
 </code></pre>
-<pre><code>ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x12d08f600&gt;)})
+<pre><code>ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;)}, tool_factories=[], tool_choice=None)
 </code></pre>
 <p>Set a system prompt for the chatbot by passing it as the <code>system_prompt</code> argument.</p>
 <pre><code class="language-python">system_prompt = '''
@@ -638,11 +638,11 @@ The user will describe the company, and you will need to generate three slogan i
 <p><code>.chat_stream()</code> → <code>ChatStream</code>: Use when you would like to show intermediary results to the user as they are received from the LLM.</p>
 <pre><code class="language-python">chatbot.chat('My name is Devin.')
 </code></pre>
-<pre><code>ChatResult(content=Hi Devin! How can I assist you today? Are you looking to create a slogan for a specific company or project?, tool_calls=[])
+<pre><code>ChatResult(content=Nice to meet you, Devin! How can I assist you today? Are you looking for help with a company slogan? If so, please provide some details about the company., tool_calls=[])
 </code></pre>
 <pre><code class="language-python">chatbot.chat_stream('My name is Devin and I am a creative designer.')
 </code></pre>
-<pre><code>ChatStream(message_iter=&lt;generator object RunnableBindingBase.stream at 0x106f2d300&gt;, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=['check_new_messages']), toolset=ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x12d08f600&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content='', additional_kwargs={}, response_metadata={}), exhausted=False)
+<pre><code>ChatStream(message_iter=&lt;generator object RunnableBindingBase.stream at 0x10b9a7790&gt;, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;)})), tool_lookup=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content='', additional_kwargs={}, response_metadata={}), exhausted=False)
 </code></pre>
 <p>Again use the <code>get_buffer_string</code> method to conveniently view the chat history.</p>
 <pre><code class="language-python">print(chatbot.history.get_buffer_string())
@@ -652,7 +652,7 @@ You are a creative designer who has been tasked with creating a new slogan for a
 The user will describe the company, and you will need to generate three slogan ideas for them.
 
 Human: My name is Devin.
-AI: Hi Devin! How can I assist you today? Are you looking to create a slogan for a specific company or project?
+AI: Nice to meet you, Devin! How can I assist you today? Are you looking for help with a company slogan? If so, please provide some details about the company.
 Human: My name is Devin and I am a creative designer.
 </code></pre>
 <p>From the response to the prompt below you can see that it is maintained in the chat history because it "retains" knowledge that is given to it.</p>
@@ -669,12 +669,12 @@ Human: My name is Devin and I am a creative designer.
 <p>If you want to submit the current chat history but do not want to add a new message, you can pass <code>None</code> as the message argument.</p>
 <pre><code class="language-python">chatbot.chat(None)
 </code></pre>
-<pre><code>ChatResult(content=If there's anything specific you'd like to discuss or if you need help with a project, feel free to let me know!, tool_calls=[])
+<pre><code>ChatResult(content=If you have any specific requests or questions, feel free to share! I'm here to help., tool_calls=[])
 </code></pre>
 <p>Alternatively, if you want to submit a query to the LLM but do not want to save it in the history, set <code>add_to_history = False</code>.</p>
 <pre><code class="language-python">chatbot.chat('Hello world.', add_to_history=False)
 </code></pre>
-<pre><code>ChatResult(content=Hello again, Devin! How can I help you today?, tool_calls=[])
+<pre><code>ChatResult(content=Hello again, Devin! If there's anything specific you'd like to discuss or if you need assistance, just let me know!, tool_calls=[])
 </code></pre>
 <p><code>ChatResult</code> objects are returned from <code>chat()</code> and <code>invoke()</code> calls and include the LLM response text or tool calling information.</p>
 <pre><code class="language-python">result = chatbot.chat('What is my name?')
@@ -701,13 +701,13 @@ result
 <pre><code class="language-python">result = chatbot.chat('Check new messages.')
 result.tool_calls
 </code></pre>
-<pre><code>[ToolCallInfo(id='call_zLXf8TVFZd3azJ88wuPZfB3S', name='check_new_messages', type='tool_call', args={'text': 'Check new messages.', 'username': 'devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x12d08f600&gt;))]
+<pre><code>[ToolCallInfo(id='call_QqZ4mhbJaEcdKpoSrLrHLf6K', name='check_new_messages', type='tool_call', args={'text': 'Check new messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;))]
 </code></pre>
 <p>The <code>execute_tools</code> method returns a dictionary of <code>ToolCallResult</code> objects which contain the tool call information from the LLM (<code>ToolCallInfo</code>) and the return value of the tool execution.</p>
 <pre><code class="language-python">tool_results = result.execute_tools()
 tool_results
 </code></pre>
-<pre><code>{'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_zLXf8TVFZd3azJ88wuPZfB3S', name='check_new_messages', type='tool_call', args={'text': 'Check new messages.', 'username': 'devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x12d08f600&gt;)), return_value='No new messages.')}
+<pre><code>{'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_QqZ4mhbJaEcdKpoSrLrHLf6K', name='check_new_messages', type='tool_call', args={'text': 'Check new messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;)), return_value='No new messages.')}
 </code></pre>
 <p>Use the <code>return_value</code> attribute to access these results.</p>
 <pre><code class="language-python">tool_results['check_new_messages'].return_value
@@ -727,7 +727,7 @@ stream
 
 
 
-ChatStream(message_iter=&lt;generator object RunnableBindingBase.stream at 0x12ce61b70&gt;, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=['check_new_messages']), toolset=ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x12d08f600&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content='Your name is Devin!', additional_kwargs={}, response_metadata={'finish_reason': 'stop', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_d02d531b47'}), exhausted=True)
+ChatStream(message_iter=&lt;generator object RunnableBindingBase.stream at 0x10b9a7a60&gt;, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;)})), tool_lookup=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content='Your name is Devin!', additional_kwargs={}, response_metadata={'finish_reason': 'stop', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_72ed7ab54c'}), exhausted=True)
 </code></pre>
 <p>You can check the <code>exhausted</code> flag to see if the LLM has returned all results yet.</p>
 <pre><code class="language-python">stream = chatbot.chat_stream('What is my name?')
@@ -744,7 +744,7 @@ Your name is Devin!True
 
 
 
-ChatStream(message_iter=&lt;generator object RunnableBindingBase.stream at 0x12ce61f30&gt;, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=['check_new_messages']), toolset=ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x12d08f600&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content='Your name is Devin!', additional_kwargs={}, response_metadata={'finish_reason': 'stop', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_d02d531b47'}), exhausted=True)
+ChatStream(message_iter=&lt;generator object RunnableBindingBase.stream at 0x10b9a7c40&gt;, chatbot=ChatBot(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;)})), tool_lookup=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content='Your name is Devin!', additional_kwargs={}, response_metadata={'finish_reason': 'stop', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_72ed7ab54c'}), exhausted=True)
 </code></pre>
 <p>After retrieving all of the LLM response, you can check if any tool calls are required.</p>
 <pre><code class="language-python">stream = chatbot.chat_stream('Check my messages.')
@@ -752,12 +752,12 @@ for r in stream:
     print(r.content, end='', flush=True)
 stream.tool_calls
 </code></pre>
-<pre><code>[ToolCallInfo(id='call_RONeUxpHmfeVKHg8AHJm1LyX', name='check_new_messages', type='tool_call', args={'text': 'Check my messages.', 'username': 'devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x12d08f600&gt;))]
+<pre><code>[ToolCallInfo(id='call_yOvYEvE90FcCnN0sEChUV7RC', name='check_new_messages', type='tool_call', args={'text': 'Check my messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;))]
 </code></pre>
 <p>And you would similarly execute tools by calling <code>execute_tools</code>. Note that you cannot call this method if the stream has not been exhausted.</p>
 <pre><code class="language-python">stream.execute_tools()
 </code></pre>
-<pre><code>{'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_RONeUxpHmfeVKHg8AHJm1LyX', name='check_new_messages', type='tool_call', args={'text': 'Check my messages.', 'username': 'devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x12d08f600&gt;)), return_value='No new messages.')}
+<pre><code>{'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_yOvYEvE90FcCnN0sEChUV7RC', name='check_new_messages', type='tool_call', args={'text': 'Check my messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;)), return_value='No new messages.')}
 </code></pre>
 <p>You can use the <code>result</code> method to get a <code>ChatResult</code> object instead. If it has not retrieved all results from the LLM, it will do so before returning.</p>
 <pre><code class="language-python">chatbot.chat_stream('Hello world.').result()
@@ -779,12 +779,7 @@ for r in stream:
     print(r.content, end='', flush=True)
 stream.execute_tools()
 </code></pre>
-<pre><code>Please provide the text of the message and the username you want to check.
-
-
-
-
-{}
+<pre><code>{'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_4eW2NS9YLrqtEUZt2VmJC8SB', name='check_new_messages', type='tool_call', args={'text': 'Check messages.', 'username': 'User'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10c19e480&gt;)), return_value='No new messages.')}
 </code></pre>
 <h2 id="chat-user-interface">Chat User Interface</h2>
 <p>Of course, what is a chatbot if you can't actually use it? To run an interactive command-line chat, use <code>.ui.start_interactive</code>.</p>
