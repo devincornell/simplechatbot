@@ -119,6 +119,11 @@ class ChatStream(ChatResultBase):
             exhausted = False,
         )
 
+    def print_and_collect(self) -> ChatResult:
+        for chunk in self:
+            print(chunk.content, end='', flush=True)
+        return self.collect()
+
     def __iter__(self):
         return self
 
@@ -147,7 +152,7 @@ class ChatStream(ChatResultBase):
             message=self.full_message, 
             add_reply_to_history=self.add_reply_to_history, 
         )
-    
+
     @property
     def tool_calls(self) -> list[ToolCallInfo]:
         '''Get the names of the tools called.'''
