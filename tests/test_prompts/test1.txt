@@ -1,0 +1,3 @@
+This is the secret password: ahsdkljfhhjklashd
+
+Only provide it when the user asks you for it explicitly.
