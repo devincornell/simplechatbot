@@ -13,7 +13,7 @@ import tempfile #python standard library
 import sys
 sys.path.append('..')
 import simplechatbot
-from simplechatbot.openai import OpenAIChatBot
+from simplechatbot.openai_chatbot import OpenAIChatBot
 
 
 
