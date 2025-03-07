@@ -4,7 +4,6 @@
 # simplechatbot.tools.WhateverTool
 from . import tools
 
-from . import devin
 from . import andrew
 
 # I had to move this to the package root for some imports to work.
