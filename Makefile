@@ -1,11 +1,18 @@
 PACKAGE_NAME = simplechatbot
 
 
-install:
+reinstall: uninstall install
+
+install: clean
 	pip install .
 
 uninstall:
 	pip uninstall simplechatbot
+
+clean:
+	rm -rf dist
+	rm -rf build
+	rm -rf *.egg-info
 
 
 ############### Doc Update Instructions ################
