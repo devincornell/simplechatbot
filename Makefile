@@ -56,4 +56,6 @@ example_notebooks:
 	jupyter nbconvert --to markdown $(EXAMPLE_NOTEBOOK_FOLDER)/*.ipynb
 	mv $(EXAMPLE_NOTEBOOK_FOLDER)/*.md $(EXAMPLE_NOTEBOOK_MARKDOWN_FOLDER)
 
-	
+
+run_ollama:
+	ollama run dolphin-mixtral:8x7b
