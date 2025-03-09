@@ -62,14 +62,14 @@ class ChatBotUI:
 
         if self.ignore_tool_exceptions:
             try:
-                tool_results = result.call_tools()
+                tool_results = result.execute_tools()
             except UknownToolError as e:
                 print(f'UNKOWN TOOL CALL: {e.tool_name}')
 
             except ToolRaisedExceptionError as e:
                 print(f'TOOL RAISED EXCEPTION: {e.text}\n{e.tool_info}\n{e.e}')
         else:
-            tool_results = result.call_tools()
+            tool_results = result.execute_tools()
 
         # if tools were called, do this recursively
         if len(tool_results):
