@@ -100,6 +100,7 @@ class ChatStream(ChatResultBase):
     add_reply_to_history: bool
     full_message: AIMessage
     exhausted: bool
+    receive_callback: typing.Callable[[AIMessageChunk], None]
 
     @classmethod
     def from_message_iter(
@@ -108,6 +109,7 @@ class ChatStream(ChatResultBase):
         chatbot: ChatBot,
         tool_lookup: ToolLookup,
         add_reply_to_history: bool,
+        receive_callback: typing.Callable[[AIMessageChunk], None] = None,
     ) -> ChatStream:
         '''Create a chat stream from a message iterator.'''
         return cls(
@@ -117,6 +119,7 @@ class ChatStream(ChatResultBase):
             add_reply_to_history=add_reply_to_history,
             full_message = AIMessageChunk(content=''),
             exhausted = False,
+            receive_callback = receive_callback,
         )
 
     def print_and_collect(self) -> ChatResult:
@@ -131,6 +134,8 @@ class ChatStream(ChatResultBase):
         '''Get the next message and add it to the full message.'''
         try:
             next_message = next(self.message_iter)
+            if self.receive_callback is not None:
+                self.receive_callback(next_message)
             self.full_message += next_message
             return next_message
         
