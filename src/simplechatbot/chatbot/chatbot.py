@@ -76,7 +76,7 @@ class ChatBot:
     
     
     ############################# Chat interface #############################
-    def chat_stream(self, 
+    def stream(self, 
         new_message: typing.Optional[str], 
         add_to_history: bool = True,
         tools: typing.Optional[list[BaseTool]] = None,
