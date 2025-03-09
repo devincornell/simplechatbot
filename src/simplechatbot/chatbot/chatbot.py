@@ -82,18 +82,27 @@ class ChatBot:
         tools: typing.Optional[list[BaseTool]] = None,
         toolkits: typing.Optional[list[BaseToolkit]] = None,
         tool_factories: ToolFactoryType | None = None,
+        do_print: bool = False,
+        receive_callback: typing.Callable[[AIMessageChunk], None] = None,
     ) -> ChatStream:
         '''Return a ChatStream that can be iterated over to get the chat messages.
         Args:
-            new_message: message to send to the chatbot. If None is entered, a new message will not be added to history.
+            new_message: message to send to the chatbot. If None is entered, a new message will 
+                not be added to history.
+            add_to_history: whether to add the message to the history after the response is received
+            tools: tools to use in this particular message.
+            toolkits: toolkits to use in this particular message.
+            tool_factories: tool factories to use in this particular message.
         '''
         use_messages = self._get_message_history(new_message, add_to_history)
-        return self.stream(
+        return self._stream(
             messages = use_messages,
             add_reply_to_history=add_to_history,
             tools = tools,
             toolkits = toolkits,
             tool_factories = tool_factories,
+            receive_callback = receive_callback,
+            do_print=do_print,
         )
 
     def chat(self, 
@@ -110,7 +119,7 @@ class ChatBot:
             add_to_history: whether to add the message to the history after the response is received.
         '''
         use_messages = self._get_message_history(new_message, add_to_history=add_to_history)
-        return self.invoke(
+        return self._invoke(
             messages = use_messages,
             add_reply_to_history=add_to_history,
             tools = tools,
@@ -129,7 +138,7 @@ class ChatBot:
         return use_messages
     
     ############################# wrappers over model calls #############################
-    def stream(
+    def _stream(
         self, 
         messages: BaseMessage | str | list[BaseMessage] | list[str],
         add_reply_to_history: bool = False,
@@ -137,9 +146,11 @@ class ChatBot:
         toolkits: list[BaseToolkit] | None = None,
         tool_factories: ToolFactoryType | None = None,
         tool_choice: ToolName | typing.Literal['auto', 'any'] | UnspecifiedType | None = UNSPECIFIED,
+        receive_callback: typing.Callable[[AIMessageChunk], None] = None,
+        do_print: bool = False,
         **kwargs,
     ) -> ChatStream:
-        '''Wrapper for model.stream.'''
+        '''Sends a message to be streamed back without storing the message as history.'''
         self.history.check_tools_were_executed()
         model, tool_lookup = self.get_model_with_tools(
             tools = tools,
@@ -147,15 +158,21 @@ class ChatBot:
             tool_factories = tool_factories,
             tool_choice=tool_choice,
         )
+
+        if do_print and receive_callback is None:
+            receive_callback = lambda r: print(r.content, end='', flush=True)
+        elif do_print and receive_callback is not None:
+            receive_callback = lambda r: (print(r.content, end='', flush=True), receive_callback(r))
         
         return ChatStream.from_message_iter(
             message_iter = model.stream(messages, **kwargs),
             chatbot = self,
             tool_lookup=tool_lookup,
             add_reply_to_history = add_reply_to_history,
+            receive_callback=receive_callback,
         )
 
-    def invoke(
+    def _invoke(
         self, 
         messages: BaseMessage | str | list[BaseMessage] | list[str],
         add_reply_to_history: bool = False,

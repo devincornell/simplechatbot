@@ -72,27 +72,27 @@ def test_tools():
 
         with tqdm.tqdm() as pbar:
             ########################## invoke/stream tool tests ##########################
-            r = chatbot.invoke('How are you today?')
+            r = chatbot._invoke('How are you today?')
             assert(len(r.content))
             assert(len(r.tool_calls) == 0)
             pbar.update()
 
-            r = chatbot.stream('How are you today?').result()
+            r = chatbot._stream('How are you today?').result()
             assert(len(r.content))
             assert(len(r.tool_calls) == 0)
             pbar.update()
 
-            r = chatbot.invoke('List the files in the current directory.')
+            r = chatbot._invoke('List the files in the current directory.')
             assert(len(r.content))
             assert(len(r.tool_calls) == 0)
             pbar.update()
 
-            r = chatbot.stream('List the files in the current directory.').result()
+            r = chatbot._stream('List the files in the current directory.').result()
             assert(len(r.content))
             assert(len(r.tool_calls) == 0)
             pbar.update()
 
-            r = chatbot.invoke(
+            r = chatbot._invoke(
                 'List the files in the current directory.', 
                 toolkits=get_toolkits(wd),
             )
@@ -100,7 +100,7 @@ def test_tools():
             assert('list_directory' == r.tool_calls[0].name)
             pbar.update()
 
-            r = chatbot.stream(
+            r = chatbot._stream(
                 'List the files in the current directory.', 
                 toolkits=get_toolkits(wd),
             ).result()
@@ -108,11 +108,11 @@ def test_tools():
             assert('list_directory' == r.tool_calls[0].name)
             pbar.update()
 
-            r = chatbot.invoke(f'Send the following message to @devin: "Hello, how are you?"')
+            r = chatbot._invoke(f'Send the following message to @devin: "Hello, how are you?"')
             assert('send_message' == r.tool_calls[0].name)
             pbar.update()
             
-            r = chatbot.stream(f'Check my messages and tell me all of the new ones.').result()
+            r = chatbot._stream(f'Check my messages and tell me all of the new ones.').result()
             print(r.tool_calls)
             assert('check_new_messages' == r.tool_calls[0].name)
             pbar.update()
@@ -146,7 +146,7 @@ def test_tools_chat():
 
         with tqdm.tqdm() as pbar:
             ########################## invoke/stream tool tests ##########################
-            r = chatbot.invoke('How are you today?')
+            r = chatbot._invoke('How are you today?')
             assert(len(r.content))
             assert(len(r.tool_calls) == 0)
             pbar.update()
