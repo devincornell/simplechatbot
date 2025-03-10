@@ -11,6 +11,8 @@ if typing.TYPE_CHECKING:
 
 from .toolset import ToolCallInfo, ToolCallResult, ToolLookup
 
+
+
 class ChatResultBase:
     '''Base class for chat results.'''
 
@@ -191,18 +193,20 @@ class StreamResult(ChatResultBase):
         '''Return whether the message has tool calls.'''
         return len(self.full_message.tool_calls) > 0
     
-    
+
+T = typing.TypeVar('T', bound=pydantic.BaseModel)
+
 @dataclasses.dataclass(repr=False)
 class StructuredOutputResult:
     '''Result of a structured output model. Use .data to access the result data.'''
-    data: pydantic.BaseModel
+    data: T
     chatbot: ChatBot
     add_reply_to_history: bool
 
     @classmethod
     def from_output(
         cls,
-        output: pydantic.BaseModel,
+        output: T,
         chatbot: ChatBot,
         add_reply_to_history: bool,
     ) -> typing.Self:

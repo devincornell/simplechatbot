@@ -38,6 +38,9 @@ if typing.TYPE_CHECKING:
     from .toolset import ToolFactoryType
 
 
+T = typing.TypeVar('T', bound=pydantic.BaseModel)
+
+
 @dataclasses.dataclass
 class ChatBot:
     '''Stores a chat model (or runnable interface), tools, and chat history.
@@ -66,11 +69,9 @@ class ChatBot:
             model: chat model to use
             system_prompt: first system message
             tools: tools to be bound to the model using model.bind_tools(tools)
+            toolkits: toolkits to extract tools from.
+            tool_factories: tool factories that create new tools.
         '''
-        
-        # I'd like to think my MessageHistory does somethign that the langchain MessageHistory
-        #   does not, but really it was just because I didn't know it was a thing before I implemented
-        #   it. I'm not sure if I should keep it or not.
         if system_prompt is not None:
             history = MessageHistory.from_system_prompt(system_prompt)
         else:
@@ -235,10 +236,10 @@ class ChatBot:
     def _invoke_structured_output(
         self, 
         messages: BaseMessage | str | list[BaseMessage] | list[str],
-        output_structure: typing.Type[pydantic.BaseModel],
+        output_structure: typing.Type[T],
         add_reply_to_history: bool = False,
         **kwargs,
-    ) -> StructuredOutputResult:
+    ) -> StructuredOutputResult[T]:
         '''Invoke the model and return a chatresult object.'''
         self.history.check_tools_were_executed()
         model = self.get_model_with_structured_output(
@@ -294,7 +295,27 @@ class ChatBot:
         return self._model.with_structured_output(output_structure)
 
     ############################# cloning #############################
-    def fresh(
+    def clone(
+        self, 
+        clear_history: bool = False,
+        keep_system_prompt: bool = True,
+        clear_tools: bool = True,
+        model_transform: typing.Callable[[BaseChatModel],BaseChatModel]|None = None,
+    ) -> typing.Self:
+        '''Make a clone of this agent, clearing history or tools if requested.
+        Args:
+            keep_history: whether to keep the history.
+            keep_system_prompt: whether to keep the system prompt if history is being cleared.
+            clear_tools: whether to clear the tools.
+            model_transform: function to create a new model from the old one. Use to bind tools, etc.
+        '''
+        return self.__class__(
+            _model = model_transform(self._model) if model_transform is not None else self._model,
+            history = MessageHistory.empty(keep_system_prompt=keep_system_prompt) if clear_history else self.history.clone(),
+            toolset = self.toolset.empty() if clear_tools else self.toolset.clone(),
+        )
+
+    def new_agent_from_model(
         self, 
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
@@ -317,59 +338,6 @@ class ChatBot:
             toolkits = toolkits,
             tool_factories = tool_factories,
             tool_choice=tool_choice,
-        )
-    
-    def empty(
-        self, 
-        keep_system_prompt: bool = False, 
-        clear_tools: bool = True,
-    ) -> typing.Self:
-        '''Create an empty chatbot, keeping the system prompt if desired.
-        Args:
-            keep_system_prompt: whether to keep the system prompt.
-            clear_tools: whether to clear the tools.
-        '''
-        return self.clone(
-            history = self.history.empty(keep_system_prompt=keep_system_prompt),
-            toolset=self.toolset.empty() if clear_tools else self.toolset.clone(),
-        )
-
-    def clone(
-        self, 
-        model_transform: typing.Callable[[BaseChatModel],BaseChatModel] = lambda m: m,
-        system_prompt: str | None = None,
-        history: MessageHistory | None = None,
-        toolset: ToolSet | None = None,
-    ) -> typing.Self:
-        '''Clone this instance, keeping some aspects the same and changing others.
-        Description: Makes a copy of this chatbot. If toolset or history is specified,
-            a clone of them will replace the old instances. If system_prompt is specified, it will 
-            create a new history with ONLY the system prompt. system_prompt cannot be used
-            with history.
-
-            If you want to completely clear history, use the empty() method first.
-
-        Args:
-            model_transform: function to create a new model from the old one. Use to bind tools, etc.
-            system_prompt: if specified, will create a new history with only the system prompt.
-            history: new history to use. If None, a clone of the old history is used.
-            toolset: new toolset to use. If None, a clone of the old toolset is used.
-        '''
-        if system_prompt is not None:
-            if history is not None:
-                raise ValueError("Cannot specify both system_prompt and history.")
-            else:
-                history = MessageHistory.from_system_prompt(system_prompt)
-        else:
-            if history is not None:
-                history = history.clone()
-            else:
-                history = self.history.clone()
-            
-        return self.__class__(
-            _model = model_transform(self._model),
-            history = history,
-            toolset = toolset.clone() if toolset is not None else self.toolset.clone(),
         )
 
     ############################# method classes #############################    
