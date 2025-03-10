@@ -11,8 +11,8 @@ from .types import ToolCallID, ToolName, UnspecifiedType, UNSPECIFIED
 from .util import format_tool_text
 
 if typing.TYPE_CHECKING:
-    from .chatbot import ChatBot
-    ToolFactoryType = typing.Callable[[ChatBot],list[BaseTool]]
+    from .agent import Agent
+    ToolFactoryType = typing.Callable[[Agent],list[BaseTool]]
     
 
 @dataclasses.dataclass
@@ -45,7 +45,7 @@ class ToolSet:
         Args:
             tools: list of tools to add before returning all tools
             toolkits: list of toolkits to add before returning all tools
-            tool_factories: list of tool factories that will be called with ChatBot as an argument.
+            tool_factories: list of tool factories that will be called with Agent as an argument.
             tool_choice: tool to use when multiple tools are available
         '''
         return cls(
@@ -57,17 +57,17 @@ class ToolSet:
     ################################# accessing tools #################################
     def bind_tools(
         self, 
-        chatbot: ChatBot | None = None,
+        agent: Agent | None = None,
     ) -> tuple[BaseChatModel, ToolLookup]:
         '''Create tools from factories and bind them to the model.'''
-        tool_lookup = self.tool_lookup(chatbot=chatbot)
+        tool_lookup = self.tool_lookup(agent=agent)
         if len(tool_lookup) > 0:
             if self.tool_choice is None:
-                return chatbot._model.bind_tools(tool_lookup.tool_list()), tool_lookup
+                return agent._model.bind_tools(tool_lookup.tool_list()), tool_lookup
             else:
-                return chatbot._model.bind_tools(tool_lookup.tool_list(), tool_choice=self.tool_choice), tool_lookup
+                return agent._model.bind_tools(tool_lookup.tool_list(), tool_choice=self.tool_choice), tool_lookup
         else:
-            return chatbot._model, tool_lookup
+            return agent._model, tool_lookup
         
     ################################# merging #################################
     def __add__(self, other: typing.Self) -> typing.Self:
@@ -101,20 +101,20 @@ class ToolSet:
         )
     
     ################################# accessing tool information #################################
-    def tool_list(self, chatbot: ChatBot | None = None) -> list[BaseTool]:
+    def tool_list(self, agent: Agent | None = None) -> list[BaseTool]:
         '''Get a list of tools.'''
-        return list(self.tool_dict(chatbot=chatbot).values())
+        return list(self.tool_dict(agent=agent).values())
     
-    def tool_lookup(self, chatbot: ChatBot | None = None) -> ToolLookup:
+    def tool_lookup(self, agent: Agent | None = None) -> ToolLookup:
         '''Get a tool lookup.'''
-        return ToolLookup.from_toolset(self, chatbot=chatbot)
+        return ToolLookup.from_toolset(self, agent=agent)
 
-    def tool_dict(self, chatbot: ChatBot | None = None) -> dict[ToolName, BaseTool]:
+    def tool_dict(self, agent: Agent | None = None) -> dict[ToolName, BaseTool]:
         '''Get a list of tools.'''
         if self.tool_factories is not None:
-            if chatbot is None:
-                raise ValueError('chatbot must be provided if tool factories are provided')
-            factory_tools = {t.name: t for tf in self.tool_factories for t in tf(chatbot)}
+            if agent is None:
+                raise ValueError('agent must be provided if tool factories are provided')
+            factory_tools = {t.name: t for tf in self.tool_factories for t in tf(agent)}
         else:
             factory_tools = dict()
 
@@ -159,10 +159,10 @@ class ToolLookup:
     tools: dict[ToolName, BaseTool]
 
     @classmethod
-    def from_toolset(cls, toolset: ToolSet, chatbot: ChatBot | None = None) -> typing.Self:
+    def from_toolset(cls, toolset: ToolSet, agent: Agent | None = None) -> typing.Self:
         '''Create a tool lookup from a toolset.'''
         return cls(
-            tools = toolset.tool_dict(chatbot=chatbot),
+            tools = toolset.tool_dict(agent=agent),
         )
     
     ################################# tool lookups #################################
@@ -229,7 +229,7 @@ class ToolCallInfo:
         return format_tool_text(self.tool_call_args)
     
 
-    def execute(self, chatbot: ChatBot|None = None, add_to_history: bool = True) -> ToolCallResult:
+    def execute(self, agent: Agent|None = None, add_to_history: bool = True) -> ToolCallResult:
         '''Execute the tool call and return the result.'''
         try:
             return_value = self.tool.invoke(self.args)
@@ -242,9 +242,9 @@ class ToolCallInfo:
         )
 
         if add_to_history:
-            if chatbot is None:
-                raise ValueError('chatbot must be provided if add_to_history is True')
-            chatbot.history.add_tool_message(result.return_value, result.id)
+            if agent is None:
+                raise ValueError('agent must be provided if add_to_history is True')
+            agent.history.add_tool_message(result.return_value, result.id)
 
         return result
 

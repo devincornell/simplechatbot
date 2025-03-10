@@ -7,6 +7,7 @@
 
 
 # when there are more versions, we can do this:
+from .agent import Agent
 from .chatbot import ChatBot
 from .toolset import ToolSet, ToolCallResult
 from .message_history import MessageHistory

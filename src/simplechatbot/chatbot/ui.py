@@ -3,15 +3,15 @@ import typing
 
 from .toolset import UknownToolError, ToolRaisedExceptionError
 if typing.TYPE_CHECKING:
-    from .chatbot import ChatBot
+    from .agent import Agent
     from .chatresult import ChatResult
 else:
-    ChatBot = typing.TypeVar('ChatBot')
+    Agent = typing.TypeVar('Agent')
     ChatResult = typing.TypeVar('ChatResult')
 
 @dataclasses.dataclass
 class ChatBotUI:
-    chatbot: ChatBot
+    agent: Agent
     ignore_tool_exceptions: bool = False
 
     def start_interactive(self, 
@@ -21,20 +21,20 @@ class ChatBotUI:
     ) -> None:
         if show_intro:
             try:
-                system_prompt = self.chatbot.history.first_system.content
+                system_prompt = self.agent.history.first_system.content
                 print('=============== System Message for this Chat ===================')
                 print(system_prompt, '\n')
             except ValueError as e:
                 pass
             try:
-                tools = self.chatbot.toolset.render()
+                tools = self.agent.toolset.render()
                 print('\n=============== Tools for this Chat ===================')
                 print(tools, '\n')
             except AttributeError:
                 pass
 
         while True:
-            if len(self.chatbot.history) and not self.chatbot.history.last.content.endswith('\n'):
+            if len(self.agent.history) and not self.agent.history.last.content.endswith('\n'):
                 print()
             user_text = ''
             while not len(user_text.strip()):
@@ -47,17 +47,17 @@ class ChatBotUI:
             else:
                 self._do_chat_call(user_text, stream, show_tools)
 
-            #print(self.chatbot.history.get_buffer_string())
+            #print(self.agent.history.get_buffer_string())
 
     def _do_chat_call(self, user_text: str|None, stream: bool, show_tools: bool) -> dict[str,ChatResult]:
         '''Handle a single chat. Recursive if tools are called.'''
         print(f'AI Response: ', end="", flush=True)
         if stream:
-            result = self.chatbot.stream(user_text, add_to_history=True)
+            result = self.agent.stream(user_text, add_to_history=True)
             for chunk in result:
                 print(chunk.content, end="", flush=True)
         else:
-            result = self.chatbot.chat(user_text, add_to_history=True)
+            result = self.agent.chat(user_text, add_to_history=True)
             print(result.message.content)
 
         if self.ignore_tool_exceptions:
@@ -86,36 +86,36 @@ class ChatBotUI:
         assistant = lambda m: streamlit.chat_message("assistant").write(m)
         if show_intro:
             try:
-                system_prompt = self.chatbot.history.first_system.content
+                system_prompt = self.agent.history.first_system.content
                 assistant(f'=============== System Message for this Chat ===================\n\n{system_prompt}')
             except ValueError as e:
                 pass
             try:
-                tools = self.chatbot.toolset.render()
+                tools = self.agent.toolset.render()
                 assistant(f'=============== Tools for this Chat ===================\n\n{tools}')
             except AttributeError:
                 pass
 
         if user_text := streamlit.text_input('>> '):
-            #if len(self.chatbot.history) and not self.chatbot.history.last.content.endswith('\n'):
+            #if len(self.agent.history) and not self.agent.history.last.content.endswith('\n'):
             #    print()
             #user_text = ''
             #while not len(user_text.strip()):
             #    print('>> ', end='', flush=True)
             #    user_text = input()
             # Display user input and save to message history.
-            #self.chatbot.history.render_streamlit(streamlit)
-            #print(len(self.chatbot.history))
+            #self.agent.history.render_streamlit(streamlit)
+            #print(len(self.agent.history))
 
             # print past history
-            for msg in self.chatbot.history:
+            for msg in self.agent.history:
                 streamlit.chat_message(msg.type).write(msg.content)
 
             user(user_text)
             #msgs.add_user_message(input)
             # Invoke chain to get reponse.
             #response = chain.invoke({'input': input})
-            response = self.chatbot.chat(user_text)
+            response = self.agent.chat(user_text)
 
             # Display AI assistant response and save to message history.
             assistant(str(response))
