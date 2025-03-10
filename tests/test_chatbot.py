@@ -4,6 +4,7 @@ import getpass
 import os
 import tqdm
 
+import pydantic
 import langchain_core.tools
 
 from langchain_community.agent_toolkits import FileManagementToolkit
@@ -273,25 +274,42 @@ def test_cloning():
     assert(len(c.history) == len(chatbot.history))
     assert(len(c.toolset) == len(chatbot.toolset))
 
-    c = chatbot.empty(keep_system_prompt=True, clear_tools=False)
+    c = chatbot.clone(clear_history=True, keep_system_prompt=True, clear_tools=False)
     assert(len(c.history) == 1)
     assert(len(c.toolset) == len(c.toolset))
 
-    c = chatbot.empty(keep_system_prompt=False, clear_tools=True)
+    c = chatbot.clone(clear_history=True, clear_tools=True)
     assert(len(c.history) == 0)
     assert(len(c.toolset) == 0)
 
-    c = chatbot.empty(keep_system_prompt=True, clear_tools=True)
+    c = chatbot.clone(clear_history=True, keep_system_prompt=True, clear_tools=True)
     assert(len(c.history) == 1)
     assert(len(c.toolset) == 0)
 
-    c = chatbot.empty(keep_system_prompt=False, clear_tools=False)
+    c = chatbot.clone(clear_history=True, clear_tools=False)
     assert(len(c.history) == 0)
     assert(len(c.toolset) == len(chatbot.toolset))
 
+def test_structured_outputs():
+    keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
+    chatbot = OpenAIChatBot.new(
+        model_name = 'gpt-4o-mini', 
+        api_key=keychain['openai'],
+        system_prompt='Answer any question the user has.',
+        tools = get_tools(),
+    )
 
+    class ResponseFormatter(pydantic.BaseModel):
+        """Always use this tool to structure your response to the user."""
+        answer: str = pydantic.Field(description="The answer to the user's question.")
+        followup_question: str = pydantic.Field(description="A follow-up question the user could ask.")
+
+    print(chatbot.chat_structured('what is your favorite cat?', output_structure=ResponseFormatter))
+    print(chatbot.history.get_buffer_string())
+    assert(len(chatbot.history) == 3)
 
 if __name__ == '__main__':
+    test_structured_outputs()
     test_cloning()
     test_tools()
     test_tools_chat()
