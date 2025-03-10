@@ -5,21 +5,21 @@ import dataclasses
 
 
 # BaseChatModel
-from langchain_mistralai import ChatMistralAI
+from langchain_ollama import ChatOllama
 
 if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool, BaseToolkit
-    from ..chatbot.toolset import ToolFactoryType, ToolName
+    from ..agent.toolset import ToolFactoryType, ToolName
 
-from ..chatbot import Agent
+from ..agent import Agent
 
 
-class MistralAgent(Agent):
-    '''Chatbot created from an Mistral model. Only separate so that it can be imported separately for dependency reasons.'''
+class OllamaAgent(Agent):
+    '''Chatbot created from an Ollama model. Only separate so that it can be imported separately for dependency reasons.'''
     @classmethod
     def new(cls,
-        model_name: str = "mistral-large-latest", 
+        model_name: str = "llama3.1", 
         system_prompt: typing.Optional[str] = None,
         tools: typing.Optional[list[BaseTool]] = None,
         toolkits: typing.Optional[list[BaseToolkit]] = None,
@@ -35,7 +35,7 @@ class MistralAgent(Agent):
             tool_callable: function to get tools to use. Here so that the tools can access a reference to the model.
             model_kwargs: any additional arguments to pass to the model constructor.
         '''
-        model = ChatMistralAI(
+        model = ChatOllama(
             model=model_name, 
             **model_kwargs
         )

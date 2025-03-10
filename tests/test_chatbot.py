@@ -14,7 +14,7 @@ import tempfile #python standard library
 import sys
 sys.path.append('../src/')
 import simplechatbot
-from simplechatbot.openai_chatbot import OpenAIChatBot
+from simplechatbot.openai_agent import OpenAIChatBot
 
 
 

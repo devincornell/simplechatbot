@@ -4,12 +4,12 @@ import typing
 
 from langchain_openai import ChatOpenAI
 
-from ..chatbot import Agent
+from ..agent import Agent
 
 if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool, BaseToolkit
-    from ..chatbot.toolset import ToolFactoryType, ToolName
+    from ..agent.toolset import ToolFactoryType, ToolName
 
 
 class OpenAIAgent(Agent):

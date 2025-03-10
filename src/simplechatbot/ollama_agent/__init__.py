@@ -1,4 +1,4 @@
-from .ollama_chatbot import OllamaAgent
+from .ollama_agent import OllamaAgent
 
 
 class OllamaChatBot(OllamaAgent):

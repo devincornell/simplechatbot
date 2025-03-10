@@ -1,4 +1,4 @@
-from .openai_chatbot import OpenAIAgent
+from .openai_agent import OpenAIAgent
 
 class OpenAIChatBot(OpenAIAgent):
     pass

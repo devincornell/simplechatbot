@@ -22,7 +22,7 @@ import importlib
 #import simplechatbot.v4
 #importlib.reload(simplechatbot.v4)
 import simplechatbot
-from simplechatbot.mistral_chatbot import MistralChatBot
+from simplechatbot.mistral_agent import MistralChatBot
 
 if __name__ == '__main__':
 

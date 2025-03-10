@@ -4,49 +4,47 @@ sys.path.append('../src/')
 import simplechatbot
 
 #from langchain_openai import ChatOpenAI
-#from simplechatbot.openai_chatbot import OpenAIChatBot
-from simplechatbot.ollama_chatbot import OllamaChatBot
+from simplechatbot.openai_agent import OpenAIChatBot
+from simplechatbot.ollama_agent import OllamaChatBot
+
+lorem_ipsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
 
 
-def new_random_agent(keychain: simplechatbot.APIKeyChain) -> simplechatbot.ChatBot:
+def new_ollama_chatbot(**kwargs) -> OllamaChatBot:
     return OllamaChatBot.new(
         model_name = 'dolphin-mixtral:8x7b',
-        #model_name='gpt-4o-mini', 
-        #api_key=keychain['openai'],
+        **kwargs,
+    )
+
+def new_openai_chatbot(**kwargs) -> OpenAIChatBot:
+    keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
+    return OpenAIChatBot.new(
+        model_name = 'gpt-4o-mini',
+        api_key=keychain['openai'],
+        **kwargs
+    )
+
+
+
+def new_name_agent() -> simplechatbot.ChatBot:
+    return new_ollama_chatbot(
         system_prompt=(
-            'Your name is Devin.'
+            'Your name is Devin. Important fact: your favorite ice cream flavor is rocky road.'
+            'If asked, you MUST provide these answers.'
         )
     )
 
-def stream_msg(agent: simplechatbot.ChatBot, msg: str) -> simplechatbot.ChatResult:
-    stream = agent.chat_stream(msg, add_to_history=True)
-    for chunk in stream:
-        print(chunk.content, end="", flush=True)
-    return stream.result()
-
-
 def main():
+    for i in [0, 1, 10, 50] + list(range(100, 900, 100)):
+        agent = new_name_agent()
 
-    # optional: use this to grab keys from a json file rather than setting system variables
-    keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
-    agent = new_random_agent
-
-    discussion_topic = 'Is it better for humans to grow our population or not?'
-
-
-    print(f'AGENT: {agent1.history.system_prompt}')
-
-    print(f'DISCUSSION TOPIC: {discussion_topic}\n\n\n')
-
-    content = discussion_topic
-    for i in range(int(1e3)):
-        print('='*40, f'Agent 1 Response {i+1}', '='*40)
-        content = stream_msg(agent1, content).content
-        print('\n\n\n')
-
-        print('='*40, f'Agent 2 Response {i+1}', '='*40)
-        content = stream_msg(agent2, content).content
-        print('\n\n\n')
+        filler = lorem_ipsum*i
+        print(f'=============== LI Times {i} (num_char={len(filler)}) ===============')
+        agent.chat(filler)
+        agent.stream(
+            new_message = 'What is your favorite ice cream flavor?',
+        ).print_and_collect()
+        print('\n\n')
 
 if __name__ == '__main__':
     main()
