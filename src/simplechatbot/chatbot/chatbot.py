@@ -298,8 +298,8 @@ class ChatBot:
     def clone(
         self, 
         clear_history: bool = False,
-        keep_system_prompt: bool = True,
-        clear_tools: bool = True,
+        keep_system_prompt: bool = False,
+        clear_tools: bool = False,
         model_transform: typing.Callable[[BaseChatModel],BaseChatModel]|None = None,
     ) -> typing.Self:
         '''Make a clone of this agent, clearing history or tools if requested.
@@ -311,7 +311,7 @@ class ChatBot:
         '''
         return self.__class__(
             _model = model_transform(self._model) if model_transform is not None else self._model,
-            history = MessageHistory.empty(keep_system_prompt=keep_system_prompt) if clear_history else self.history.clone(),
+            history = self.history.empty(keep_system_prompt=keep_system_prompt) if clear_history else self.history.clone(),
             toolset = self.toolset.empty() if clear_tools else self.toolset.clone(),
         )
 
