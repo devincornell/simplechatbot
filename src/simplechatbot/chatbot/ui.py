@@ -53,7 +53,7 @@ class ChatBotUI:
         '''Handle a single chat. Recursive if tools are called.'''
         print(f'AI Response: ', end="", flush=True)
         if stream:
-            result = self.chatbot.chat_stream(user_text, add_to_history=True)
+            result = self.chatbot.stream(user_text, add_to_history=True)
             for chunk in result:
                 print(chunk.content, end="", flush=True)
         else:
@@ -67,7 +67,7 @@ class ChatBotUI:
                 print(f'UNKOWN TOOL CALL: {e.tool_name}')
 
             except ToolRaisedExceptionError as e:
-                print(f'TOOL RAISED EXCEPTION: {e.text}\n{e.tool_info}\n{e.e}')
+                print(f'TOOL RAISED EXCEPTION: {str(e.e)}\nCALL INFO: {e.tool_info}')
         else:
             tool_results = result.execute_tools()
 
@@ -75,7 +75,7 @@ class ChatBotUI:
         if len(tool_results):
             print('\n[Tool Results]')
             for tool_result in tool_results.values():
-                print(f'{tool_result.tool_info_str()} -> {tool_result.return_value}')
+                print(f'{tool_result.info.tool_info_str()} -> {tool_result.return_value}')
             print('[END Tool Results]')
 
             # recursively call chat if tools were called
