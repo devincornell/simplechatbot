@@ -4,23 +4,38 @@ import typing
 import dataclasses
 import copy
 
-from langchain_core.messages import AIMessageChunk, AIMessage, BaseMessage, HumanMessage
 import pydantic
+
+from langchain_core.messages import (
+    AIMessageChunk, 
+    AIMessage, 
+    BaseMessage, 
+    HumanMessage,
+)
 
 from .message_history import MessageHistory
 from .toolset import ToolSet, ToolCallResult, ToolLookup
 
 from .ui import ChatBotUI
-from .chatresult import ChatResult, ChatStream
-from .structbot import StructBot
+from .chatresult import (
+    ChatResult, 
+    StreamResult,
+    StructuredOutputResult,
+)
+
+
+
+from .types import (
+    ToolName, 
+    ToolCallID, 
+    UNSPECIFIED, 
+    UnspecifiedType,
+)
 
 if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool, BaseToolkit
     from .toolset import ToolFactoryType
-
-from .types import ToolName, ToolCallID, UNSPECIFIED, UnspecifiedType
-
 
 
 @dataclasses.dataclass
@@ -84,8 +99,8 @@ class ChatBot:
         tool_factories: ToolFactoryType | None = None,
         do_print: bool = False,
         receive_callback: typing.Callable[[AIMessageChunk], None] = None,
-    ) -> ChatStream:
-        '''Return a ChatStream that can be iterated over to get the chat messages.
+    ) -> StreamResult:
+        '''Return a StreamResult that can be iterated over to get the chat messages.
         Args:
             new_message: message to send to the chatbot. If None is entered, a new message will 
                 not be added to history.
@@ -94,7 +109,7 @@ class ChatBot:
             toolkits: toolkits to use in this particular message.
             tool_factories: tool factories to use in this particular message.
         '''
-        use_messages = self._get_message_history(new_message, add_to_history)
+        use_messages = self._get_message_history(new_message, add_to_history=add_to_history)
         return self._stream(
             messages = use_messages,
             add_reply_to_history=add_to_history,
@@ -127,6 +142,25 @@ class ChatBot:
             tool_factories = tool_factories,
         )
     
+    def chat_structured(self, 
+        new_message: typing.Optional[str], 
+        output_structure: type[pydantic.BaseModel],
+        add_to_history: bool = True,
+    ) -> StructuredOutputResult:
+        '''Send a message to the chatbot and return the response.
+        Args:
+            new_message: message to send to the chatbot. If None is entered, a new message will not be added to history..
+            show_tools: whether to show tool calls in the response.
+            add_to_history: whether to add the message to the history after the response is received.
+        '''
+        use_messages = self._get_message_history(new_message, add_to_history=add_to_history)
+        return self._invoke_structured_output(
+            messages = use_messages,
+            output_structure=output_structure,
+            add_reply_to_history=add_to_history,
+        )
+
+
     def _get_message_history(self, new_message: typing.Optional[str | HumanMessage], add_to_history: bool) -> list[BaseMessage]:
         '''Get messages for this chat and add the new message to the history if needed.'''
         if new_message is None:
@@ -149,7 +183,7 @@ class ChatBot:
         receive_callback: typing.Callable[[AIMessageChunk], None] = None,
         do_print: bool = False,
         **kwargs,
-    ) -> ChatStream:
+    ) -> StreamResult:
         '''Sends a message to be streamed back without storing the message as history.'''
         self.history.check_tools_were_executed()
         model, tool_lookup = self.get_model_with_tools(
@@ -164,7 +198,7 @@ class ChatBot:
         elif do_print and receive_callback is not None:
             receive_callback = lambda r: (print(r.content, end='', flush=True), receive_callback(r))
         
-        return ChatStream.from_message_iter(
+        return StreamResult.from_message_iter(
             message_iter = model.stream(messages, **kwargs),
             chatbot = self,
             tool_lookup=tool_lookup,
@@ -194,6 +228,25 @@ class ChatBot:
             message = model.invoke(messages, **kwargs),
             chatbot = self,
             tool_lookup=tool_lookup,
+            add_reply_to_history = add_reply_to_history,
+            add_tool_calls_to_history = add_reply_to_history,
+        )
+
+    def _invoke_structured_output(
+        self, 
+        messages: BaseMessage | str | list[BaseMessage] | list[str],
+        output_structure: typing.Type[pydantic.BaseModel],
+        add_reply_to_history: bool = False,
+        **kwargs,
+    ) -> StructuredOutputResult:
+        '''Invoke the model and return a chatresult object.'''
+        self.history.check_tools_were_executed()
+        model = self.get_model_with_structured_output(
+            output_structure=output_structure,
+        )
+        return StructuredOutputResult.from_output(
+            output = model.invoke(messages, **kwargs),
+            chatbot = self,
             add_reply_to_history = add_reply_to_history,
         )
 
@@ -229,6 +282,16 @@ class ChatBot:
         model, tool_lookup = toolset.bind_tools(chatbot=self)
         
         return model, tool_lookup
+    
+    def get_model_with_structured_output(
+        self, 
+        output_structure: typing.Type[pydantic.BaseModel],
+    ) -> BaseChatModel:
+        '''Bind tools to the model and return the resulting chain.
+        Args:
+            output_structure: desired output structure.
+        '''
+        return self._model.with_structured_output(output_structure)
 
     ############################# cloning #############################
     def fresh(
@@ -309,27 +372,7 @@ class ChatBot:
             toolset = toolset.clone() if toolset is not None else self.toolset.clone(),
         )
 
-    ############################# method classes #############################
-    def structbot_from_model(
-        self, 
-        output_structure: pydantic.BaseModel,
-        system_prompt: str | None = None,
-        history: MessageHistory | None = None,
-    ) -> StructBot:
-        '''Create a StructBot from the model in this chatbot.
-        Args:
-            output_structure: the output structure to use.
-            system_prompt: the system prompt to use.
-            history: history to add to structbot.
-        '''
-
-        return StructBot.from_model(
-            model=self._model, 
-            output_structure=output_structure,
-            system_prompt=system_prompt,
-            history = history,
-        )
-    
+    ############################# method classes #############################    
     @property
     def ui(self) -> ChatBotUI:
         '''Expose diffferent UI for the chatbot.'''

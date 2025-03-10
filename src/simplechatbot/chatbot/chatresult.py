@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import typing
 import dataclasses
+import pydantic
 
 from .message_history import AIMessage, AIMessageChunk
 
@@ -18,19 +19,13 @@ class ChatResultBase:
         chatbot: ChatBot,
         tool_lookup: ToolLookup,
         message: AIMessage,
-        add_reply_to_history: bool = True,
+        add_to_history: bool,
     ) -> dict[str, ToolCallResult]:
-        '''Handle the actual calling of tools.'''
+        '''Actually execute tool calls and add results to history if requested.'''
         results: dict[str,ToolCallResult] = dict()
         for tool_info_dict in message.tool_calls:
             tool_info = tool_lookup.get_tool_info(tool_info_dict)
-            result = tool_info.execute()
-
-            if add_reply_to_history:
-                chatbot.history.add_tool_message(result.return_value, result.id)
-
-            #if verbose:
-            #    print(f'{result.tool_info_str} -> {result.return_value}')
+            result = tool_info.execute(chatbot, add_to_history=add_to_history)
             results[tool_info.name] = result
         
         return results
@@ -41,7 +36,7 @@ class ChatResult(ChatResultBase):
     message: AIMessage
     chatbot: ChatBot
     tool_lookup: ToolLookup
-    add_reply_to_history: bool
+    add_tool_calls_to_history: bool
 
     @classmethod
     def from_message(
@@ -50,7 +45,8 @@ class ChatResult(ChatResultBase):
         chatbot: ChatBot,
         tool_lookup: ToolLookup,
         add_reply_to_history: bool,
-    ) -> ChatStream:
+        add_tool_calls_to_history: bool
+    ) -> typing.Self:
         '''Create a chat stream from a message iterator.'''
         if add_reply_to_history:
             chatbot.history.add_message(message)
@@ -59,8 +55,9 @@ class ChatResult(ChatResultBase):
             message=message,
             chatbot=chatbot,
             tool_lookup = tool_lookup,
-            add_reply_to_history=add_reply_to_history,
+            add_tool_calls_to_history=add_tool_calls_to_history,
         )
+
 
     def execute_tools(self, 
     ) -> dict[str, ToolCallResult]:
@@ -69,7 +66,7 @@ class ChatResult(ChatResultBase):
             chatbot=self.chatbot, 
             tool_lookup = self.tool_lookup,
             message=self.message, 
-            add_reply_to_history=self.add_reply_to_history, 
+            add_to_history=self.add_tool_calls_to_history, 
         )
     
     @property
@@ -92,12 +89,13 @@ class ChatResult(ChatResultBase):
 
 
 @dataclasses.dataclass
-class ChatStream(ChatResultBase):
+class StreamResult(ChatResultBase):
     '''Returned from chat_stream so that user can collect results of streamed chat and tool calls.'''
     message_iter: typing.Iterator[AIMessageChunk]
     chatbot: ChatBot
     tool_lookup: ToolLookup
     add_reply_to_history: bool
+    #add_tool_calls_to_history: bool
     full_message: AIMessage
     exhausted: bool
     receive_callback: typing.Callable[[AIMessageChunk], None]
@@ -109,23 +107,46 @@ class ChatStream(ChatResultBase):
         chatbot: ChatBot,
         tool_lookup: ToolLookup,
         add_reply_to_history: bool,
+        #add_tool_calls_to_history: bool,
         receive_callback: typing.Callable[[AIMessageChunk], None] = None,
-    ) -> ChatStream:
+    ) -> typing.Self:
         '''Create a chat stream from a message iterator.'''
         return cls(
             message_iter=message_iter,
             chatbot=chatbot,
             tool_lookup = tool_lookup,
             add_reply_to_history=add_reply_to_history,
+            #add_tool_calls_to_history = add_tool_calls_to_history,
             full_message = AIMessageChunk(content=''),
             exhausted = False,
             receive_callback = receive_callback,
         )
-
+    
+    ####################### Iterating through results #######################
     def print_and_collect(self) -> ChatResult:
+        '''Print the chat stream result and collect it.
+        Example:
+            result = agent.stream('hello world').print_and_collect()
+            result.execute_tools()
+        '''
         for chunk in self:
             print(chunk.content, end='', flush=True)
         return self.collect()
+
+    def collect(self) -> ChatResult:
+        '''Get the full chat result after accumulating all messages.'''
+        if not self.exhausted:
+            #raise ValueError('Cannot get chat result until the stream is exhausted.')
+            for _ in self:
+                pass
+
+        return ChatResult.from_message(
+            message=self.full_message,
+            chatbot=self.chatbot,
+            tool_lookup=self.tool_lookup,
+            add_reply_to_history=False,
+            add_tool_calls_to_history=self.add_reply_to_history,
+        )
 
     def __iter__(self):
         return self
@@ -145,6 +166,7 @@ class ChatStream(ChatResultBase):
             self.exhausted = True
             raise StopIteration
     
+    ####################### handle tool calls #######################
     def execute_tools(self, 
     ) -> dict[str, ToolCallResult]:
         '''Call tools on the full message.'''
@@ -155,7 +177,7 @@ class ChatStream(ChatResultBase):
             chatbot=self.chatbot, 
             tool_lookup = self.tool_lookup,
             message=self.full_message, 
-            add_reply_to_history=self.add_reply_to_history, 
+            add_to_history=self.add_reply_to_history, 
         )
 
     @property
@@ -169,21 +191,35 @@ class ChatStream(ChatResultBase):
         '''Return whether the message has tool calls.'''
         return len(self.full_message.tool_calls) > 0
     
-    def result(self) -> ChatResult:
-        '''DEPRICATED. USE .collect() instead. Gets the full chat result after accumulating all messages.'''
-        return self.collect()
+    
+@dataclasses.dataclass(repr=False)
+class StructuredOutputResult:
+    '''Result of a structured output model. Use .data to access the result data.'''
+    data: pydantic.BaseModel
+    chatbot: ChatBot
+    add_reply_to_history: bool
 
-    def collect(self) -> ChatResult:
-        '''Get the full chat result after accumulating all messages.'''
-        if not self.exhausted:
-            #raise ValueError('Cannot get chat result until the stream is exhausted.')
-            for _ in self:
-                pass
+    @classmethod
+    def from_output(
+        cls,
+        output: pydantic.BaseModel,
+        chatbot: ChatBot,
+        add_reply_to_history: bool,
+    ) -> typing.Self:
+        '''Create a chat stream from a message iterator.'''
+        if add_reply_to_history:
+            chatbot.history.add_ai_message(output.model_dump_json())
 
-        return ChatResult.from_message(
-            message=self.full_message,
-            chatbot=self.chatbot,
-            tool_lookup=self.tool_lookup,
-            add_reply_to_history=self.add_reply_to_history
+        return cls(
+            data=output,
+            chatbot=chatbot,
+            add_reply_to_history=add_reply_to_history,
         )
+
+    def as_json(self) -> str:
+        '''Return the data as a json string.'''
+        return self.data.model_dump_json()
+    
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(data={self.data})'
     

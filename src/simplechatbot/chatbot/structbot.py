@@ -11,7 +11,7 @@ from .message_history import MessageHistory
 from .toolset import ToolSet, ToolCallResult
 
 from .ui import ChatBotUI
-from .chatresult import ChatResult, ChatStream
+from .chatresult import ChatResult, StreamResult
 
 
 if typing.TYPE_CHECKING:

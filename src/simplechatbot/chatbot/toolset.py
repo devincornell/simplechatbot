@@ -229,18 +229,24 @@ class ToolCallInfo:
         return format_tool_text(self.tool_call_args)
     
 
-    def execute(self) -> ToolCallResult:
+    def execute(self, chatbot: ChatBot|None = None, add_to_history: bool = True) -> ToolCallResult:
         '''Execute the tool call and return the result.'''
         try:
             return_value = self.tool.invoke(self.args)
         except Exception as e:
             raise ToolRaisedExceptionError.from_exception(self, e) from e
         
-        return ToolCallResult.from_tool_info(
+        result = ToolCallResult.from_tool_info(
             info = self, 
             return_value = return_value, 
         )
 
+        if add_to_history:
+            if chatbot is None:
+                raise ValueError('chatbot must be provided if add_to_history is True')
+            chatbot.history.add_tool_message(result.return_value, result.id)
+
+        return result
 
 
 @dataclasses.dataclass

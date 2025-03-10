@@ -77,7 +77,7 @@ def test_tools():
             assert(len(r.tool_calls) == 0)
             pbar.update()
 
-            r = chatbot._stream('How are you today?').result()
+            r = chatbot._stream('How are you today?').collect()
             assert(len(r.content))
             assert(len(r.tool_calls) == 0)
             pbar.update()
@@ -87,7 +87,7 @@ def test_tools():
             assert(len(r.tool_calls) == 0)
             pbar.update()
 
-            r = chatbot._stream('List the files in the current directory.').result()
+            r = chatbot._stream('List the files in the current directory.').collect()
             assert(len(r.content))
             assert(len(r.tool_calls) == 0)
             pbar.update()
@@ -103,7 +103,7 @@ def test_tools():
             r = chatbot._stream(
                 'List the files in the current directory.', 
                 toolkits=get_toolkits(wd),
-            ).result()
+            ).collect()
             assert(len(r.tool_calls) == 1)
             assert('list_directory' == r.tool_calls[0].name)
             pbar.update()
@@ -112,7 +112,7 @@ def test_tools():
             assert('send_message' == r.tool_calls[0].name)
             pbar.update()
             
-            r = chatbot._stream(f'Check my messages and tell me all of the new ones.').result()
+            r = chatbot._stream(f'Check my messages and tell me all of the new ones.').collect()
             print(r.tool_calls)
             assert('check_new_messages' == r.tool_calls[0].name)
             pbar.update()
@@ -155,19 +155,19 @@ def test_tools_chat():
             r = chatbot.chat('How are you today?', add_to_history=False)
             pbar.update()
 
-            stream = chatbot.chat_stream('How are you today?', add_to_history=False)
+            stream = chatbot.stream('How are you today?', add_to_history=False)
             for r in stream:
                 pass
             assert(len(stream.tool_calls) == 0)
             pbar.update()
 
-            stream = chatbot.chat_stream('How are you today?', add_to_history=True)
+            stream = chatbot.stream('How are you today?', add_to_history=True)
             for r in stream:
                 pass
             assert(len(stream.tool_calls) == 0)
             pbar.update()
 
-            stream = chatbot.chat_stream(
+            stream = chatbot.stream(
                 'List the files in this directory.', 
                 add_to_history=True,
                 toolkits=get_toolkits(wd),
@@ -179,7 +179,7 @@ def test_tools_chat():
             stream.execute_tools()
             pbar.update()
 
-            stream = chatbot.chat_stream(
+            stream = chatbot.stream(
                 'List the files in this directory.', 
                 add_to_history=True,
             )
@@ -217,7 +217,7 @@ def test_chat():
         )
         print(chatbot)
 
-        stream = chatbot.chat_stream('List the files in this directory.')
+        stream = chatbot.stream('List the files in this directory.')
         for r in stream:
             print(r.content, end='', flush=True)
         results = stream.execute_tools()
@@ -228,7 +228,7 @@ def test_chat():
 
         # test writing file and reading it back.
         fname = 'hello.txt'
-        stream = chatbot.chat_stream(f'Write a text file called "{fname}" to disk with the content "Hello, world!"')
+        stream = chatbot.stream(f'Write a text file called "{fname}" to disk with the content "Hello, world!"')
         for r in stream:
             print(r.content, end='', flush=True)
         print(stream.tool_calls[0].name)
@@ -236,7 +236,7 @@ def test_chat():
         print(stream.execute_tools())
         pbar.update()
 
-        stream = chatbot.chat_stream('List files in the directory.')
+        stream = chatbot.stream('List files in the directory.')
         for r in stream:
             print(r.content, end='', flush=True)
         assert(stream.tool_calls[0].name == 'list_directory')

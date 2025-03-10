@@ -50,7 +50,7 @@ class MessageHistory(list[BaseMessage]):
             if isinstance(self[i], AIMessage) and len(self[i].tool_calls) and not isinstance(self[i+1], ToolMessage):
                 raise ToolWasNotExecutedError(
                     f'Previous tool call must be executed to retain consistent message history.'
-                    f'Call execute_tools() on the ChatResult or ChatStream objects to execute the tool calls.'
+                    f'Call execute_tools() on the ChatResult or StreamResult objects to execute the tool calls.'
                 )
         
     ############################# Transformations #############################
@@ -70,7 +70,7 @@ class MessageHistory(list[BaseMessage]):
     def system_prompt(self) -> list[AIMessage]:
         '''Get all ai messages.'''
         if len(self) == 0 or not isinstance(self[0], SystemMessage):
-            raise NoSystemPromptError('There is no system prompt in the history.')
+            raise NoSystemPromptError(f'There is no system prompt in the history (length={len(self)}).')
         return self[0]
 
     @property
@@ -103,6 +103,17 @@ class MessageHistory(list[BaseMessage]):
         
         # I use this exception type bc it is same used when x not found in list.index(x)
         raise ValueError(f'There are no messages of type {MessageType.__name__} in the history.')
+    
+    def executed_tool_ids(self) -> set[str]:
+        '''Get all tool ids in the history.'''
+        return set(m.tool_call_id for m in self if isinstance(m, ToolMessage))
+    
+    def tool_result_exists(self, tool_call_id: str) -> bool:
+        '''Return whether a tool call result was added to history yet.'''
+        for m in self:
+            if isinstance(m, ToolMessage) and m.tool_call_id == tool_call_id:
+                return True
+        return False
 
     ############################# Adding Messages #############################
     def add_ai_chunks(self, chunks: list[AIMessageChunk]) -> None:
