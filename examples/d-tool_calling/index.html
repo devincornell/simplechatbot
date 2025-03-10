@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://devincornell.github.io/simplechatbot/examples/b-tool_calling/">
+        <link rel="canonical" href="https://devincornell.github.io/simplechatbot/examples/d-tool_calling/">
       
       
-        <link rel="prev" href="../a-overview/">
+        <link rel="prev" href="../c-structured_outputs/">
       
       
-        <link rel="next" href="../c-model_specific_chatbots/">
+        <link rel="next" href="../f-multi-agent_example/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -292,6 +292,48 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../b-model_specific_chatbots/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Model-specific ChatBots
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../c-structured_outputs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Structured Outputs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -416,28 +458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../c-model_specific_chatbots/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Model-specific ChatBots
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../d_multi-agent_example/" class="md-nav__link">
+      <a href="../f-multi-agent_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -563,14 +584,14 @@
 
 
 <h1 id="tool-calling">Tool Calling</h1>
-<p><code>simplechatbot</code> empowers chatbot agents with the ability to produce arguments for arbitrary user functions instead of providing a text response to the user's prompt. Using this interface you can enable features such as web searching, email sending/checking, file browsing, image creation, or any other functionality that can be accessed through Python. The LLM will "decide" whether and which tools/functions should be executed based on a given prompt, so the key is to use tools with clear and concise instructions.</p>
+<p><code>simplechatbot</code> empowers agents with the ability to produce arguments for arbitrary user functions instead of providing a text response to the user's prompt. Using this interface you can enable features such as web searching, email sending/checking, file browsing, image creation, or any other functionality that can be accessed through Python. The LLM will "decide" whether and which tools/functions should be executed based on a given prompt, so the key is to use tools with clear and concise instructions.</p>
 <p>Under the hood, <code>ChatBot</code> instances maintain a collection of <a href="https://python.langchain.com/docs/how_to/#tools">langchain tools</a> which can be extracted from toolkits or even factory methods that accept the chatbot itself as a parameter. Tools may also be added at the time of LLM execution to enable dynamic systems of available tools.</p>
 <p>You can create your own <a href="https://python.langchain.com/docs/how_to/custom_tools/">custom tools</a> or choose from <a href="https://python.langchain.com/docs/integrations/tools/">Langchain's built-in tools</a>. I will use <code>FileManagementToolkit</code> for demonstration purposes here.</p>
 <pre><code class="language-python">import sys
-sys.path.append('..')
+sys.path.append('../src/')
 
 import simplechatbot
-from simplechatbot.openai import OpenAIChatBot
+from simplechatbot.openai_agent import OpenAIAgent
 </code></pre>
 <h2 id="enabling-tools">Enabling Tools</h2>
 <p>Start by creating a new example tool that can enables the LLM to check email for the user. We create this tool using the <code>@langchain_core.tools.tool</code> decorator.</p>
@@ -590,35 +611,35 @@ When the user requests you to check your messages, you should display the retrie
  to the user.
 '''
 
-chatbot = OpenAIChatBot.new(
+agent = OpenAIAgent.new(
     model_name = 'gpt-4o-mini', 
     api_key=keychain['openai'],
     system_prompt=system_prompt,
     tools = [check_new_messages],
 )
 </code></pre>
-<p>Now the LLM will have access to these tools. While the chatbot instance stores the LLM object in the <code>_model</code> attribute, you can use <code>model</code> to get the LLM with bound tools.</p>
-<pre><code class="language-python">chatbot.model
+<p>Now the LLM will have access to these tools. While the agent instance stores the LLM object in the <code>_model</code> attribute, you can use <code>model</code> to get the LLM with bound tools.</p>
+<pre><code class="language-python">agent.model
 </code></pre>
-<pre><code>RunnableBinding(bound=ChatOpenAI(client=&lt;openai.resources.chat.completions.Completions object at 0x128006a80&gt;, async_client=&lt;openai.resources.chat.completions.AsyncCompletions object at 0x1280306e0&gt;, root_client=&lt;openai.OpenAI object at 0x10f153a40&gt;, root_async_client=&lt;openai.AsyncOpenAI object at 0x128006ae0&gt;, model_name='gpt-4o-mini', model_kwargs={}, openai_api_key=SecretStr('**********')), kwargs={'tools': [{'type': 'function', 'function': {'name': 'check_new_messages', 'description': 'Check messages.', 'parameters': {'properties': {}, 'type': 'object'}}}]}, config={}, config_factories=[])
+<pre><code>RunnableBinding(bound=ChatOpenAI(client=&lt;openai.resources.chat.completions.completions.Completions object at 0x10cd3c080&gt;, async_client=&lt;openai.resources.chat.completions.completions.AsyncCompletions object at 0x10cd3dd90&gt;, root_client=&lt;openai.OpenAI object at 0x10844b6e0&gt;, root_async_client=&lt;openai.AsyncOpenAI object at 0x10cd3c0e0&gt;, model_name='gpt-4o-mini', model_kwargs={}, openai_api_key=SecretStr('**********')), kwargs={'tools': [{'type': 'function', 'function': {'name': 'check_new_messages', 'description': 'Check messages.', 'parameters': {'properties': {}, 'type': 'object'}}}]}, config={}, config_factories=[])
 </code></pre>
 <p>You can also use the method <code>get_model_with_tools</code> to get the tool-bound model with any additional tools. The <code>invoke</code>, <code>stream</code>, <code>chat</code>, and <code>chat_stream</code> methods all use this under-the hood so you can add any tools, toolkits, or tool factories to the model at invokation.</p>
-<pre><code class="language-python">chatbot.get_model_with_tools(tools=None)
+<pre><code class="language-python">agent.get_model_with_tools(tools=None)
 </code></pre>
-<pre><code>(RunnableBinding(bound=ChatOpenAI(client=&lt;openai.resources.chat.completions.Completions object at 0x128006a80&gt;, async_client=&lt;openai.resources.chat.completions.AsyncCompletions object at 0x1280306e0&gt;, root_client=&lt;openai.OpenAI object at 0x10f153a40&gt;, root_async_client=&lt;openai.AsyncOpenAI object at 0x128006ae0&gt;, model_name='gpt-4o-mini', model_kwargs={}, openai_api_key=SecretStr('**********')), kwargs={'tools': [{'type': 'function', 'function': {'name': 'check_new_messages', 'description': 'Check messages.', 'parameters': {'properties': {}, 'type': 'object'}}}]}, config={}, config_factories=[]),
- ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10f957ce0&gt;)}))
+<pre><code>(RunnableBinding(bound=ChatOpenAI(client=&lt;openai.resources.chat.completions.completions.Completions object at 0x10cd3c080&gt;, async_client=&lt;openai.resources.chat.completions.completions.AsyncCompletions object at 0x10cd3dd90&gt;, root_client=&lt;openai.OpenAI object at 0x10844b6e0&gt;, root_async_client=&lt;openai.AsyncOpenAI object at 0x10cd3c0e0&gt;, model_name='gpt-4o-mini', model_kwargs={}, openai_api_key=SecretStr('**********')), kwargs={'tools': [{'type': 'function', 'function': {'name': 'check_new_messages', 'description': 'Check messages.', 'parameters': {'properties': {}, 'type': 'object'}}}]}, config={}, config_factories=[]),
+ ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x1084516c0&gt;)}))
 </code></pre>
 <p>Tools will be automatically used when we call any of the invoke or stream methods.</p>
 <p>Notice that the LLM behaves normally if the user's prompts are unrelated to the tool.</p>
-<pre><code class="language-python">chatbot.invoke('Hello world!')
+<pre><code class="language-python">agent._invoke('Hello world!')
 </code></pre>
 <pre><code>ChatResult(content=Hello! How can I assist you today?, tool_calls=[])
 </code></pre>
 <p>If the LLM "decides" that the user needs to execute a tool, it returns a tool call as the response instead of returning content.</p>
-<pre><code class="language-python">result = chatbot.invoke('Check my messages.')
+<pre><code class="language-python">result = agent._invoke('Check my messages.')
 result
 </code></pre>
-<pre><code>ChatResult(content=, tool_calls=[ToolCallInfo(id='call_ngajeroEwfXipobUvG6sPNxd', name='check_new_messages', type='tool_call', args={}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10f957ce0&gt;))])
+<pre><code>ChatResult(content=, tool_calls=[ToolCallInfo(id='call_D0WyCNzn8Hg0qRxsui24aZ33', name='check_new_messages', type='tool_call', args={}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x1084516c0&gt;))])
 </code></pre>
 <p>The tool call information can be accessed through the <code>ChatResult.tool_calls</code> attribute, which is simply a list supertype. Use <code>tool_info_str</code> to clearly show the arguments being passed to the function.</p>
 <pre><code class="language-python">for tc in result.tool_calls:
@@ -633,10 +654,10 @@ def send_message(recipient: str, text: str) -&gt; str:
     '''Send messages to others.'''
     return f'Message sent!'
 
-result = chatbot.invoke('Send a message to Bob saying &quot;Hello!&quot;', tools=[send_message])
+result = agent._invoke('Send a message to Bob saying &quot;Hello!&quot;', tools=[send_message])
 result
 </code></pre>
-<pre><code>ChatResult(content=, tool_calls=[ToolCallInfo(id='call_p4znAVb29LTFT6TF8qnkG1NU', name='send_message', type='tool_call', args={'recipient': 'Bob', 'text': 'Hello!'}, tool=StructuredTool(name='send_message', description='Send messages to others.', args_schema=&lt;class 'langchain_core.utils.pydantic.send_message'&gt;, func=&lt;function send_message at 0x12804bb00&gt;))])
+<pre><code>ChatResult(content=, tool_calls=[ToolCallInfo(id='call_CaZgudgmby8bQahiyL2PnP6J', name='send_message', type='tool_call', args={'recipient': 'Bob', 'text': 'Hello!'}, tool=StructuredTool(name='send_message', description='Send messages to others.', args_schema=&lt;class 'langchain_core.utils.pydantic.send_message'&gt;, func=&lt;function send_message at 0x10cd45a80&gt;))])
 </code></pre>
 <p>You can see that the LLM provided the <code>recipient</code> and <code>text</code> arguments which were passed to the function call information.</p>
 <pre><code class="language-python">result.tool_calls[0].tool_info_str()
@@ -644,7 +665,7 @@ result
 <pre><code>'send_message(recipient=Bob, text=Hello!)'
 </code></pre>
 <p>You can adjust behavior using the <code>tool_choice</code> argument in the chatbot constructor or at invokation. The value <code>'any'</code> means that a tool MUST be called, but all tools are candidates. The value <code>'auto'</code> (the default) allows the LLM to reply with normal content rather than a tool call, and you can also pass the name of a specific function as well.</p>
-<pre><code class="language-python">result = chatbot.invoke('Go to the store for me!', tool_choice='any')
+<pre><code class="language-python">result = agent._invoke('Go to the store for me!', tool_choice='any')
 result.tool_calls[0].tool_info_str()
 </code></pre>
 <pre><code>'check_new_messages()'
@@ -652,7 +673,7 @@ result.tool_calls[0].tool_info_str()
 <h2 id="executing-tools">Executing Tools</h2>
 <p>Tools allow the LLM to determine if and when to execute tools and also provides parameters for the tool call based on conversation history, but the user containing function is responsible for actually executing the tool with the arguments from the LLM.</p>
 <p>Use the <code>execute_tools</code> method to actually execute the tool, which returns a mapping of tool names to <code>ToolCallResult</code> objects.</p>
-<pre><code class="language-python">result = chatbot.invoke('Check my messages.')
+<pre><code class="language-python">result = agent._invoke('Check my messages.')
 result.tool_calls[0].tool_info_str()
 </code></pre>
 <pre><code>'check_new_messages()'
@@ -660,7 +681,7 @@ result.tool_calls[0].tool_info_str()
 <pre><code class="language-python">tr = result.execute_tools()
 tr
 </code></pre>
-<pre><code>{'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_sOvFP85Zw090E9xin3c74uCl', name='check_new_messages', type='tool_call', args={}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x10f957ce0&gt;)), return_value='No new messages.')}
+<pre><code>{'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_CPyijbPQpk91FIdl0B8NOLmI', name='check_new_messages', type='tool_call', args={}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x1084516c0&gt;)), return_value='No new messages.')}
 </code></pre>
 <p>Get the return value from the tool through the <code>return_value</code> property.</p>
 <pre><code class="language-python">tr['check_new_messages'].return_value
@@ -669,16 +690,16 @@ tr
 </code></pre>
 <p>Extracting tool calls from a <code>StreamResult</code> is a little more complicated because the stream must be exhausted before executing tools. This happens because the tool call information replaces the text response, so the streamer is essentially receiving chunks of the function call information until exhaustion.</p>
 <p>The calling function must handle both the streamed output and tool calls.</p>
-<pre><code class="language-python">stream = chatbot.stream('Check my messages.')
+<pre><code class="language-python">stream = agent._stream('Check my messages.')
 for r in stream:
     print(r, end='', flush=True)
 if len(stream.tool_calls) &gt; 0:
     stream.execute_tools()
 </code></pre>
-<pre><code>content='' additional_kwargs={'tool_calls': [{'index': 0, 'id': 'call_8MqiTmWRcqC9xjVUqzY1sq2P', 'function': {'arguments': '', 'name': 'check_new_messages'}, 'type': 'function'}]} response_metadata={} id='run-825b8400-30dd-4d02-ac24-47d0cc9c2cac' tool_calls=[{'name': 'check_new_messages', 'args': {}, 'id': 'call_8MqiTmWRcqC9xjVUqzY1sq2P', 'type': 'tool_call'}] tool_call_chunks=[{'name': 'check_new_messages', 'args': '', 'id': 'call_8MqiTmWRcqC9xjVUqzY1sq2P', 'index': 0, 'type': 'tool_call_chunk'}]content='' additional_kwargs={'tool_calls': [{'index': 0, 'id': None, 'function': {'arguments': '{}', 'name': None}, 'type': None}]} response_metadata={} id='run-825b8400-30dd-4d02-ac24-47d0cc9c2cac' tool_calls=[{'name': '', 'args': {}, 'id': None, 'type': 'tool_call'}] tool_call_chunks=[{'name': None, 'args': '{}', 'id': None, 'index': 0, 'type': 'tool_call_chunk'}]content='' additional_kwargs={} response_metadata={'finish_reason': 'tool_calls', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_bd83329f63'} id='run-825b8400-30dd-4d02-ac24-47d0cc9c2cac'
+<pre><code>content='' additional_kwargs={'tool_calls': [{'index': 0, 'id': 'call_0I3oV4MeoavXZe8gyJygHkQZ', 'function': {'arguments': '', 'name': 'check_new_messages'}, 'type': 'function'}]} response_metadata={} id='run-029ed68d-e9ad-4a1f-9716-960302d7c64b' tool_calls=[{'name': 'check_new_messages', 'args': {}, 'id': 'call_0I3oV4MeoavXZe8gyJygHkQZ', 'type': 'tool_call'}] tool_call_chunks=[{'name': 'check_new_messages', 'args': '', 'id': 'call_0I3oV4MeoavXZe8gyJygHkQZ', 'index': 0, 'type': 'tool_call_chunk'}]content='' additional_kwargs={'tool_calls': [{'index': 0, 'id': None, 'function': {'arguments': '{}', 'name': None}, 'type': None}]} response_metadata={} id='run-029ed68d-e9ad-4a1f-9716-960302d7c64b' tool_calls=[{'name': '', 'args': {}, 'id': None, 'type': 'tool_call'}] tool_call_chunks=[{'name': None, 'args': '{}', 'id': None, 'index': 0, 'type': 'tool_call_chunk'}]content='' additional_kwargs={} response_metadata={'finish_reason': 'tool_calls', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_06737a9306'} id='run-029ed68d-e9ad-4a1f-9716-960302d7c64b'
 </code></pre>
 <p>A <code>ValueError</code> will be raised if the caller tries to execute tools before the stream is exhausted.</p>
-<pre><code class="language-python">stream = chatbot.stream('Check my messages.')
+<pre><code class="language-python">stream = agent.stream('Check my messages.')
 for r in stream:
     print(r.content, end='', flush=True)
     break
@@ -706,7 +727,7 @@ except ValueError as e:
 from langchain_community.agent_toolkits import FileManagementToolkit
 with tempfile.TemporaryDirectory() as wd:
     file_tk = FileManagementToolkit(root_dir=str(wd))
-    result = chatbot.invoke('List the files in this directory.', toolkits=[file_tk])
+    result = agent._invoke('List the files in this directory.', toolkits=[file_tk])
     print(result.tool_calls[0].tool_info_str())
 </code></pre>
 <pre><code>list_directory()
@@ -714,22 +735,22 @@ with tempfile.TemporaryDirectory() as wd:
 <h4 id="tool-factory-examples">Tool Factory Examples</h4>
 <p>Now I create a tool factory that can be passed to the chatbot. This tool uses the chatbot reference to invoke the LLM with access to all of the same tools.</p>
 <pre><code class="language-python">
-def my_tool_factory(chatbot: simplechatbot.ChatBot) -&gt; list[langchain_core.tools.Tool]:
+def my_tool_factory(agent: simplechatbot.Agent) -&gt; list[langchain_core.tools.Tool]:
     @langchain_core.tools.tool
     def story_generator(topic: str) -&gt; str:
         '''Generate a story absed on a particular topic.'''
-        result = chatbot.invoke(
+        result = agent._invoke(
             f'Generate a story about {topic}. Your response should only include the text of the story and make it short but engaging.',
         )
         return result.content
 
     return [story_generator]
 
-result = chatbot.invoke('Generate a story about western cowboys.', tool_factories=[my_tool_factory])
+result = agent._invoke('Generate a story about western cowboys.', tool_factories=[my_tool_factory])
 tc_result = result.execute_tools()
 tc_result['story_generator'].return_value
 </code></pre>
-<pre><code>'In the dusty town of Dry Gulch, the sun hung low in the sky, casting long shadows over the wooden saloons and weathered storefronts. The air was thick with the scent of leather and gunpowder, a reminder of the untamed land that surrounded the settlement. It was here that two rival cowboys, Jake “Iron” McGraw and Sam “Quickshot” Riley, were destined to cross paths.\n\nJake was known for his iron will and unmatched strength, while Sam earned his reputation as the fastest draw in the West. Their rivalry had begun years ago over a beautiful saloon owner, Clara, who had captured both their hearts with her fiery spirit. But Clara had made her choice, and it only intensified the flames of their competition.\n\nOne fateful afternoon, the townsfolk gathered in the dusty square, whispering tales of the upcoming showdown. With the sun dipping low, casting a golden hue over the landscape, Jake and Sam faced each other, eyes locked in a battle of wills. The tension was palpable, and the crowd held its breath.\n\n“Today, we settle this once and for all,” Jake growled, his hand hovering near his holster. Sam smirked, confidence radiating from him. “I’ve been waiting for this, Iron. Let’s see if you can keep up.”\n\nWith a single, thunderous clap of thunder, the duel began. Dust swirled around them as they moved like lightning, drawing their guns in a heartbeat. Shots rang out, echoing across the canyon. But in a twist of fate, both cowboys hesitated, their eyes catching Clara’s pleading gaze from the crowd.\n\nIn that moment, they realized the futility of their rivalry. The guns lowered, and silence fell. Clara rushed forward, tears in her eyes. “Enough! This isn’t what I wanted!”\n\nWith a shared look of understanding, Jake and Sam holstered their weapons. They turned to Clara, and together, they walked away from the battlefield, leaving behind the echoes of their past and forging a new path of friendship. The sun set over Dry Gulch, casting a warm glow as the three of them rode into the horizon, united against the world.'
+<pre><code>'In the heart of the rugged Wild West, a small town called Dusty Springs thrived under the watchful eyes of the surrounding mesas. The sun blazed overhead, casting long shadows over the dusty streets where only a handful of souls dared to tread. Among them was Colt Harper, a seasoned cowboy known for his swift draw and uncanny ability to ride like the wind.\n\nOne sweltering afternoon, a mysterious stranger rode into town on a sleek black stallion. Cloaked in a dust-covered duster and a wide-brimmed hat that obscured his face, he dismounted at the saloon, causing the townsfolk to whisper in hushed tones. Colt, nursing a whiskey at the bar, felt a stirring in his gut; trouble had a way of finding him.\n\nThe stranger, known only as Jake, challenged Colt to a duel at high noon. Rumors swirled that Jake was looking for revenge against Colt’s brother, who had long since met his fate in a gunfight gone wrong. As the clock ticked towards noon, the townspeople gathered, tension crackling in the air like a summer storm.\n\nColt strode into the street, his boots kicking up dust as he faced Jake under the blazing sun. The world around them faded away, each heartbeat echoing in the silence. With a quick draw, Colt aimed and fired, the bullet whistling through the air and finding its mark. Jake fell, surprise blossoming on his face, and the whispering crowd gasped.\n\nAs the dust settled, Colt walked over to him. “This ain’t no way to settle a score,” he said, his voice steady. “Let’s put the past to rest. Life’s too short.” Jake nodded slowly, his anger replaced by a flicker of understanding.\n\nThe two men stood, embodying a spirit of camaraderie that echoed through the rugged landscape. Dusty Springs would remember that day not just for the gunfight, but for the moment a cowboy chose peace over vengeance. As the sun dipped below the horizon, Colt tipped his hat and rode off into the golden glow, a true gunslinger of the West.'
 </code></pre>
 <h2 id="conclusions">Conclusions</h2>
 <p>That is all! Now you know how to enable and disable tools that your LLM can use to do anything!</p>

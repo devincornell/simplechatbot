@@ -1,0 +1,883 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://devincornell.github.io/simplechatbot/examples/f-multi-agent_example/">
+      
+      
+        <link rel="prev" href="../d-tool_calling/">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Multi-agent Examples - simplechatbot</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#multi-agent-examples" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="simplechatbot" class="md-header__button md-logo" aria-label="simplechatbot" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            simplechatbot
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Multi-agent Examples
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/devincornell/simplechatbot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    devincornell/simplechatbot
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="simplechatbot" class="md-nav__button md-logo" aria-label="simplechatbot" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    simplechatbot
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/devincornell/simplechatbot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    devincornell/simplechatbot
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../a-overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../b-model_specific_chatbots/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Model-specific ChatBots
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../c-structured_outputs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Structured Outputs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../d-tool_calling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tool Calling
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Multi-agent Examples
+  </span>
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="multi-agent-examples">Multi-agent Examples</h1>
+<p>In this example I show an example of an agent that writes a story using a series of steps.</p>
+<ol>
+<li>The user provides an idea for their story.</li>
+<li>The <code>Outline Bot</code> generates an outline for the story including section titles and descriptions.</li>
+<li>The first section content is created by the <code>Story Bot</code> from section title/description and the overall story description.</li>
+<li>The <code>Summary Bot</code> creates a summary of the newly generated chapter.</li>
+<li>The section summary is passed to the <code>Story Bot</code> along with section title/description to generate the next section.</li>
+<li>All sections follow steps 3-5.
+...</li>
+<li>The sections are combined into a full story.</li>
+</ol>
+<p><img alt="Story bot design diagram" src="https://storage.googleapis.com/public_data_09324832787/story_bot_design.svg" /></p>
+<pre><code class="language-python">import pydantic
+import typing
+
+import sys
+sys.path.append('../src/')
+
+import simplechatbot
+from simplechatbot.openai_agent import OpenAIAgent
+</code></pre>
+<p>First I create a new chatbot from OpenAI using the API stored in the keychain file.</p>
+<p>I also create a new function <code>stream_it</code> that prints the result from the LLM as it is received and returns the full result of the LLM call.</p>
+<pre><code class="language-python">keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
+base_agent = OpenAIAgent.new(
+    model_name = 'gpt-4o-mini', 
+    api_key=keychain['openai'],
+)
+</code></pre>
+<p>Next we need to direct the LLM to create an outline for the story. I do this by creating a system prompt describing the task of creating an outline and a pydantic class to direct the LLM on how to structure its response. This is important because the output of the outline bot will be used for generating chapters.</p>
+<pre><code class="language-python">class StoryOutline(pydantic.BaseModel):
+    &quot;&quot;&quot;Outline of the story.&quot;&quot;&quot;
+
+    story_topic: str = pydantic.Field(description=&quot;The topic of the story.&quot;)
+
+    part1_title: str = pydantic.Field(description=&quot;Title of Part 1 of the story.&quot;)
+    part1_description: str = pydantic.Field(description=&quot;Longer description of part 1.&quot;)
+
+    part2_title: str = pydantic.Field(description=&quot;Title of Part 2 of the story.&quot;)
+    part2_description: str = pydantic.Field(description=&quot;Longer description of part 2.&quot;)
+
+    part3_title: str = pydantic.Field(description=&quot;Title of Part 3 of the story.&quot;)
+    part3_description: str = pydantic.Field(description=&quot;Longer description of part 3.&quot;)
+
+    def outline_str(self) -&gt; str:
+        return f'topic: {self.story_topic}\n\n{self.part1_title}: {self.part1_description}\n\n{self.part2_title}: {self.part2_description}\n\n{self.part3_title}: {self.part3_description}'
+
+
+class OutlineBot:
+    system_prompt = (
+        &quot;The user will provide you a description of a story, and you must create a chapter outline with titles and brief descriptions. &quot;
+        &quot;Each section should contain a title and a brief description of what happens in that section. &quot;
+        &quot;The sections should all be part of a single narrative ark, but each section should have a complete beginning, middle, and end. &quot;
+    )
+    def __init__(self, base_agent: simplechatbot.Agent):
+        self.agent = base_agent.new_agent_from_model(
+            system_prompt=self.system_prompt,
+        )
+
+    def create_outline(self, story_description: str) -&gt; StoryOutline:
+        return self.agent.chat_structured(story_description, output_structure=StoryOutline).data
+
+outline_bot = OutlineBot(base_agent)
+
+q = f'Write an outline for a story about two friends who met when they were young and then lost touch. They meet again as adults and have to navigate their new relationship.'
+outline: StoryOutline = outline_bot.create_outline(q)
+print(outline.outline_str())
+</code></pre>
+<pre><code>topic: Rekindling a Friendship
+
+The Innocent Bond: In a small town, two children, Mia and Jake, form a deep bond during summer vacations. They share adventures, secrets, and dreams, making a pact to always stay friends. However, as they grow older, Mia moves away, and they lose touch. The chapter ends with Mia looking back at old photos, reminiscing about the carefree days of their friendship and wondering how Jake is doing.
+
+A Chance Encounter: Years later, Mia returns to her hometown for a wedding. On the night of the event, she unexpectedly runs into Jake, who hasn't changed much but feels like a stranger. Their initial conversation is awkward, filled with nostalgia and uncertainty. But as the night unfolds, they find common ground in shared memories. They agree to grab coffee the next day to catch up, both feeling a mix of excitement and anxiety about seeing each other after so long.
+
+Rebuilding the Past: During coffee, Mia and Jake navigate the complexities of their adult lives, revealing new aspects of their personalities that have developed separately. They reminisce about the past but also confront the differences that have emerged over the years. Misunderstandings arise but are resolved through open communication, leading to a rekindling of their friendship. The chapter ends with both feeling hopeful but uncertain about what the future holds for their relationship.
+</code></pre>
+<p>Next we create a bot that will generate the actual chapter content based on information generated in the outline and a summary of the previous chapter (if one exists).</p>
+<pre><code class="language-python">class ChapterBot:
+    system_prompt = (
+        &quot;You are designed to write a single chapter of a larger story based on the following information: \n\n&quot;
+        &quot;+ Overall story topic: The topic of the full story.\n&quot;
+        &quot;+ Chapter title: The title of the section you are writing.\n&quot;
+        &quot;+ Chapter description: A longer description of what happens in the section.\n&quot;
+        &quot;+ (optional) previous chapter summary: A summary of the previous chapter.\n&quot;
+        &quot;Your responses should only include text that is part of the story. Do not include the chapter title \n&quot;
+        &quot;or any other information that is not part of the story itself.\n&quot;
+        &quot;The story chapter should be super short, so keep that in mind!&quot;
+    )
+
+    def __init__(self, base_agent: simplechatbot.Agent):
+        self.agent = base_agent.new_agent_from_model(
+            system_prompt=self.system_prompt,
+        )
+
+    def write_chapter(
+        self,
+        story_topic: str,
+        chapter_title: str,
+        chapter_description: str,
+        previous_chapter_summary: typing.Optional[str] = None,
+    ) -&gt; str:
+        prompt = (
+            f'General story topic: &quot;{story_topic}&quot;\n\n'
+            f'Section title: &quot;{chapter_title}&quot;\n\n'
+            f'Description: &quot;{chapter_description}&quot;\n\n'
+            f'Previous chapter summary: &quot;{previous_chapter_summary if previous_chapter_summary is not None else &quot;No previous chapter - this is the first!&quot;}&quot;'
+        )
+        return self.agent.stream(prompt, add_to_history=False).print_and_collect().content
+
+chapter_bot = ChapterBot(base_agent)
+</code></pre>
+<p>Now we actually create the chatper using the prompt.</p>
+<pre><code class="language-python">chapter1 = chapter_bot.write_chapter(outline.story_topic, outline.part1_title, outline.part1_description)
+</code></pre>
+<pre><code>The sun-drenched days of summer blended into a tapestry of laughter and adventure for Mia and Jake. Their small town, a canvas of vibrant colors and warm breezes, became the backdrop for their blossoming friendship.
+
+They often met at the old oak tree, its branches spreading wide like welcoming arms, where they shared whispered secrets and dreams of the future. One day, they painstakingly crafted a treasure map from an old cereal box, declaring their mission to find hidden gems in the nearby woods. With their imaginations running wild, they transformed fallen twigs into swords, prowled like pirates, and crowned each other as guardians of their secret world.
+
+Mia would sometimes pull out her worn notebook, filled with sketches of their adventures, while Jake would recount tales of daring knights and fearless dragons. They made a pact—an earnest promise to always stay friends—each believing their bond was unbreakable.
+
+Then, as summer slipped away and the cold winds of fate began to blow, Mia's family received the news. They were moving, a change that echoed with uncertainty and sadness. On the night before her departure, they sat under the stars, their hearts heavy with unspoken fears. Mia held Jake's hand tightly, sealing their pact with a desperate wish that distance would never come between them.
+
+Years passed like fluttering leaves in the autumn breeze. Mia moved to a place where everything felt foreign. New friends filled her days, but the whispers of that innocent bond lingered in the corners of her heart. One quiet evening, feeling nostalgic, she rummaged through a box of memories.
+
+As she pulled out old photographs, the vibrant summer days unfolded before her eyes. There they were, sunlight dancing off their smiles, the world their playground. She paused at a picture where they both grinned widely, remnants of mud smeared on their cheeks from a day spent crafting makeshift capes in the backyard, imaginations soaring.
+
+Mia’s heart tightened as she wondered where Jake was now, if he recalled their pact, the whispers of their carefree laughter carried by the winds through the years. In that moment, she realized that though miles apart, the bond they forged during those innocent days still held a spark of hope, waiting to be rekindled.
+</code></pre>
+<p>Next I create a bot that will summarize a chapter. We will eventually feed this into the creation of chapter 2.</p>
+<pre><code class="language-python">class SummaryBot:
+    system_prompt = (
+        'You need to create a summary of the story chapter provided to you by the user. '
+        'The summary should include names of relevant characters and capture the story arc of the chapter. '
+    )
+
+    def __init__(self, base_agent: simplechatbot.Agent):
+        self.agent = base_agent.new_agent_from_model(
+            system_prompt=self.system_prompt,
+        )
+
+    def summarize(
+        self,
+        chapter_text: str,
+    ) -&gt; str:
+        prompt = (
+            f'Chapter text:\n\n{chapter_text}'
+        )
+        return self.agent.stream(prompt, add_to_history=False).print_and_collect().content
+
+summary_bot = SummaryBot(base_agent)
+</code></pre>
+<pre><code class="language-python">ch1_summary = summary_bot.summarize(chapter1)
+</code></pre>
+<pre><code>In this poignant chapter, we follow Mia and Jake, two friends who share a magical summer filled with adventures in their small town. Their friendship flourishes at the old oak tree, where they craft a treasure map and transform their imaginations into a world of pirates, knights, and dreams. They create a pact to always remain friends, believing their bond is unbreakable.
+
+However, their idyllic summer comes to an abrupt end when Mia's family announces they are moving away, leading to a heart-wrenching farewell under the starlit sky. Mia and Jake hold hands tightly, each silently wishing that distance would not diminish their friendship.
+
+As the years progress, Mia finds herself in a new, foreign place, making new friends but often reminiscing about her time with Jake. One evening, she discovers a box of memories, pulling out old photographs that remind her of their joyful days together. Reflecting on their shared adventures and the special bond they created, Mia wonders if Jake still remembers their pact. The chapter concludes with a sense of nostalgia and hope, highlighting that despite the miles between them, the spark of their friendship still glows, waiting for a chance to reignite.
+</code></pre>
+<p>Now we actually generate the second chapter using the outline and the previous chapter summary.</p>
+<pre><code class="language-python">chapter2 = chapter_bot.write_chapter(outline.story_topic, outline.part2_title, outline.part2_description, ch1_summary)
+</code></pre>
+<pre><code>Mia stepped out of the wedding venue, the soft glow of string lights illuminating the night as laughter and music floated through the air. She wrapped her shawl tighter around her shoulders, feeling a chill that had nothing to do with the evening breeze. It was a night of joy, yet a weight settled in her chest as she navigated the familiar streets of her hometown.
+
+Suddenly, she spotted him across the courtyard – Jake, leaning casually against a pillar, his tall frame and easy smile still as comforting as she remembered. The years melted into the background as their eyes locked, and it felt as if time had rewound to that summer when everything was simple. But beneath the familiarity lay an awkwardness; he was a stranger now, the miles between them stretching wider than she’d anticipated.
+
+“Jake?” Mia called out, her voice barely cutting through the thrum of the festivities.
+
+“Mia!” he responded, his surprise mirrored in his bright eyes. He stepped forward, hands shoved in his pockets. “Wow, it’s been… what? Nearly a decade?”
+
+“Yeah, something like that.” She chuckled nervously, glancing away. “You look… well, the same.”
+
+He laughed, a sound that tugged at her heart, but it felt different this time — tinged with a hint of uncertainty. “And you still have that same spark,” he replied, though just as quickly as the words left his mouth, his expression faltered. “How’s life been?”
+
+They each began to share snippets of their lives, awkward pauses punctuating their conversation. The nostalgia laced their exchanges, memories of childhood adventures swirling around them. “Do you remember that treasure map we made?” Mia asked, a smile creeping onto her face.
+
+Jake’s face lit up. “Of course. We thought we were real pirates.”
+
+The moment drew them closer, their shared laughter echoing in the night. As they reminisced, the tension melted away, and a flicker of connection sparked anew. Their hearts raced with an unspoken agreement: they wouldn’t let this chance pass by.
+
+“How about we grab coffee tomorrow?” Mia suggested, holding her breath as she waited for his response.
+
+“Yeah, I’d like that,” Jake replied, his smile returning with a hint of warmth.
+
+As they parted ways, a mix of excitement and anxiety washed over Mia. She watched him walk back into the crowd, feeling a renewed sense of hope. Perhaps this was the beginning of rekindling what they had lost, a chance to mend the spaces that distance had created.
+</code></pre>
+<p>Create a summary for chapter 2 now.</p>
+<pre><code class="language-python">ch2_summary = summary_bot.summarize(chapter2)
+</code></pre>
+<pre><code>In this chapter, Mia finds herself stepping out of a wedding venue, overwhelmed by a mix of joy and nostalgia. As she walks through her hometown, she unexpectedly encounters Jake, her childhood friend and first love, who she hasn't seen in nearly a decade. Their initial interaction is filled with awkwardness and familiarity, highlighting the emotional distance that time and circumstances have created between them.
+
+They engage in small talk, reminiscing about their childhood adventures, such as creating a treasure map, which leads to laughter and a rekindling of their connection. Despite the years apart, they quickly find common ground, indicating an enduring bond beneath the surface. As Mia suggests meeting for coffee the next day, both characters sense a hopeful opportunity to explore what could be a revival of their relationship. The chapter concludes with Mia feeling a renewed sense of hope for the future as she watches Jake disappear back into the crowd, hinting at the possibility of mending the gaps that time had widened between them.
+</code></pre>
+<p>Use the summary of chapter 2 and outline information to create chapter 3.</p>
+<pre><code class="language-python">chapter3 = chapter_bot.write_chapter(outline.story_topic, outline.part3_title, outline.part3_description, ch2_summary)
+</code></pre>
+<pre><code>The coffee shop smelled of roasted beans and sweet pastries, a familiar scent that enveloped Mia as she entered, her heart racing with anticipation. She spotted Jake at a corner table, his back straight, absorbed in a steaming mug. Memories flooded her as she approached—of painting their childhood treehouse and sharing secrets under the stars.
+
+“Hey,” she said, her voice barely above a whisper.
+
+He looked up, his expression brightening. “Hey, you made it.”
+
+They exchanged warm smiles, feeling the shock of re-encounter fade, replaced by a comfortable, yet cautious atmosphere. As they sipped their coffees, the conversation flowed from light-hearted banter to deeper confessions. Mia shared tales of her career struggles, and Jake spoke of unpredictable travel adventures.
+
+“Remember the treasure map we made?” Mia chuckled, attempting to bridge any lingering gaps, her fingers tracing the rim of her cup.
+
+Jake laughed, a sound that reminded her of so many summers spent laughing together. “Yeah, and how we never found anything but those old coins?”
+
+A moment of silence lingered as they both realized how their paths have diverged since those days—her commitment to a steady job, his penchant for spontaneity. Tension arose as they stumbled into differences: Jake’s love for risk clashed with Mia’s yearning for stability.
+
+“This is nice, but…” Mia hesitated, searching for the right words, “could we talk about how life has changed us?”
+
+He nodded, looking serious for a moment. Misunderstandings emerged as they aired out old grievances—miscommunication that had haunted their friendship for years.
+
+“I thought you were mad at me for leaving,” Jake admitted, running a hand through his hair.
+
+“I was just scared of losing you,” Mia replied, her voice trembling slightly. They both took deep breaths, the tension easing as honesty laid the groundwork for rebuilding.
+
+With each revelation, walls crumbled, revealing the roots of their companionship buried beneath soil and time. They embraced vulnerability, each apology serving as both an acknowledgment of the past and a guide forward.
+
+They left the coffee shop with that same hopeful feeling—a cautious optimism decorating the edges of their hearts. As Mia turned to look at Jake one last time before parting ways, a sense of uncertainty lingered in the air. Would this be the beginning of something new, or merely a fleeting spark?
+</code></pre>
+<p>And now we can review the full text of the book.</p>
+<pre><code class="language-python">story = f'''
+
+Overview: {outline.story_topic}
+
+== Chapter 1: {outline.part1_title} ==
+
+{chapter1}
+
+
+== Chapter 2: {outline.part2_title} ==
+
+{chapter2}
+
+
+== Chapter 3: {outline.part3_title} ==
+
+{chapter3}
+
+'''
+
+import pprint
+pprint.pprint(story)
+</code></pre>
+<pre><code>('\n'
+ '\n'
+ 'Overview: Rekindling a Friendship\n'
+ '\n'
+ '== Chapter 1: The Innocent Bond ==\n'
+ '\n'
+ 'The sun-drenched days of summer blended into a tapestry of laughter and '
+ 'adventure for Mia and Jake. Their small town, a canvas of vibrant colors and '
+ 'warm breezes, became the backdrop for their blossoming friendship. \n'
+ '\n'
+ 'They often met at the old oak tree, its branches spreading wide like '
+ 'welcoming arms, where they shared whispered secrets and dreams of the '
+ 'future. One day, they painstakingly crafted a treasure map from an old '
+ 'cereal box, declaring their mission to find hidden gems in the nearby woods. '
+ 'With their imaginations running wild, they transformed fallen twigs into '
+ 'swords, prowled like pirates, and crowned each other as guardians of their '
+ 'secret world. \n'
+ '\n'
+ 'Mia would sometimes pull out her worn notebook, filled with sketches of '
+ 'their adventures, while Jake would recount tales of daring knights and '
+ 'fearless dragons. They made a pact—an earnest promise to always stay '
+ 'friends—each believing their bond was unbreakable.\n'
+ '\n'
+ "Then, as summer slipped away and the cold winds of fate began to blow, Mia's "
+ 'family received the news. They were moving, a change that echoed with '
+ 'uncertainty and sadness. On the night before her departure, they sat under '
+ "the stars, their hearts heavy with unspoken fears. Mia held Jake's hand "
+ 'tightly, sealing their pact with a desperate wish that distance would never '
+ 'come between them.\n'
+ '\n'
+ 'Years passed like fluttering leaves in the autumn breeze. Mia moved to a '
+ 'place where everything felt foreign. New friends filled her days, but the '
+ 'whispers of that innocent bond lingered in the corners of her heart. One '
+ 'quiet evening, feeling nostalgic, she rummaged through a box of memories. \n'
+ '\n'
+ 'As she pulled out old photographs, the vibrant summer days unfolded before '
+ 'her eyes. There they were, sunlight dancing off their smiles, the world '
+ 'their playground. She paused at a picture where they both grinned widely, '
+ 'remnants of mud smeared on their cheeks from a day spent crafting makeshift '
+ 'capes in the backyard, imaginations soaring.\n'
+ '\n'
+ 'Mia’s heart tightened as she wondered where Jake was now, if he recalled '
+ 'their pact, the whispers of their carefree laughter carried by the winds '
+ 'through the years. In that moment, she realized that though miles apart, the '
+ 'bond they forged during those innocent days still held a spark of hope, '
+ 'waiting to be rekindled.\n'
+ '\n'
+ '\n'
+ '== Chapter 2: A Chance Encounter ==\n'
+ '\n'
+ 'Mia stepped out of the wedding venue, the soft glow of string lights '
+ 'illuminating the night as laughter and music floated through the air. She '
+ 'wrapped her shawl tighter around her shoulders, feeling a chill that had '
+ 'nothing to do with the evening breeze. It was a night of joy, yet a weight '
+ 'settled in her chest as she navigated the familiar streets of her '
+ 'hometown. \n'
+ '\n'
+ 'Suddenly, she spotted him across the courtyard – Jake, leaning casually '
+ 'against a pillar, his tall frame and easy smile still as comforting as she '
+ 'remembered. The years melted into the background as their eyes locked, and '
+ 'it felt as if time had rewound to that summer when everything was simple. '
+ 'But beneath the familiarity lay an awkwardness; he was a stranger now, the '
+ 'miles between them stretching wider than she’d anticipated. \n'
+ '\n'
+ '“Jake?” Mia called out, her voice barely cutting through the thrum of the '
+ 'festivities. \n'
+ '\n'
+ '“Mia!” he responded, his surprise mirrored in his bright eyes. He stepped '
+ 'forward, hands shoved in his pockets. “Wow, it’s been… what? Nearly a '
+ 'decade?”\n'
+ '\n'
+ '“Yeah, something like that.” She chuckled nervously, glancing away. “You '
+ 'look… well, the same.”\n'
+ '\n'
+ 'He laughed, a sound that tugged at her heart, but it felt different this '
+ 'time — tinged with a hint of uncertainty. “And you still have that same '
+ 'spark,” he replied, though just as quickly as the words left his mouth, his '
+ 'expression faltered. “How’s life been?”\n'
+ '\n'
+ 'They each began to share snippets of their lives, awkward pauses punctuating '
+ 'their conversation. The nostalgia laced their exchanges, memories of '
+ 'childhood adventures swirling around them. “Do you remember that treasure '
+ 'map we made?” Mia asked, a smile creeping onto her face.\n'
+ '\n'
+ 'Jake’s face lit up. “Of course. We thought we were real pirates.” \n'
+ '\n'
+ 'The moment drew them closer, their shared laughter echoing in the night. As '
+ 'they reminisced, the tension melted away, and a flicker of connection '
+ 'sparked anew. Their hearts raced with an unspoken agreement: they wouldn’t '
+ 'let this chance pass by. \n'
+ '\n'
+ '“How about we grab coffee tomorrow?” Mia suggested, holding her breath as '
+ 'she waited for his response.\n'
+ '\n'
+ '“Yeah, I’d like that,” Jake replied, his smile returning with a hint of '
+ 'warmth. \n'
+ '\n'
+ 'As they parted ways, a mix of excitement and anxiety washed over Mia. She '
+ 'watched him walk back into the crowd, feeling a renewed sense of hope. '
+ 'Perhaps this was the beginning of rekindling what they had lost, a chance to '
+ 'mend the spaces that distance had created.\n'
+ '\n'
+ '\n'
+ '== Chapter 3: Rebuilding the Past ==\n'
+ '\n'
+ 'The coffee shop smelled of roasted beans and sweet pastries, a familiar '
+ 'scent that enveloped Mia as she entered, her heart racing with anticipation. '
+ 'She spotted Jake at a corner table, his back straight, absorbed in a '
+ 'steaming mug. Memories flooded her as she approached—of painting their '
+ 'childhood treehouse and sharing secrets under the stars.\n'
+ '\n'
+ '“Hey,” she said, her voice barely above a whisper. \n'
+ '\n'
+ 'He looked up, his expression brightening. “Hey, you made it.”\n'
+ '\n'
+ 'They exchanged warm smiles, feeling the shock of re-encounter fade, replaced '
+ 'by a comfortable, yet cautious atmosphere. As they sipped their coffees, the '
+ 'conversation flowed from light-hearted banter to deeper confessions. Mia '
+ 'shared tales of her career struggles, and Jake spoke of unpredictable travel '
+ 'adventures. \n'
+ '\n'
+ '“Remember the treasure map we made?” Mia chuckled, attempting to bridge any '
+ 'lingering gaps, her fingers tracing the rim of her cup.\n'
+ '\n'
+ 'Jake laughed, a sound that reminded her of so many summers spent laughing '
+ 'together. “Yeah, and how we never found anything but those old coins?”\n'
+ '\n'
+ 'A moment of silence lingered as they both realized how their paths have '
+ 'diverged since those days—her commitment to a steady job, his penchant for '
+ 'spontaneity. Tension arose as they stumbled into differences: Jake’s love '
+ 'for risk clashed with Mia’s yearning for stability.\n'
+ '\n'
+ '“This is nice, but…” Mia hesitated, searching for the right words, “could we '
+ 'talk about how life has changed us?”\n'
+ '\n'
+ 'He nodded, looking serious for a moment. Misunderstandings emerged as they '
+ 'aired out old grievances—miscommunication that had haunted their friendship '
+ 'for years.\n'
+ '\n'
+ '“I thought you were mad at me for leaving,” Jake admitted, running a hand '
+ 'through his hair.\n'
+ '\n'
+ '“I was just scared of losing you,” Mia replied, her voice trembling '
+ 'slightly. They both took deep breaths, the tension easing as honesty laid '
+ 'the groundwork for rebuilding.\n'
+ '\n'
+ 'With each revelation, walls crumbled, revealing the roots of their '
+ 'companionship buried beneath soil and time. They embraced vulnerability, '
+ 'each apology serving as both an acknowledgment of the past and a guide '
+ 'forward.\n'
+ '\n'
+ 'They left the coffee shop with that same hopeful feeling—a cautious optimism '
+ 'decorating the edges of their hearts. As Mia turned to look at Jake one last '
+ 'time before parting ways, a sense of uncertainty lingered in the air. Would '
+ 'this be the beginning of something new, or merely a fleeting spark?\n'
+ '\n')
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.expand"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+    
+  </body>
+</html>
