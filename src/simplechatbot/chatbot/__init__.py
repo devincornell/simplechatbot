@@ -16,5 +16,3 @@ from .errors import UknownToolError, ToolRaisedExceptionError, ToolWasNotExecute
 from .chatresult import ChatResult, StreamResult, StructuredOutputResult
 # import old stuff into separate namespace
 #from . import v4
-
-from .structbot import StructBot
