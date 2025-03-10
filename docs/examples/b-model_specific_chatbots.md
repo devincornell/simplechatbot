@@ -7,7 +7,7 @@ Model-specific chatbots only differ from `ChatBot` in that they define static fa
 
 ```python
 import sys
-sys.path.append('..')
+sys.path.append('../src/')
 
 import simplechatbot
 ```
@@ -23,18 +23,18 @@ Notice that we use a separate import statement to explicitly import the model-sp
 
 
 ```python
-from simplechatbot.ollama import OllamaChatBot
+from simplechatbot.ollama_agent import OllamaAgent
 
-chatbot = OllamaChatBot.new(
+agent = OllamaAgent.new(
     model_name = 'llama3.1', 
 )
 ```
 
 
 ```python
-from simplechatbot.openai import OpenAIChatBot
+from simplechatbot.openai_agent import OpenAIAgent
 
-chatbot = OpenAIChatBot.new(
+agent = OpenAIAgent.new(
     model_name = 'gpt-4o-mini', 
     api_key=keychain['openai'],
 )
@@ -42,9 +42,9 @@ chatbot = OpenAIChatBot.new(
 
 
 ```python
-from simplechatbot.mistral import MistralChatBot
+from simplechatbot.mistral_agent import MistralAgent
 
-chatbot = MistralChatBot.new(
+agent = MistralAgent.new(
     model_name = 'mistral-large-latest', 
     api_key=keychain['mistral'],
 )
