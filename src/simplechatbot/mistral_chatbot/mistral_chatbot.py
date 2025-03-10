@@ -12,10 +12,10 @@ if typing.TYPE_CHECKING:
     from langchain_core.tools import BaseTool, BaseToolkit
     from ..chatbot.toolset import ToolFactoryType, ToolName
 
-from ..chatbot import ChatBot
+from ..chatbot import Agent
 
 
-class MistralChatBot(ChatBot):
+class MistralAgent(Agent):
     '''Chatbot created from an Mistral model. Only separate so that it can be imported separately for dependency reasons.'''
     @classmethod
     def new(cls,

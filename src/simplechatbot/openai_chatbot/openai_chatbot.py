@@ -4,7 +4,7 @@ import typing
 
 from langchain_openai import ChatOpenAI
 
-from ..chatbot import ChatBot
+from ..chatbot import Agent
 
 if typing.TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
     from ..chatbot.toolset import ToolFactoryType, ToolName
 
 
-class OpenAIChatBot(ChatBot):
+class OpenAIAgent(Agent):
     '''Chatbot created from an OpenAI model. Only separate so that it can be imported separately for dependency reasons.'''
     @classmethod
     def new(cls,

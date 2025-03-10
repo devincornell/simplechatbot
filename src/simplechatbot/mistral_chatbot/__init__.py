@@ -1,1 +1,4 @@
-from .mistral_chatbot import MistralChatBot
+from .mistral_chatbot import MistralAgent
+
+class MistralChatBot(MistralAgent):
+    pass
