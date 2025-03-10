@@ -5,11 +5,11 @@ import simplechatbot
 
 #from langchain_openai import ChatOpenAI
 #from simplechatbot.openai_chatbot import OpenAIChatBot
-from simplechatbot.ollama_chatbot import OllamaChatBot
+from simplechatbot.ollama_agent import OllamaAgent
 
 
 def new_philosophy_agent(keychain: simplechatbot.APIKeyChain) -> simplechatbot.ChatBot:
-    return OllamaChatBot.new(
+    return OllamaAgent.new(
         model_name = 'dolphin-mixtral:8x7b',
         #model_name='gpt-4o-mini', 
         #api_key=keychain['openai'],
@@ -26,10 +26,10 @@ def new_philosophy_agent(keychain: simplechatbot.APIKeyChain) -> simplechatbot.C
     )
 
 def stream_msg(agent: simplechatbot.ChatBot, msg: str) -> simplechatbot.ChatResult:
-    stream = agent.chat_stream(msg, add_to_history=True)
+    stream = agent.stream(msg, add_to_history=True)
     for chunk in stream:
         print(chunk.content, end="", flush=True)
-    return stream.result()
+    return stream.collect()
 
 
 def main():

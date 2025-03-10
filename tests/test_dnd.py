@@ -4,39 +4,44 @@ sys.path.append('../src/')
 import simplechatbot
 
 #from langchain_openai import ChatOpenAI
-#from simplechatbot.openai_chatbot import OpenAIChatBot
-from simplechatbot.ollama_chatbot import OllamaChatBot
+from simplechatbot.openai_agent import OpenAIAgent
+from simplechatbot.ollama_agent import OllamaChatBot
 
 
-def new_philosophy_agent(keychain: simplechatbot.APIKeyChain) -> simplechatbot.ChatBot:
+def new_ollama_agent(**kwargs) -> OllamaChatBot:
     return OllamaChatBot.new(
         model_name = 'dolphin-mixtral:8x7b',
-        #model_name='gpt-4o-mini', 
-        #api_key=keychain['openai'],
+        **kwargs,
+    )
+
+def new_openai_agent(**kwargs) -> OpenAIAgent:
+    keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
+    return OpenAIAgent.new(
+        model_name = 'gpt-4o-mini',
+        api_key=keychain['openai'],
+        **kwargs
+    )
+
+def new_dm() -> simplechatbot.ChatBot:
+    return new_ollama_agent(
         system_prompt=(
-            'Your job is to write amazing science fiction stories. The user will first give you '
-            'ideas and then iterate to come up with new stories, which you can take and iterate on again. '
-            'Through repeated back-and-forth iteration you will be able to come up with amazing stories.'
-            'Feel free to pull ideas from every possible science fiction story you can think of. '
-            'The best story ideas will include interesting commentary on our present society and '
-            'include critiques of the contradictions that are prevalent in our society. These critiques '
-            'should be expressed inherently as part of the narrative rather than mentioned explicitly. '
-            'Great stories are also very long, so be sure to produce really long stories.'
+            'You are a dungeon master. You are running a game of Dungeons and Dragons.'
+            'Your players are about to enter a dark cave. You must describe the cave to them.'
         )
     )
 
 def stream_msg(agent: simplechatbot.ChatBot, msg: str) -> simplechatbot.ChatResult:
-    stream = agent.chat_stream(msg, add_to_history=True)
+    stream = agent.stream(msg, add_to_history=True)
     for chunk in stream:
         print(chunk.content, end="", flush=True)
-    return stream.result()
+    return stream.collect()
 
 
 def main():
 
     # optional: use this to grab keys from a json file rather than setting system variables
-    keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
-    agent1, agent2 = new_philosophy_agent(keychain), new_philosophy_agent(keychain)
+    
+    #agent1, agent2 = new_dm(keychain), new_philosophy_agent(keychain)
 
     discussion_topic = 'Is it better for humans to grow our population or not?'
 
@@ -48,7 +53,7 @@ def main():
     content = discussion_topic
     for i in range(int(1e3)):
         print('='*40, f'Agent 1 Response {i+1}', '='*40)
-        content = stream_msg(agent1, content).content
+        content = agent1.stream(content).content
         print('\n\n\n')
 
         print('='*40, f'Agent 2 Response {i+1}', '='*40)
