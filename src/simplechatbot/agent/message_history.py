@@ -54,6 +54,10 @@ class MessageHistory(list[BaseMessage]):
                 )
         
     ############################# Transformations #############################
+    def to_string(self) -> str:
+        '''Get entire buffer as a string.'''
+        return self.get_buffer_string()
+    
     def get_buffer_string(self, *args, **kwargs) -> str:
         '''Get entire buffer as a string.'''
         return get_buffer_string(self, *args, **kwargs)
