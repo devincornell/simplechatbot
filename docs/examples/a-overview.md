@@ -24,7 +24,7 @@ import simplechatbot
 
 ## Instantiating `Agent` Objects
 
-`Agent` instances maintain three elements: a chat model (or runnable) LLM, chat history, and available tools / functions.
+`Agent` instances maintain three elements: a chat model (or runnable) LLM, chat history, and available tools / functions. System prompts are simply stored as part of the conversation history.
 
 It may be instantiated from any [langchain chat model](https://python.langchain.com/v0.1/docs/modules/model_io/chat/) or runnable.
 
