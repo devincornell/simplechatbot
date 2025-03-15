@@ -1,3 +1,6 @@
+
+
+
 # Model-specific ChatBots
 
 While `ChatBot` instances can be created from any Langchain Chat interface, we created some convenient superclasses that have varying levels of model-specific behavior.
@@ -5,24 +8,48 @@ While `ChatBot` instances can be created from any Langchain Chat interface, we c
 Model-specific chatbots only differ from `ChatBot` in that they define static factory constructor methods, all named `new`. As each chat model needs to be installed separately, they must be accessed via separate imports.
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 import sys
 sys.path.append('../src/')
 
 import simplechatbot
 ```
 
+
+---
+
+
+
+
 I will use the keychain to manage API keys for OpenAI and Mistral.
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
 ```
+
+
+---
+
+
+
 
 Notice that we use a separate import statement to explicitly import the model-specific chatbots.
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 from simplechatbot.ollama_agent import OllamaAgent
 
 agent = OllamaAgent.new(
@@ -31,7 +58,15 @@ agent = OllamaAgent.new(
 ```
 
 
-```python
+---
+
+
+
+
+
+---
+
+``` python linenums="1"
 from simplechatbot.openai_agent import OpenAIAgent
 
 agent = OpenAIAgent.new(
@@ -41,7 +76,15 @@ agent = OpenAIAgent.new(
 ```
 
 
-```python
+---
+
+
+
+
+
+---
+
+``` python linenums="1"
 from simplechatbot.mistral_agent import MistralAgent
 
 agent = MistralAgent.new(
@@ -49,3 +92,9 @@ agent = MistralAgent.new(
     api_key=keychain['mistral'],
 )
 ```
+
+
+---
+
+
+ 

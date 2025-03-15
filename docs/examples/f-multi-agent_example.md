@@ -1,3 +1,6 @@
+
+
+
 # Multi-agent Examples
 
 In this example I show an example of an agent that writes a story using a series of steps.
@@ -14,7 +17,11 @@ In this example I show an example of an agent that writes a story using a series
 ![Story bot design diagram](https://storage.googleapis.com/public_data_09324832787/story_bot_design.svg)
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 import pydantic
 import typing
 
@@ -25,12 +32,22 @@ import simplechatbot
 from simplechatbot.openai_agent import OpenAIAgent
 ```
 
+
+---
+
+
+
+
 First I create a new chatbot from OpenAI using the API stored in the keychain file.
 
 I also create a new function `stream_it` that prints the result from the LLM as it is received and returns the full result of the LLM call.
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
 base_agent = OpenAIAgent.new(
     model_name = 'gpt-4o-mini', 
@@ -38,10 +55,20 @@ base_agent = OpenAIAgent.new(
 )
 ```
 
+
+---
+
+
+
+
 Next we need to direct the LLM to create an outline for the story. I do this by creating a system prompt describing the task of creating an outline and a pydantic class to direct the LLM on how to structure its response. This is important because the output of the outline bot will be used for generating chapters.
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 class StoryOutline(pydantic.BaseModel):
     """Outline of the story."""
 
@@ -81,6 +108,11 @@ outline: StoryOutline = outline_bot.create_outline(q)
 print(outline.outline_str())
 ```
 
+
+
+stdout:
+ 
+
     topic: Rekindling a Friendship
     
     The Innocent Bond: In a small town, two children, Mia and Jake, form a deep bond during summer vacations. They share adventures, secrets, and dreams, making a pact to always stay friends. However, as they grow older, Mia moves away, and they lose touch. The chapter ends with Mia looking back at old photos, reminiscing about the carefree days of their friendship and wondering how Jake is doing.
@@ -88,12 +120,25 @@ print(outline.outline_str())
     A Chance Encounter: Years later, Mia returns to her hometown for a wedding. On the night of the event, she unexpectedly runs into Jake, who hasn't changed much but feels like a stranger. Their initial conversation is awkward, filled with nostalgia and uncertainty. But as the night unfolds, they find common ground in shared memories. They agree to grab coffee the next day to catch up, both feeling a mix of excitement and anxiety about seeing each other after so long.
     
     Rebuilding the Past: During coffee, Mia and Jake navigate the complexities of their adult lives, revealing new aspects of their personalities that have developed separately. They reminisce about the past but also confront the differences that have emerged over the years. Misunderstandings arise but are resolved through open communication, leading to a rekindling of their friendship. The chapter ends with both feeling hopeful but uncertain about what the future holds for their relationship.
+    
+
+ 
+
+
+
+---
+
+
 
 
 Next we create a bot that will generate the actual chapter content based on information generated in the outline and a summary of the previous chapter (if one exists).
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 class ChapterBot:
     system_prompt = (
         "You are designed to write a single chapter of a larger story based on the following information: \n\n"
@@ -129,12 +174,27 @@ class ChapterBot:
 chapter_bot = ChapterBot(base_agent)
 ```
 
+
+---
+
+
+
+
 Now we actually create the chatper using the prompt.
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 chapter1 = chapter_bot.write_chapter(outline.story_topic, outline.part1_title, outline.part1_description)
 ```
+
+
+
+stdout:
+ 
 
     The sun-drenched days of summer blended into a tapestry of laughter and adventure for Mia and Jake. Their small town, a canvas of vibrant colors and warm breezes, became the backdrop for their blossoming friendship. 
     
@@ -150,10 +210,23 @@ chapter1 = chapter_bot.write_chapter(outline.story_topic, outline.part1_title, o
     
     Mia’s heart tightened as she wondered where Jake was now, if he recalled their pact, the whispers of their carefree laughter carried by the winds through the years. In that moment, she realized that though miles apart, the bond they forged during those innocent days still held a spark of hope, waiting to be rekindled.
 
+ 
+
+
+
+---
+
+
+
+
 Next I create a bot that will summarize a chapter. We will eventually feed this into the creation of chapter 2.
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 class SummaryBot:
     system_prompt = (
         'You need to create a summary of the story chapter provided to you by the user. '
@@ -178,9 +251,22 @@ summary_bot = SummaryBot(base_agent)
 ```
 
 
-```python
+---
+
+
+
+
+
+---
+
+``` python linenums="1"
 ch1_summary = summary_bot.summarize(chapter1)
 ```
+
+
+
+stdout:
+ 
 
     In this poignant chapter, we follow Mia and Jake, two friends who share a magical summer filled with adventures in their small town. Their friendship flourishes at the old oak tree, where they craft a treasure map and transform their imaginations into a world of pirates, knights, and dreams. They create a pact to always remain friends, believing their bond is unbreakable.
     
@@ -188,12 +274,30 @@ ch1_summary = summary_bot.summarize(chapter1)
     
     As the years progress, Mia finds herself in a new, foreign place, making new friends but often reminiscing about her time with Jake. One evening, she discovers a box of memories, pulling out old photographs that remind her of their joyful days together. Reflecting on their shared adventures and the special bond they created, Mia wonders if Jake still remembers their pact. The chapter concludes with a sense of nostalgia and hope, highlighting that despite the miles between them, the spark of their friendship still glows, waiting for a chance to reignite.
 
+ 
+
+
+
+---
+
+
+
+
 Now we actually generate the second chapter using the outline and the previous chapter summary.
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 chapter2 = chapter_bot.write_chapter(outline.story_topic, outline.part2_title, outline.part2_description, ch1_summary)
 ```
+
+
+
+stdout:
+ 
 
     Mia stepped out of the wedding venue, the soft glow of string lights illuminating the night as laughter and music floated through the air. She wrapped her shawl tighter around her shoulders, feeling a chill that had nothing to do with the evening breeze. It was a night of joy, yet a weight settled in her chest as she navigated the familiar streets of her hometown. 
     
@@ -219,23 +323,59 @@ chapter2 = chapter_bot.write_chapter(outline.story_topic, outline.part2_title, o
     
     As they parted ways, a mix of excitement and anxiety washed over Mia. She watched him walk back into the crowd, feeling a renewed sense of hope. Perhaps this was the beginning of rekindling what they had lost, a chance to mend the spaces that distance had created.
 
+ 
+
+
+
+---
+
+
+
+
 Create a summary for chapter 2 now.
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 ch2_summary = summary_bot.summarize(chapter2)
 ```
+
+
+
+stdout:
+ 
 
     In this chapter, Mia finds herself stepping out of a wedding venue, overwhelmed by a mix of joy and nostalgia. As she walks through her hometown, she unexpectedly encounters Jake, her childhood friend and first love, who she hasn't seen in nearly a decade. Their initial interaction is filled with awkwardness and familiarity, highlighting the emotional distance that time and circumstances have created between them. 
     
     They engage in small talk, reminiscing about their childhood adventures, such as creating a treasure map, which leads to laughter and a rekindling of their connection. Despite the years apart, they quickly find common ground, indicating an enduring bond beneath the surface. As Mia suggests meeting for coffee the next day, both characters sense a hopeful opportunity to explore what could be a revival of their relationship. The chapter concludes with Mia feeling a renewed sense of hope for the future as she watches Jake disappear back into the crowd, hinting at the possibility of mending the gaps that time had widened between them.
 
+ 
+
+
+
+---
+
+
+
+
 Use the summary of chapter 2 and outline information to create chapter 3.
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 chapter3 = chapter_bot.write_chapter(outline.story_topic, outline.part3_title, outline.part3_description, ch2_summary)
 ```
+
+
+
+stdout:
+ 
 
     The coffee shop smelled of roasted beans and sweet pastries, a familiar scent that enveloped Mia as she entered, her heart racing with anticipation. She spotted Jake at a corner table, his back straight, absorbed in a steaming mug. Memories flooded her as she approached—of painting their childhood treehouse and sharing secrets under the stars.
     
@@ -263,10 +403,23 @@ chapter3 = chapter_bot.write_chapter(outline.story_topic, outline.part3_title, o
     
     They left the coffee shop with that same hopeful feeling—a cautious optimism decorating the edges of their hearts. As Mia turned to look at Jake one last time before parting ways, a sense of uncertainty lingered in the air. Would this be the beginning of something new, or merely a fleeting spark?
 
+ 
+
+
+
+---
+
+
+
+
 And now we can review the full text of the book.
 
 
-```python
+
+
+---
+
+``` python linenums="1"
 story = f'''
 
 Overview: {outline.story_topic}
@@ -290,6 +443,11 @@ Overview: {outline.story_topic}
 import pprint
 pprint.pprint(story)
 ```
+
+
+
+stdout:
+ 
 
     ('\n'
      '\n'
@@ -447,4 +605,13 @@ pprint.pprint(story)
      'time before parting ways, a sense of uncertainty lingered in the air. Would '
      'this be the beginning of something new, or merely a fleeting spark?\n'
      '\n')
+    
 
+ 
+
+
+
+---
+
+
+ 

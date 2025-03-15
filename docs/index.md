@@ -73,6 +73,6 @@ EXAMPLE_NOTEBOOK_MARKDOWN_FOLDER = ./docs/examples/# this is where example noteb
 
 example_notebooks:
 	-mkdir $(EXAMPLE_NOTEBOOK_MARKDOWN_FOLDER)
-	jupyter nbconvert --to markdown $(EXAMPLE_NOTEBOOK_FOLDER)/*.ipynb
+	python -m pymddoc ipynb2md-multi $(EXAMPLE_NOTEBOOK_FOLDER)/*.ipynb
 	mv $(EXAMPLE_NOTEBOOK_FOLDER)/*.md $(EXAMPLE_NOTEBOOK_MARKDOWN_FOLDER)
 ```
