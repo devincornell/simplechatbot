@@ -278,7 +278,7 @@
         
   
   <span class="md-ellipsis">
-    Introduction
+    API Introduction
   </span>
   
 
@@ -428,35 +428,62 @@
 <h1 id="model-specific-chatbots">Model-specific ChatBots</h1>
 <p>While <code>ChatBot</code> instances can be created from any Langchain Chat interface, we created some convenient superclasses that have varying levels of model-specific behavior.</p>
 <p>Model-specific chatbots only differ from <code>ChatBot</code> in that they define static factory constructor methods, all named <code>new</code>. As each chat model needs to be installed separately, they must be accessed via separate imports.</p>
-<pre><code class="language-python">import sys
-sys.path.append('../src/')
-
-import simplechatbot
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1">1</a></span>
+<span class="normal"><a href="#__codelineno-0-2">2</a></span>
+<span class="normal"><a href="#__codelineno-0-3">3</a></span>
+<span class="normal"><a href="#__codelineno-0-4">4</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">sys</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../src/&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="kn">import</span> <span class="nn">simplechatbot</span>
+</code></pre></div></td></tr></table></div>
+<hr />
 <p>I will use the keychain to manage API keys for OpenAI and Mistral.</p>
-<pre><code class="language-python">keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-1-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="n">keychain</span> <span class="o">=</span> <span class="n">simplechatbot</span><span class="o">.</span><span class="n">APIKeyChain</span><span class="o">.</span><span class="n">from_json_file</span><span class="p">(</span><span class="s1">&#39;../keys.json&#39;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<hr />
 <p>Notice that we use a separate import statement to explicitly import the model-specific chatbots.</p>
-<pre><code class="language-python">from simplechatbot.ollama_agent import OllamaAgent
-
-agent = OllamaAgent.new(
-    model_name = 'llama3.1', 
-)
-</code></pre>
-<pre><code class="language-python">from simplechatbot.openai_agent import OpenAIAgent
-
-agent = OpenAIAgent.new(
-    model_name = 'gpt-4o-mini', 
-    api_key=keychain['openai'],
-)
-</code></pre>
-<pre><code class="language-python">from simplechatbot.mistral_agent import MistralAgent
-
-agent = MistralAgent.new(
-    model_name = 'mistral-large-latest', 
-    api_key=keychain['mistral'],
-)
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-2-1">1</a></span>
+<span class="normal"><a href="#__codelineno-2-2">2</a></span>
+<span class="normal"><a href="#__codelineno-2-3">3</a></span>
+<span class="normal"><a href="#__codelineno-2-4">4</a></span>
+<span class="normal"><a href="#__codelineno-2-5">5</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="kn">from</span> <span class="nn">simplechatbot.ollama_agent</span> <span class="kn">import</span> <span class="n">OllamaAgent</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">OllamaAgent</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4"></a>    <span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;llama3.1&#39;</span><span class="p">,</span> 
+<a id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<hr />
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-3-1">1</a></span>
+<span class="normal"><a href="#__codelineno-3-2">2</a></span>
+<span class="normal"><a href="#__codelineno-3-3">3</a></span>
+<span class="normal"><a href="#__codelineno-3-4">4</a></span>
+<span class="normal"><a href="#__codelineno-3-5">5</a></span>
+<span class="normal"><a href="#__codelineno-3-6">6</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kn">from</span> <span class="nn">simplechatbot.openai_agent</span> <span class="kn">import</span> <span class="n">OpenAIAgent</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">OpenAIAgent</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4"></a>    <span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;gpt-4o-mini&#39;</span><span class="p">,</span> 
+<a id="__codelineno-3-5" name="__codelineno-3-5"></a>    <span class="n">api_key</span><span class="o">=</span><span class="n">keychain</span><span class="p">[</span><span class="s1">&#39;openai&#39;</span><span class="p">],</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6"></a><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<hr />
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-4-1">1</a></span>
+<span class="normal"><a href="#__codelineno-4-2">2</a></span>
+<span class="normal"><a href="#__codelineno-4-3">3</a></span>
+<span class="normal"><a href="#__codelineno-4-4">4</a></span>
+<span class="normal"><a href="#__codelineno-4-5">5</a></span>
+<span class="normal"><a href="#__codelineno-4-6">6</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kn">from</span> <span class="nn">simplechatbot.mistral_agent</span> <span class="kn">import</span> <span class="n">MistralAgent</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">MistralAgent</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4"></a>    <span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;mistral-large-latest&#39;</span><span class="p">,</span> 
+<a id="__codelineno-4-5" name="__codelineno-4-5"></a>    <span class="n">api_key</span><span class="o">=</span><span class="n">keychain</span><span class="p">[</span><span class="s1">&#39;mistral&#39;</span><span class="p">],</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<hr />
 
 
 
@@ -503,7 +530,7 @@ agent = MistralAgent.new(
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.expand"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "navigation.expand", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>

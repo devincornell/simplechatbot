@@ -278,7 +278,7 @@
         
   
   <span class="md-ellipsis">
-    Introduction
+    API Introduction
   </span>
   
 
@@ -325,6 +325,17 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Structured Outputs
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -334,6 +345,43 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pydantic-types-and-chat_structured" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pydantic Types and chat_structured
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complex-structures-and-response-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complex Structures and Response Order
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -409,6 +457,32 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pydantic-types-and-chat_structured" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pydantic Types and chat_structured
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complex-structures-and-response-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complex Structures and Response Order
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -426,90 +500,240 @@
 
 
 <h1 id="structured-outputs">Structured Outputs</h1>
-<p>One of the most powerful features of LLMs is the ability to produce output which conforms to a pre-determined structure.</p>
+<p>One of the most powerful features of LLMs is the ability to produce outputs which conform to a pre-determined structure. There are several instances in which this feature is critical.</p>
+<ul>
+<li>Output structures may enforce "reasoning" or systematic approaches to generating responses.</li>
+<li>The output must be passed to an application or interface that is not simply text-based.</li>
+</ul>
 <p>We define output structures using custom Pydantic types with attribute descriptions and validation logics. See more about using Pydantic types for structured outputs using langchain <a href="https://python.langchain.com/docs/concepts/structured_outputs/">here</a>. This package builds on that functionality by making it easy to request structured output at any point in an exchange.</p>
-<pre><code class="language-python">import pydantic
-
-import sys
-sys.path.append('../src/')
-
-import simplechatbot
-from simplechatbot.openai_agent import OpenAIAgent
-</code></pre>
-<pre><code class="language-python">
-# optional: use this to grab keys from a json file rather than setting system variables
-keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
-
-agent = OpenAIAgent.new('gpt-4o-mini', api_key=keychain['openai'])
-print(agent)
-</code></pre>
-<pre><code>OpenAIAgent(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={}))
-</code></pre>
-<pre><code class="language-python">agent.history
-</code></pre>
-<pre><code>[]
-</code></pre>
-<pre><code class="language-python">agent.stream('Hello, how are you? My name is Devin. Don\'t forget it!').print_and_collect()
-</code></pre>
-<pre><code>Hello, Devin! I'm here to help you. What can I do for you today?
-
-
-
-
-ChatResult(content=Hello, Devin! I'm here to help you. What can I do for you today?, tool_calls=[])
-</code></pre>
-<pre><code class="language-python">print(agent.history.get_buffer_string())
-</code></pre>
-<pre><code>Human: Hello, how are you? My name is Devin. Don't forget it!
-AI: Hello, Devin! I'm here to help you. What can I do for you today?
-</code></pre>
-<pre><code class="language-python">class ResponseFormatter(pydantic.BaseModel):
-    &quot;&quot;&quot;Always use this tool to structure your response to the user.&quot;&quot;&quot;
-    answer: str = pydantic.Field(description=&quot;The answer to the user's question.&quot;)
-    followup_question: str = pydantic.Field(description=&quot;A follow-up question the user could ask.&quot;)
-
-agent.chat_structured('what is your favorite cat?', output_structure=ResponseFormatter)
-</code></pre>
-<pre><code>StructuredOutputResult(data=answer="I don't have personal preferences, but many people love the Maine Coon for their friendly nature and impressive size, or the Siamese for their vocal personalities and striking appearance. Do you have a favorite cat breed?" followup_question='What characteristics do you look for in a cat?')
-</code></pre>
-<pre><code class="language-python">print(agent.history.get_buffer_string())
-</code></pre>
-<pre><code>Human: Hello, how are you? My name is Devin. Don't forget it!
-AI: Hello, Devin! I'm here to help you. What can I do for you today?
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1">1</a></span>
+<span class="normal"><a href="#__codelineno-0-2">2</a></span>
+<span class="normal"><a href="#__codelineno-0-3">3</a></span>
+<span class="normal"><a href="#__codelineno-0-4">4</a></span>
+<span class="normal"><a href="#__codelineno-0-5">5</a></span>
+<span class="normal"><a href="#__codelineno-0-6">6</a></span>
+<span class="normal"><a href="#__codelineno-0-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">pydantic</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3"></a><span class="kn">import</span> <span class="nn">sys</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../src/&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6"></a><span class="kn">import</span> <span class="nn">simplechatbot</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7"></a><span class="kn">from</span> <span class="nn">simplechatbot.openai_agent</span> <span class="kn">import</span> <span class="n">OpenAIAgent</span>
+</code></pre></div></td></tr></table></div>
+<hr />
+<p>Create a new basic agent with no system prompt and no tools.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-1-1">1</a></span>
+<span class="normal"><a href="#__codelineno-1-2">2</a></span>
+<span class="normal"><a href="#__codelineno-1-3">3</a></span>
+<span class="normal"><a href="#__codelineno-1-4">4</a></span>
+<span class="normal"><a href="#__codelineno-1-5">5</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="c1"># optional: use this to grab keys from a json file rather than setting system variables</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2"></a><span class="n">keychain</span> <span class="o">=</span> <span class="n">simplechatbot</span><span class="o">.</span><span class="n">APIKeyChain</span><span class="o">.</span><span class="n">from_json_file</span><span class="p">(</span><span class="s1">&#39;../keys.json&#39;</span><span class="p">)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">OpenAIAgent</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;gpt-4o-mini&#39;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">keychain</span><span class="p">[</span><span class="s1">&#39;openai&#39;</span><span class="p">])</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>OpenAIAgent(model_type=ChatOpenAI, model_name=&quot;gpt-4o-mini&quot;, tools=ToolLookup(tools={}))
+</code></pre></div>
+<hr />
+<p>Note that this is a normal agent that can be conversed with.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-2-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="s1">&#39;Hello, how are you? My name is Devin. Don</span><span class="se">\&#39;</span><span class="s1">t forget it!&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">print_and_collect</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>Hello, Devin! I&#39;m doing well, thank you. How can I assist you today?
+</code></pre></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=Hello, Devin! I&#39;m doing well, thank you. How can I assist you today?, tool_calls=[])
+</code></pre></div>
+<hr />
+<h2 id="pydantic-types-and-chat_structured">Pydantic Types and <code>chat_structured</code></h2>
+<p>The <code>chat_structured</code> method allows you to provide an output structure that the LLM response will be constrained to. The example below forces the LLM to answer the question and even come up with a follow-up question.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-3-1">1</a></span>
+<span class="normal"><a href="#__codelineno-3-2">2</a></span>
+<span class="normal"><a href="#__codelineno-3-3">3</a></span>
+<span class="normal"><a href="#__codelineno-3-4">4</a></span>
+<span class="normal"><a href="#__codelineno-3-5">5</a></span>
+<span class="normal"><a href="#__codelineno-3-6">6</a></span>
+<span class="normal"><a href="#__codelineno-3-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="k">class</span> <span class="nc">ResponseFormatter</span><span class="p">(</span><span class="n">pydantic</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Always use this tool to structure your response to the user.&quot;&quot;&quot;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3"></a>    <span class="n">answer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The answer to the user&#39;s question.&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4"></a>    <span class="n">followup_question</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;A follow-up question the user could ask.&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6"></a><span class="n">sresult</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat_structured</span><span class="p">(</span><span class="s1">&#39;what is your favorite cat?&#39;</span><span class="p">,</span> <span class="n">output_structure</span><span class="o">=</span><span class="n">ResponseFormatter</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7"></a><span class="n">sresult</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>StructuredOutputResult(data=answer=&quot;As an AI, I don&#39;t have personal preferences or feelings, but popular cat breeds that many people love include the Maine Coon for their friendly nature and size, the Siamese for their vocal personality, and the Ragdoll for their affectionate demeanor. What about you, Devin? Do you have a favorite cat?&quot; followup_question=&#39;What qualities do you look for in a favorite cat?&#39;)
+</code></pre></div>
+<hr />
+<p>As you can see, the <code>chat_structured</code> method returns a <code>StructuredOutputResult</code> instance, which has a <code>data</code> attribute which actually stores the Pydantic type instance.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-4-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="n">sresult</span><span class="o">.</span><span class="n">data</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ResponseFormatter(answer=&quot;As an AI, I don&#39;t have personal preferences or feelings, but popular cat breeds that many people love include the Maine Coon for their friendly nature and size, the Siamese for their vocal personality, and the Ragdoll for their affectionate demeanor. What about you, Devin? Do you have a favorite cat?&quot;, followup_question=&#39;What qualities do you look for in a favorite cat?&#39;)
+</code></pre></div>
+<hr />
+<p>Access the attributes of the response through this instance.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-5-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="n">sresult</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">answer</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>&quot;As an AI, I don&#39;t have personal preferences or feelings, but popular cat breeds that many people love include the Maine Coon for their friendly nature and size, the Siamese for their vocal personality, and the Ragdoll for their affectionate demeanor. What about you, Devin? Do you have a favorite cat?&quot;
+</code></pre></div>
+<hr />
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-6-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="n">sresult</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">followup_question</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>&#39;What qualities do you look for in a favorite cat?&#39;
+</code></pre></div>
+<hr />
+<p>You can see this object in json format using the <code>as_json</code> method.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-7-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">sresult</span><span class="o">.</span><span class="n">as_json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>{
+  &quot;answer&quot;: &quot;As an AI, I don&#39;t have personal preferences or feelings, but popular cat breeds that many people love include the Maine Coon for their friendly nature and size, the Siamese for their vocal personality, and the Ragdoll for their affectionate demeanor. What about you, Devin? Do you have a favorite cat?&quot;,
+  &quot;followup_question&quot;: &quot;What qualities do you look for in a favorite cat?&quot;
+}
+</code></pre></div>
+<hr />
+<p>You can see that the response was included in the conversation history in json format. Fortunately, modern LLMs can easily parse json data structures to keep track of conversation progress.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-8-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">get_buffer_string</span><span class="p">())</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>Human: Hello, how are you? My name is Devin. Don&#39;t forget it!
+AI: Hello, Devin! I&#39;m doing well, thank you. How can I assist you today?
 Human: what is your favorite cat?
-AI: {"answer":"I don't have personal preferences, but many people love the Maine Coon for their friendly nature and impressive size, or the Siamese for their vocal personalities and striking appearance. Do you have a favorite cat breed?","followup_question":"What characteristics do you look for in a cat?"}
-</code></pre>
-<pre><code class="language-python">agent.stream('I like that they are so cute!').print_and_collect()
-</code></pre>
-<pre><code>Cat cuteness is definitely a huge draw! Their playful antics, soft fur, and adorable faces can brighten anyone's day. Do you have a favorite cat or a pet of your own?
-
-
-
-
-ChatResult(content=Cat cuteness is definitely a huge draw! Their playful antics, soft fur, and adorable faces can brighten anyone's day. Do you have a favorite cat or a pet of your own?, tool_calls=[])
-</code></pre>
-<pre><code class="language-python">print(agent.history.get_buffer_string())
-</code></pre>
-<pre><code>Human: Hello, how are you? My name is Devin. Don't forget it!
-AI: Hello, Devin! I'm here to help you. What can I do for you today?
-Human: what is your favorite cat?
-AI: {"answer":"I don't have personal preferences, but many people love the Maine Coon for their friendly nature and impressive size, or the Siamese for their vocal personalities and striking appearance. Do you have a favorite cat breed?","followup_question":"What characteristics do you look for in a cat?"}
-Human: I like that they are so cute!
-AI: Cat cuteness is definitely a huge draw! Their playful antics, soft fur, and adorable faces can brighten anyone's day. Do you have a favorite cat or a pet of your own?
-</code></pre>
-<pre><code class="language-python">agent.chat_structured('what is your favorite cat?', output_structure=ResponseFormatter, add_to_history=False)
-</code></pre>
-<pre><code>StructuredOutputResult(data=answer="While I don't have personal favorites, many people adore the Ragdoll for its affectionate and calm temperament. They are known for their laid-back nature and striking blue eyes. What do you find cutest about cats?" followup_question='Have you ever thought about owning a cat?')
-</code></pre>
-<pre><code class="language-python">print(agent.history.get_buffer_string())
-</code></pre>
-<pre><code>Human: Hello, how are you? My name is Devin. Don't forget it!
-AI: Hello, Devin! I'm here to help you. What can I do for you today?
-Human: what is your favorite cat?
-AI: {"answer":"I don't have personal preferences, but many people love the Maine Coon for their friendly nature and impressive size, or the Siamese for their vocal personalities and striking appearance. Do you have a favorite cat breed?","followup_question":"What characteristics do you look for in a cat?"}
-Human: I like that they are so cute!
-AI: Cat cuteness is definitely a huge draw! Their playful antics, soft fur, and adorable faces can brighten anyone's day. Do you have a favorite cat or a pet of your own?
-</code></pre>
+AI: {&quot;answer&quot;:&quot;As an AI, I don&#39;t have personal preferences or feelings, but popular cat breeds that many people love include the Maine Coon for their friendly nature and size, the Siamese for their vocal personality, and the Ragdoll for their affectionate demeanor. What about you, Devin? Do you have a favorite cat?&quot;,&quot;followup_question&quot;:&quot;What qualities do you look for in a favorite cat?&quot;}
+</code></pre></div>
+<hr />
+<p>Asking it again by passing <code>new_message=None</code> shows that it will simply ask the questions in plain text format, so it will re-use the structured response provided in the previous message.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-9-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">print_and_collect</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>As an AI, I don&#39;t have personal preferences or feelings, but popular cat breeds that many people love include the Maine Coon for their friendly nature and size, the Siamese for their vocal personality, and the Ragdoll for their affectionate demeanor. What about you, Devin? Do you have a favorite cat?
+</code></pre></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=As an AI, I don&#39;t have personal preferences or feelings, but popular cat breeds that many people love include the Maine Coon for their friendly nature and size, the Siamese for their vocal personality, and the Ragdoll for their affectionate demeanor. What about you, Devin? Do you have a favorite cat?, tool_calls=[])
+</code></pre></div>
+<hr />
+<h2 id="complex-structures-and-response-order">Complex Structures and Response Order</h2>
+<p>The most powerful aspect of structured responses is that they force the LLM to provide parts of the full response separately and in-sequence. Carefully designed output structures can lead to better and more complete responses.</p>
+<p>In the following questions, we ask the LLM to provide a response to the question "Why are cheetahs so fast?" with different output structures.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-10-1">1</a></span>
+<span class="normal"><a href="#__codelineno-10-2">2</a></span>
+<span class="normal"><a href="#__codelineno-10-3">3</a></span>
+<span class="normal"><a href="#__codelineno-10-4">4</a></span>
+<span class="normal"><a href="#__codelineno-10-5">5</a></span>
+<span class="normal"><a href="#__codelineno-10-6">6</a></span>
+<span class="normal"><a href="#__codelineno-10-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1"></a><span class="k">class</span> <span class="nc">ReasonedResponse</span><span class="p">(</span><span class="n">pydantic</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Always use this tool to structure your response to the user.&quot;&quot;&quot;</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3"></a>    <span class="n">answer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The answer to the user&#39;s question.&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4"></a>    <span class="n">reasons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Reasons for the answer.&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5"></a>
+<a id="__codelineno-10-6" name="__codelineno-10-6"></a><span class="n">sresult</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat_structured</span><span class="p">(</span><span class="s1">&#39;Why are cheetahs so fast?&#39;</span><span class="p">,</span> <span class="n">output_structure</span><span class="o">=</span><span class="n">ReasonedResponse</span><span class="p">,</span> <span class="n">add_to_history</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">sresult</span><span class="o">.</span><span class="n">as_json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>{
+  &quot;answer&quot;: &quot;Cheetahs are fast due to their unique physical adaptations and evolutionary traits.&quot;,
+  &quot;reasons&quot;: [
+    &quot;Cheetahs have a lightweight body structure, which reduces drag when running.&quot;,
+    &quot;They possess long, powerful legs that enable rapid acceleration and speed.&quot;,
+    &quot;Their flexible spine allows for an extended stride length, increasing their speed.&quot;,
+    &quot;Cheetahs have large nasal passages and lungs that facilitate increased oxygen intake during high-speed chases.&quot;
+  ]
+}
+</code></pre></div>
+<hr />
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-11-1">1</a></span>
+<span class="normal"><a href="#__codelineno-11-2">2</a></span>
+<span class="normal"><a href="#__codelineno-11-3">3</a></span>
+<span class="normal"><a href="#__codelineno-11-4">4</a></span>
+<span class="normal"><a href="#__codelineno-11-5">5</a></span>
+<span class="normal"><a href="#__codelineno-11-6">6</a></span>
+<span class="normal"><a href="#__codelineno-11-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1"></a><span class="k">class</span> <span class="nc">ReasonedResponse2</span><span class="p">(</span><span class="n">pydantic</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;This is a well-reasoned response.&quot;&quot;&quot;</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3"></a>    <span class="n">reasons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Reasons for the answer.&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4"></a>    <span class="n">answer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The answer to the user&#39;s question.&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5"></a>
+<a id="__codelineno-11-6" name="__codelineno-11-6"></a><span class="n">sresult</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat_structured</span><span class="p">(</span><span class="s1">&#39;Why are cheetahs so fast?&#39;</span><span class="p">,</span> <span class="n">output_structure</span><span class="o">=</span><span class="n">ReasonedResponse2</span><span class="p">,</span> <span class="n">add_to_history</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">sresult</span><span class="o">.</span><span class="n">as_json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>{
+  &quot;reasons&quot;: [
+    &quot;Cheetahs have a lightweight body structure and long legs designed for speed.&quot;,
+    &quot;Their flexible spine allows for an extended stride length while running.&quot;,
+    &quot;Muscle composition in cheetahs is optimized for quick bursts of speed, containing a high percentage of fast-twitch muscle fibers.&quot;,
+    &quot;They have large nasal passages for increased oxygen intake and a specialized respiratory system that facilitates rapid breathing during sprints.&quot;
+  ],
+  &quot;answer&quot;: &quot;Cheetahs are so fast due to their lightweight body, long leg structure, flexible spine, and muscle composition optimized for speed.&quot;
+}
+</code></pre></div>
+<hr />
+<p>You may also create nested response structures. In this case, we further improve reasoning abilities by requiring the LLM to self-rate the quality of its own responses, leading to a final answer which places special emphasis on these reasons.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-12-1"> 1</a></span>
+<span class="normal"><a href="#__codelineno-12-2"> 2</a></span>
+<span class="normal"><a href="#__codelineno-12-3"> 3</a></span>
+<span class="normal"><a href="#__codelineno-12-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-12-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-12-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-12-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-12-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-12-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-12-10">10</a></span>
+<span class="normal"><a href="#__codelineno-12-11">11</a></span>
+<span class="normal"><a href="#__codelineno-12-12">12</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1"></a><span class="k">class</span> <span class="nc">SingleReason</span><span class="p">(</span><span class="n">pydantic</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;This is a single reason and a self-assessment of the quality of the reason.&quot;&quot;&quot;</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3"></a>    <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;A description of the reason.&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4"></a>    <span class="n">quality</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Quality score represented by an integer between 1 and 10.&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5"></a>
+<a id="__codelineno-12-6" name="__codelineno-12-6"></a><span class="k">class</span> <span class="nc">ReasonedResponse3</span><span class="p">(</span><span class="n">pydantic</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;This is a well-reasoned response.&quot;&quot;&quot;</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8"></a>    <span class="n">reasons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SingleReason</span><span class="p">]</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Reasons for the answer.&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9"></a>    <span class="n">answer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The answer to the user&#39;s question, based on the given reasons and emphsaizing the highest quality reasons.&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10"></a>
+<a id="__codelineno-12-11" name="__codelineno-12-11"></a><span class="n">sresult</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat_structured</span><span class="p">(</span><span class="s1">&#39;Why are cheetahs so fast?&#39;</span><span class="p">,</span> <span class="n">output_structure</span><span class="o">=</span><span class="n">ReasonedResponse3</span><span class="p">,</span> <span class="n">add_to_history</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12"></a><span class="nb">print</span><span class="p">(</span><span class="n">sresult</span><span class="o">.</span><span class="n">as_json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>{
+  &quot;reasons&quot;: [
+    {
+      &quot;reason&quot;: &quot;Cheetahs have a lightweight body structure that reduces drag and allows for quicker acceleration.&quot;,
+      &quot;quality&quot;: 9
+    },
+    {
+      &quot;reason&quot;: &quot;Their leg muscles are highly specialized for sprinting, providing powerful and rapid movement.&quot;,
+      &quot;quality&quot;: 8
+    },
+    {
+      &quot;reason&quot;: &quot;Cheetahs possess large nostrils that allow for increased oxygen intake during a sprint, supporting their high-speed chases.&quot;,
+      &quot;quality&quot;: 7
+    },
+    {
+      &quot;reason&quot;: &quot;Their flexible spine enables a longer stride length while running, enhancing speed.&quot;,
+      &quot;quality&quot;: 8
+    }
+  ],
+  &quot;answer&quot;: &quot;Cheetahs are so fast due to their lightweight body structure, specialized leg muscles, large nostrils for oxygen intake, and a flexible spine that allows for longer strides.&quot;
+}
+</code></pre></div>
+<hr />
+<p>Different approaches for output structures and ordering can lead to vastly different results, so, as with most Generative AI applications, experimentation is essential!</p>
 
 
 
@@ -556,7 +780,7 @@ AI: Cat cuteness is definitely a huge draw! Their playful antics, soft fur, and 
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.expand"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "navigation.expand", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>

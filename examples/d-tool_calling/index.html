@@ -278,7 +278,7 @@
         
   
   <span class="md-ellipsis">
-    Introduction
+    API Introduction
   </span>
   
 
@@ -587,129 +587,218 @@
 <p><code>simplechatbot</code> empowers agents with the ability to produce arguments for arbitrary user functions instead of providing a text response to the user's prompt. Using this interface you can enable features such as web searching, email sending/checking, file browsing, image creation, or any other functionality that can be accessed through Python. The LLM will "decide" whether and which tools/functions should be executed based on a given prompt, so the key is to use tools with clear and concise instructions.</p>
 <p>Under the hood, <code>ChatBot</code> instances maintain a collection of <a href="https://python.langchain.com/docs/how_to/#tools">langchain tools</a> which can be extracted from toolkits or even factory methods that accept the chatbot itself as a parameter. Tools may also be added at the time of LLM execution to enable dynamic systems of available tools.</p>
 <p>You can create your own <a href="https://python.langchain.com/docs/how_to/custom_tools/">custom tools</a> or choose from <a href="https://python.langchain.com/docs/integrations/tools/">Langchain's built-in tools</a>. I will use <code>FileManagementToolkit</code> for demonstration purposes here.</p>
-<pre><code class="language-python">import sys
-sys.path.append('../src/')
-
-import simplechatbot
-from simplechatbot.openai_agent import OpenAIAgent
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1">1</a></span>
+<span class="normal"><a href="#__codelineno-0-2">2</a></span>
+<span class="normal"><a href="#__codelineno-0-3">3</a></span>
+<span class="normal"><a href="#__codelineno-0-4">4</a></span>
+<span class="normal"><a href="#__codelineno-0-5">5</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">sys</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../src/&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="kn">import</span> <span class="nn">simplechatbot</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="kn">from</span> <span class="nn">simplechatbot.openai_agent</span> <span class="kn">import</span> <span class="n">OpenAIAgent</span>
+</code></pre></div></td></tr></table></div>
+<hr />
 <h2 id="enabling-tools">Enabling Tools</h2>
 <p>Start by creating a new example tool that can enables the LLM to check email for the user. We create this tool using the <code>@langchain_core.tools.tool</code> decorator.</p>
-<pre><code class="language-python">import langchain_core.tools
-
-@langchain_core.tools.tool
-def check_new_messages() -&gt; str:
-    '''Check messages.'''
-    return f'No new messages.'
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-1-1">1</a></span>
+<span class="normal"><a href="#__codelineno-1-2">2</a></span>
+<span class="normal"><a href="#__codelineno-1-3">3</a></span>
+<span class="normal"><a href="#__codelineno-1-4">4</a></span>
+<span class="normal"><a href="#__codelineno-1-5">5</a></span>
+<span class="normal"><a href="#__codelineno-1-6">6</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="kn">import</span> <span class="nn">langchain_core.tools</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3"></a><span class="nd">@langchain_core</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">tool</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4"></a><span class="k">def</span> <span class="nf">check_new_messages</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5"></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;Check messages.&#39;&#39;&#39;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;No new messages.&#39;</span>
+</code></pre></div></td></tr></table></div>
+<hr />
 <p>We include this tool as part of the chatbot by passing the function through the <code>tools</code> argument.</p>
-<pre><code class="language-python">keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
-
-system_prompt = '''
-You are designed to answer any question the user has and send/check messages if needed.
-When the user requests you to check your messages, you should display the retrieved messages
- to the user.
-'''
-
-agent = OpenAIAgent.new(
-    model_name = 'gpt-4o-mini', 
-    api_key=keychain['openai'],
-    system_prompt=system_prompt,
-    tools = [check_new_messages],
-)
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-2-1"> 1</a></span>
+<span class="normal"><a href="#__codelineno-2-2"> 2</a></span>
+<span class="normal"><a href="#__codelineno-2-3"> 3</a></span>
+<span class="normal"><a href="#__codelineno-2-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-2-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-2-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-2-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-2-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-2-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-2-10">10</a></span>
+<span class="normal"><a href="#__codelineno-2-11">11</a></span>
+<span class="normal"><a href="#__codelineno-2-12">12</a></span>
+<span class="normal"><a href="#__codelineno-2-13">13</a></span>
+<span class="normal"><a href="#__codelineno-2-14">14</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="n">keychain</span> <span class="o">=</span> <span class="n">simplechatbot</span><span class="o">.</span><span class="n">APIKeyChain</span><span class="o">.</span><span class="n">from_json_file</span><span class="p">(</span><span class="s1">&#39;../keys.json&#39;</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3"></a><span class="n">system_prompt</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4"></a><span class="s1">You are designed to answer any question the user has and send/check messages if needed.</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="s1">When the user requests you to check your messages, you should display the retrieved messages</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6"></a><span class="s1"> to the user.</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7"></a><span class="s1">&#39;&#39;&#39;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8"></a>
+<a id="__codelineno-2-9" name="__codelineno-2-9"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">OpenAIAgent</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10"></a>    <span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;gpt-4o-mini&#39;</span><span class="p">,</span> 
+<a id="__codelineno-2-11" name="__codelineno-2-11"></a>    <span class="n">api_key</span><span class="o">=</span><span class="n">keychain</span><span class="p">[</span><span class="s1">&#39;openai&#39;</span><span class="p">],</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12"></a>    <span class="n">system_prompt</span><span class="o">=</span><span class="n">system_prompt</span><span class="p">,</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13"></a>    <span class="n">tools</span> <span class="o">=</span> <span class="p">[</span><span class="n">check_new_messages</span><span class="p">],</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14"></a><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<hr />
 <p>Now the LLM will have access to these tools. While the agent instance stores the LLM object in the <code>_model</code> attribute, you can use <code>model</code> to get the LLM with bound tools.</p>
-<pre><code class="language-python">agent.model
-</code></pre>
-<pre><code>RunnableBinding(bound=ChatOpenAI(client=&lt;openai.resources.chat.completions.completions.Completions object at 0x10cd3c080&gt;, async_client=&lt;openai.resources.chat.completions.completions.AsyncCompletions object at 0x10cd3dd90&gt;, root_client=&lt;openai.OpenAI object at 0x10844b6e0&gt;, root_async_client=&lt;openai.AsyncOpenAI object at 0x10cd3c0e0&gt;, model_name='gpt-4o-mini', model_kwargs={}, openai_api_key=SecretStr('**********')), kwargs={'tools': [{'type': 'function', 'function': {'name': 'check_new_messages', 'description': 'Check messages.', 'parameters': {'properties': {}, 'type': 'object'}}}]}, config={}, config_factories=[])
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-3-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">model</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>RunnableBinding(bound=ChatOpenAI(client=&lt;openai.resources.chat.completions.completions.Completions object at 0x10cd3c080&gt;, async_client=&lt;openai.resources.chat.completions.completions.AsyncCompletions object at 0x10cd3dd90&gt;, root_client=&lt;openai.OpenAI object at 0x10844b6e0&gt;, root_async_client=&lt;openai.AsyncOpenAI object at 0x10cd3c0e0&gt;, model_name=&#39;gpt-4o-mini&#39;, model_kwargs={}, openai_api_key=SecretStr(&#39;**********&#39;)), kwargs={&#39;tools&#39;: [{&#39;type&#39;: &#39;function&#39;, &#39;function&#39;: {&#39;name&#39;: &#39;check_new_messages&#39;, &#39;description&#39;: &#39;Check messages.&#39;, &#39;parameters&#39;: {&#39;properties&#39;: {}, &#39;type&#39;: &#39;object&#39;}}}]}, config={}, config_factories=[])
+</code></pre></div>
+<hr />
 <p>You can also use the method <code>get_model_with_tools</code> to get the tool-bound model with any additional tools. The <code>invoke</code>, <code>stream</code>, <code>chat</code>, and <code>chat_stream</code> methods all use this under-the hood so you can add any tools, toolkits, or tool factories to the model at invokation.</p>
-<pre><code class="language-python">agent.get_model_with_tools(tools=None)
-</code></pre>
-<pre><code>(RunnableBinding(bound=ChatOpenAI(client=&lt;openai.resources.chat.completions.completions.Completions object at 0x10cd3c080&gt;, async_client=&lt;openai.resources.chat.completions.completions.AsyncCompletions object at 0x10cd3dd90&gt;, root_client=&lt;openai.OpenAI object at 0x10844b6e0&gt;, root_async_client=&lt;openai.AsyncOpenAI object at 0x10cd3c0e0&gt;, model_name='gpt-4o-mini', model_kwargs={}, openai_api_key=SecretStr('**********')), kwargs={'tools': [{'type': 'function', 'function': {'name': 'check_new_messages', 'description': 'Check messages.', 'parameters': {'properties': {}, 'type': 'object'}}}]}, config={}, config_factories=[]),
- ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x1084516c0&gt;)}))
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-4-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">get_model_with_tools</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>(RunnableBinding(bound=ChatOpenAI(client=&lt;openai.resources.chat.completions.completions.Completions object at 0x10cd3c080&gt;, async_client=&lt;openai.resources.chat.completions.completions.AsyncCompletions object at 0x10cd3dd90&gt;, root_client=&lt;openai.OpenAI object at 0x10844b6e0&gt;, root_async_client=&lt;openai.AsyncOpenAI object at 0x10cd3c0e0&gt;, model_name=&#39;gpt-4o-mini&#39;, model_kwargs={}, openai_api_key=SecretStr(&#39;**********&#39;)), kwargs={&#39;tools&#39;: [{&#39;type&#39;: &#39;function&#39;, &#39;function&#39;: {&#39;name&#39;: &#39;check_new_messages&#39;, &#39;description&#39;: &#39;Check messages.&#39;, &#39;parameters&#39;: {&#39;properties&#39;: {}, &#39;type&#39;: &#39;object&#39;}}}]}, config={}, config_factories=[]),
+ ToolLookup(tools={&#39;check_new_messages&#39;: StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x1084516c0&gt;)}))
+</code></pre></div>
+<hr />
 <p>Tools will be automatically used when we call any of the invoke or stream methods.</p>
 <p>Notice that the LLM behaves normally if the user's prompts are unrelated to the tool.</p>
-<pre><code class="language-python">agent._invoke('Hello world!')
-</code></pre>
-<pre><code>ChatResult(content=Hello! How can I assist you today?, tool_calls=[])
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-5-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">_invoke</span><span class="p">(</span><span class="s1">&#39;Hello world!&#39;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=Hello! How can I assist you today?, tool_calls=[])
+</code></pre></div>
+<hr />
 <p>If the LLM "decides" that the user needs to execute a tool, it returns a tool call as the response instead of returning content.</p>
-<pre><code class="language-python">result = agent._invoke('Check my messages.')
-result
-</code></pre>
-<pre><code>ChatResult(content=, tool_calls=[ToolCallInfo(id='call_D0WyCNzn8Hg0qRxsui24aZ33', name='check_new_messages', type='tool_call', args={}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x1084516c0&gt;))])
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-6-1">1</a></span>
+<span class="normal"><a href="#__codelineno-6-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">_invoke</span><span class="p">(</span><span class="s1">&#39;Check my messages.&#39;</span><span class="p">)</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=, tool_calls=[ToolCallInfo(id=&#39;call_D0WyCNzn8Hg0qRxsui24aZ33&#39;, name=&#39;check_new_messages&#39;, type=&#39;tool_call&#39;, args={}, tool=StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x1084516c0&gt;))])
+</code></pre></div>
+<hr />
 <p>The tool call information can be accessed through the <code>ChatResult.tool_calls</code> attribute, which is simply a list supertype. Use <code>tool_info_str</code> to clearly show the arguments being passed to the function.</p>
-<pre><code class="language-python">for tc in result.tool_calls:
-    print(tc.tool_info_str())
-</code></pre>
-<pre><code>check_new_messages()
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-7-1">1</a></span>
+<span class="normal"><a href="#__codelineno-7-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">:</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">tool_info_str</span><span class="p">())</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>check_new_messages()
+</code></pre></div>
+<hr />
 <p>You may also provide additional tools at the time of invoking the LLM, and it will be treated as if it was part of the chatbot. </p>
 <p>In this example, we create a new tool with two arguments that must be provided by the LLM.</p>
-<pre><code class="language-python">@langchain_core.tools.tool
-def send_message(recipient: str, text: str) -&gt; str:
-    '''Send messages to others.'''
-    return f'Message sent!'
-
-result = agent._invoke('Send a message to Bob saying &quot;Hello!&quot;', tools=[send_message])
-result
-</code></pre>
-<pre><code>ChatResult(content=, tool_calls=[ToolCallInfo(id='call_CaZgudgmby8bQahiyL2PnP6J', name='send_message', type='tool_call', args={'recipient': 'Bob', 'text': 'Hello!'}, tool=StructuredTool(name='send_message', description='Send messages to others.', args_schema=&lt;class 'langchain_core.utils.pydantic.send_message'&gt;, func=&lt;function send_message at 0x10cd45a80&gt;))])
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-8-1">1</a></span>
+<span class="normal"><a href="#__codelineno-8-2">2</a></span>
+<span class="normal"><a href="#__codelineno-8-3">3</a></span>
+<span class="normal"><a href="#__codelineno-8-4">4</a></span>
+<span class="normal"><a href="#__codelineno-8-5">5</a></span>
+<span class="normal"><a href="#__codelineno-8-6">6</a></span>
+<span class="normal"><a href="#__codelineno-8-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="nd">@langchain_core</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">tool</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2"></a><span class="k">def</span> <span class="nf">send_message</span><span class="p">(</span><span class="n">recipient</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3"></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;Send messages to others.&#39;&#39;&#39;</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;Message sent!&#39;</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5"></a>
+<a id="__codelineno-8-6" name="__codelineno-8-6"></a><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">_invoke</span><span class="p">(</span><span class="s1">&#39;Send a message to Bob saying &quot;Hello!&quot;&#39;</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">send_message</span><span class="p">])</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7"></a><span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=, tool_calls=[ToolCallInfo(id=&#39;call_CaZgudgmby8bQahiyL2PnP6J&#39;, name=&#39;send_message&#39;, type=&#39;tool_call&#39;, args={&#39;recipient&#39;: &#39;Bob&#39;, &#39;text&#39;: &#39;Hello!&#39;}, tool=StructuredTool(name=&#39;send_message&#39;, description=&#39;Send messages to others.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.send_message&#39;&gt;, func=&lt;function send_message at 0x10cd45a80&gt;))])
+</code></pre></div>
+<hr />
 <p>You can see that the LLM provided the <code>recipient</code> and <code>text</code> arguments which were passed to the function call information.</p>
-<pre><code class="language-python">result.tool_calls[0].tool_info_str()
-</code></pre>
-<pre><code>'send_message(recipient=Bob, text=Hello!)'
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-9-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1"></a><span class="n">result</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tool_info_str</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>&#39;send_message(recipient=Bob, text=Hello!)&#39;
+</code></pre></div>
+<hr />
 <p>You can adjust behavior using the <code>tool_choice</code> argument in the chatbot constructor or at invokation. The value <code>'any'</code> means that a tool MUST be called, but all tools are candidates. The value <code>'auto'</code> (the default) allows the LLM to reply with normal content rather than a tool call, and you can also pass the name of a specific function as well.</p>
-<pre><code class="language-python">result = agent._invoke('Go to the store for me!', tool_choice='any')
-result.tool_calls[0].tool_info_str()
-</code></pre>
-<pre><code>'check_new_messages()'
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-10-1">1</a></span>
+<span class="normal"><a href="#__codelineno-10-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">_invoke</span><span class="p">(</span><span class="s1">&#39;Go to the store for me!&#39;</span><span class="p">,</span> <span class="n">tool_choice</span><span class="o">=</span><span class="s1">&#39;any&#39;</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2"></a><span class="n">result</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tool_info_str</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>&#39;check_new_messages()&#39;
+</code></pre></div>
+<hr />
 <h2 id="executing-tools">Executing Tools</h2>
 <p>Tools allow the LLM to determine if and when to execute tools and also provides parameters for the tool call based on conversation history, but the user containing function is responsible for actually executing the tool with the arguments from the LLM.</p>
 <p>Use the <code>execute_tools</code> method to actually execute the tool, which returns a mapping of tool names to <code>ToolCallResult</code> objects.</p>
-<pre><code class="language-python">result = agent._invoke('Check my messages.')
-result.tool_calls[0].tool_info_str()
-</code></pre>
-<pre><code>'check_new_messages()'
-</code></pre>
-<pre><code class="language-python">tr = result.execute_tools()
-tr
-</code></pre>
-<pre><code>{'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_CPyijbPQpk91FIdl0B8NOLmI', name='check_new_messages', type='tool_call', args={}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x1084516c0&gt;)), return_value='No new messages.')}
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-11-1">1</a></span>
+<span class="normal"><a href="#__codelineno-11-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">_invoke</span><span class="p">(</span><span class="s1">&#39;Check my messages.&#39;</span><span class="p">)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2"></a><span class="n">result</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tool_info_str</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>&#39;check_new_messages()&#39;
+</code></pre></div>
+<hr />
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-12-1">1</a></span>
+<span class="normal"><a href="#__codelineno-12-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1"></a><span class="n">tr</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">execute_tools</span><span class="p">()</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2"></a><span class="n">tr</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>{&#39;check_new_messages&#39;: ToolCallResult(info=ToolCallInfo(id=&#39;call_CPyijbPQpk91FIdl0B8NOLmI&#39;, name=&#39;check_new_messages&#39;, type=&#39;tool_call&#39;, args={}, tool=StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x1084516c0&gt;)), return_value=&#39;No new messages.&#39;)}
+</code></pre></div>
+<hr />
 <p>Get the return value from the tool through the <code>return_value</code> property.</p>
-<pre><code class="language-python">tr['check_new_messages'].return_value
-</code></pre>
-<pre><code>'No new messages.'
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-13-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1"></a><span class="n">tr</span><span class="p">[</span><span class="s1">&#39;check_new_messages&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">return_value</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>&#39;No new messages.&#39;
+</code></pre></div>
+<hr />
 <p>Extracting tool calls from a <code>StreamResult</code> is a little more complicated because the stream must be exhausted before executing tools. This happens because the tool call information replaces the text response, so the streamer is essentially receiving chunks of the function call information until exhaustion.</p>
 <p>The calling function must handle both the streamed output and tool calls.</p>
-<pre><code class="language-python">stream = agent._stream('Check my messages.')
-for r in stream:
-    print(r, end='', flush=True)
-if len(stream.tool_calls) &gt; 0:
-    stream.execute_tools()
-</code></pre>
-<pre><code>content='' additional_kwargs={'tool_calls': [{'index': 0, 'id': 'call_0I3oV4MeoavXZe8gyJygHkQZ', 'function': {'arguments': '', 'name': 'check_new_messages'}, 'type': 'function'}]} response_metadata={} id='run-029ed68d-e9ad-4a1f-9716-960302d7c64b' tool_calls=[{'name': 'check_new_messages', 'args': {}, 'id': 'call_0I3oV4MeoavXZe8gyJygHkQZ', 'type': 'tool_call'}] tool_call_chunks=[{'name': 'check_new_messages', 'args': '', 'id': 'call_0I3oV4MeoavXZe8gyJygHkQZ', 'index': 0, 'type': 'tool_call_chunk'}]content='' additional_kwargs={'tool_calls': [{'index': 0, 'id': None, 'function': {'arguments': '{}', 'name': None}, 'type': None}]} response_metadata={} id='run-029ed68d-e9ad-4a1f-9716-960302d7c64b' tool_calls=[{'name': '', 'args': {}, 'id': None, 'type': 'tool_call'}] tool_call_chunks=[{'name': None, 'args': '{}', 'id': None, 'index': 0, 'type': 'tool_call_chunk'}]content='' additional_kwargs={} response_metadata={'finish_reason': 'tool_calls', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_06737a9306'} id='run-029ed68d-e9ad-4a1f-9716-960302d7c64b'
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-14-1">1</a></span>
+<span class="normal"><a href="#__codelineno-14-2">2</a></span>
+<span class="normal"><a href="#__codelineno-14-3">3</a></span>
+<span class="normal"><a href="#__codelineno-14-4">4</a></span>
+<span class="normal"><a href="#__codelineno-14-5">5</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1"></a><span class="n">stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">_stream</span><span class="p">(</span><span class="s1">&#39;Check my messages.&#39;</span><span class="p">)</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2"></a><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4"></a><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5"></a>    <span class="n">stream</span><span class="o">.</span><span class="n">execute_tools</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>content=&#39;&#39; additional_kwargs={&#39;tool_calls&#39;: [{&#39;index&#39;: 0, &#39;id&#39;: &#39;call_0I3oV4MeoavXZe8gyJygHkQZ&#39;, &#39;function&#39;: {&#39;arguments&#39;: &#39;&#39;, &#39;name&#39;: &#39;check_new_messages&#39;}, &#39;type&#39;: &#39;function&#39;}]} response_metadata={} id=&#39;run-029ed68d-e9ad-4a1f-9716-960302d7c64b&#39; tool_calls=[{&#39;name&#39;: &#39;check_new_messages&#39;, &#39;args&#39;: {}, &#39;id&#39;: &#39;call_0I3oV4MeoavXZe8gyJygHkQZ&#39;, &#39;type&#39;: &#39;tool_call&#39;}] tool_call_chunks=[{&#39;name&#39;: &#39;check_new_messages&#39;, &#39;args&#39;: &#39;&#39;, &#39;id&#39;: &#39;call_0I3oV4MeoavXZe8gyJygHkQZ&#39;, &#39;index&#39;: 0, &#39;type&#39;: &#39;tool_call_chunk&#39;}]content=&#39;&#39; additional_kwargs={&#39;tool_calls&#39;: [{&#39;index&#39;: 0, &#39;id&#39;: None, &#39;function&#39;: {&#39;arguments&#39;: &#39;{}&#39;, &#39;name&#39;: None}, &#39;type&#39;: None}]} response_metadata={} id=&#39;run-029ed68d-e9ad-4a1f-9716-960302d7c64b&#39; tool_calls=[{&#39;name&#39;: &#39;&#39;, &#39;args&#39;: {}, &#39;id&#39;: None, &#39;type&#39;: &#39;tool_call&#39;}] tool_call_chunks=[{&#39;name&#39;: None, &#39;args&#39;: &#39;{}&#39;, &#39;id&#39;: None, &#39;index&#39;: 0, &#39;type&#39;: &#39;tool_call_chunk&#39;}]content=&#39;&#39; additional_kwargs={} response_metadata={&#39;finish_reason&#39;: &#39;tool_calls&#39;, &#39;model_name&#39;: &#39;gpt-4o-mini-2024-07-18&#39;, &#39;system_fingerprint&#39;: &#39;fp_06737a9306&#39;} id=&#39;run-029ed68d-e9ad-4a1f-9716-960302d7c64b&#39;
+</code></pre></div>
+<hr />
 <p>A <code>ValueError</code> will be raised if the caller tries to execute tools before the stream is exhausted.</p>
-<pre><code class="language-python">stream = agent.stream('Check my messages.')
-for r in stream:
-    print(r.content, end='', flush=True)
-    break
-try:
-    stream.execute_tools()
-except ValueError as e:
-    print('Exception was caught!')
-</code></pre>
-<pre><code>Exception was caught!
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-15-1">1</a></span>
+<span class="normal"><a href="#__codelineno-15-2">2</a></span>
+<span class="normal"><a href="#__codelineno-15-3">3</a></span>
+<span class="normal"><a href="#__codelineno-15-4">4</a></span>
+<span class="normal"><a href="#__codelineno-15-5">5</a></span>
+<span class="normal"><a href="#__codelineno-15-6">6</a></span>
+<span class="normal"><a href="#__codelineno-15-7">7</a></span>
+<span class="normal"><a href="#__codelineno-15-8">8</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1"></a><span class="n">stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="s1">&#39;Check my messages.&#39;</span><span class="p">)</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2"></a><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4"></a>    <span class="k">break</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6"></a>    <span class="n">stream</span><span class="o">.</span><span class="n">execute_tools</span><span class="p">()</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7"></a><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Exception was caught!&#39;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>Exception was caught!
+</code></pre></div>
+<hr />
 <h2 id="toolkits-and-tool-factories">Toolkits and Tool Factories</h2>
 <p>Aside from providing a list of tools, you may also bind tools from toolkits and tool factories.</p>
 <ul>
@@ -723,35 +812,58 @@ except ValueError as e:
 <p>Note that these too may be provided at instantiation or at invokation.</p>
 <h4 id="toolkit-example"><code>ToolKit</code> Example</h4>
 <p>In this example, I enable the built-in Langchain <code>FileManagementToolkit</code> toolkit to allow the chatbot to list, read, and write files.</p>
-<pre><code class="language-python">import tempfile
-from langchain_community.agent_toolkits import FileManagementToolkit
-with tempfile.TemporaryDirectory() as wd:
-    file_tk = FileManagementToolkit(root_dir=str(wd))
-    result = agent._invoke('List the files in this directory.', toolkits=[file_tk])
-    print(result.tool_calls[0].tool_info_str())
-</code></pre>
-<pre><code>list_directory()
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-16-1">1</a></span>
+<span class="normal"><a href="#__codelineno-16-2">2</a></span>
+<span class="normal"><a href="#__codelineno-16-3">3</a></span>
+<span class="normal"><a href="#__codelineno-16-4">4</a></span>
+<span class="normal"><a href="#__codelineno-16-5">5</a></span>
+<span class="normal"><a href="#__codelineno-16-6">6</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1"></a><span class="kn">import</span> <span class="nn">tempfile</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2"></a><span class="kn">from</span> <span class="nn">langchain_community.agent_toolkits</span> <span class="kn">import</span> <span class="n">FileManagementToolkit</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3"></a><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">wd</span><span class="p">:</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4"></a>    <span class="n">file_tk</span> <span class="o">=</span> <span class="n">FileManagementToolkit</span><span class="p">(</span><span class="n">root_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">wd</span><span class="p">))</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">_invoke</span><span class="p">(</span><span class="s1">&#39;List the files in this directory.&#39;</span><span class="p">,</span> <span class="n">toolkits</span><span class="o">=</span><span class="p">[</span><span class="n">file_tk</span><span class="p">])</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tool_info_str</span><span class="p">())</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>list_directory()
+</code></pre></div>
+<hr />
 <h4 id="tool-factory-examples">Tool Factory Examples</h4>
 <p>Now I create a tool factory that can be passed to the chatbot. This tool uses the chatbot reference to invoke the LLM with access to all of the same tools.</p>
-<pre><code class="language-python">
-def my_tool_factory(agent: simplechatbot.Agent) -&gt; list[langchain_core.tools.Tool]:
-    @langchain_core.tools.tool
-    def story_generator(topic: str) -&gt; str:
-        '''Generate a story absed on a particular topic.'''
-        result = agent._invoke(
-            f'Generate a story about {topic}. Your response should only include the text of the story and make it short but engaging.',
-        )
-        return result.content
-
-    return [story_generator]
-
-result = agent._invoke('Generate a story about western cowboys.', tool_factories=[my_tool_factory])
-tc_result = result.execute_tools()
-tc_result['story_generator'].return_value
-</code></pre>
-<pre><code>'In the heart of the rugged Wild West, a small town called Dusty Springs thrived under the watchful eyes of the surrounding mesas. The sun blazed overhead, casting long shadows over the dusty streets where only a handful of souls dared to tread. Among them was Colt Harper, a seasoned cowboy known for his swift draw and uncanny ability to ride like the wind.\n\nOne sweltering afternoon, a mysterious stranger rode into town on a sleek black stallion. Cloaked in a dust-covered duster and a wide-brimmed hat that obscured his face, he dismounted at the saloon, causing the townsfolk to whisper in hushed tones. Colt, nursing a whiskey at the bar, felt a stirring in his gut; trouble had a way of finding him.\n\nThe stranger, known only as Jake, challenged Colt to a duel at high noon. Rumors swirled that Jake was looking for revenge against Colt’s brother, who had long since met his fate in a gunfight gone wrong. As the clock ticked towards noon, the townspeople gathered, tension crackling in the air like a summer storm.\n\nColt strode into the street, his boots kicking up dust as he faced Jake under the blazing sun. The world around them faded away, each heartbeat echoing in the silence. With a quick draw, Colt aimed and fired, the bullet whistling through the air and finding its mark. Jake fell, surprise blossoming on his face, and the whispering crowd gasped.\n\nAs the dust settled, Colt walked over to him. “This ain’t no way to settle a score,” he said, his voice steady. “Let’s put the past to rest. Life’s too short.” Jake nodded slowly, his anger replaced by a flicker of understanding.\n\nThe two men stood, embodying a spirit of camaraderie that echoed through the rugged landscape. Dusty Springs would remember that day not just for the gunfight, but for the moment a cowboy chose peace over vengeance. As the sun dipped below the horizon, Colt tipped his hat and rode off into the golden glow, a true gunslinger of the West.'
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-17-1"> 1</a></span>
+<span class="normal"><a href="#__codelineno-17-2"> 2</a></span>
+<span class="normal"><a href="#__codelineno-17-3"> 3</a></span>
+<span class="normal"><a href="#__codelineno-17-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-17-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-17-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-17-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-17-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-17-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-17-10">10</a></span>
+<span class="normal"><a href="#__codelineno-17-11">11</a></span>
+<span class="normal"><a href="#__codelineno-17-12">12</a></span>
+<span class="normal"><a href="#__codelineno-17-13">13</a></span>
+<span class="normal"><a href="#__codelineno-17-14">14</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1"></a><span class="k">def</span> <span class="nf">my_tool_factory</span><span class="p">(</span><span class="n">agent</span><span class="p">:</span> <span class="n">simplechatbot</span><span class="o">.</span><span class="n">Agent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">langchain_core</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">Tool</span><span class="p">]:</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2"></a>    <span class="nd">@langchain_core</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">tool</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3"></a>    <span class="k">def</span> <span class="nf">story_generator</span><span class="p">(</span><span class="n">topic</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4"></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;Generate a story absed on a particular topic.&#39;&#39;&#39;</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">_invoke</span><span class="p">(</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6"></a>            <span class="sa">f</span><span class="s1">&#39;Generate a story about </span><span class="si">{</span><span class="n">topic</span><span class="si">}</span><span class="s1">. Your response should only include the text of the story and make it short but engaging.&#39;</span><span class="p">,</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7"></a>        <span class="p">)</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8"></a>        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">content</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9"></a>
+<a id="__codelineno-17-10" name="__codelineno-17-10"></a>    <span class="k">return</span> <span class="p">[</span><span class="n">story_generator</span><span class="p">]</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11"></a>
+<a id="__codelineno-17-12" name="__codelineno-17-12"></a><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">_invoke</span><span class="p">(</span><span class="s1">&#39;Generate a story about western cowboys.&#39;</span><span class="p">,</span> <span class="n">tool_factories</span><span class="o">=</span><span class="p">[</span><span class="n">my_tool_factory</span><span class="p">])</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13"></a><span class="n">tc_result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">execute_tools</span><span class="p">()</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14"></a><span class="n">tc_result</span><span class="p">[</span><span class="s1">&#39;story_generator&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">return_value</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>&#39;In the heart of the rugged Wild West, a small town called Dusty Springs thrived under the watchful eyes of the surrounding mesas. The sun blazed overhead, casting long shadows over the dusty streets where only a handful of souls dared to tread. Among them was Colt Harper, a seasoned cowboy known for his swift draw and uncanny ability to ride like the wind.\n\nOne sweltering afternoon, a mysterious stranger rode into town on a sleek black stallion. Cloaked in a dust-covered duster and a wide-brimmed hat that obscured his face, he dismounted at the saloon, causing the townsfolk to whisper in hushed tones. Colt, nursing a whiskey at the bar, felt a stirring in his gut; trouble had a way of finding him.\n\nThe stranger, known only as Jake, challenged Colt to a duel at high noon. Rumors swirled that Jake was looking for revenge against Colt’s brother, who had long since met his fate in a gunfight gone wrong. As the clock ticked towards noon, the townspeople gathered, tension crackling in the air like a summer storm.\n\nColt strode into the street, his boots kicking up dust as he faced Jake under the blazing sun. The world around them faded away, each heartbeat echoing in the silence. With a quick draw, Colt aimed and fired, the bullet whistling through the air and finding its mark. Jake fell, surprise blossoming on his face, and the whispering crowd gasped.\n\nAs the dust settled, Colt walked over to him. “This ain’t no way to settle a score,” he said, his voice steady. “Let’s put the past to rest. Life’s too short.” Jake nodded slowly, his anger replaced by a flicker of understanding.\n\nThe two men stood, embodying a spirit of camaraderie that echoed through the rugged landscape. Dusty Springs would remember that day not just for the gunfight, but for the moment a cowboy chose peace over vengeance. As the sun dipped below the horizon, Colt tipped his hat and rode off into the golden glow, a true gunslinger of the West.&#39;
+</code></pre></div>
+<hr />
 <h2 id="conclusions">Conclusions</h2>
 <p>That is all! Now you know how to enable and disable tools that your LLM can use to do anything!</p>
 
@@ -800,7 +912,7 @@ tc_result['story_generator'].return_value
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.expand"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "navigation.expand", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>

@@ -22,7 +22,7 @@
     
     
       
-        <title>Introduction - simplechatbot</title>
+        <title>API Introduction - simplechatbot</title>
       
     
     
@@ -64,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#introduction" class="md-skip">
+        <a href="#api-introduction" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Introduction
+              API Introduction
             
           </span>
         </div>
@@ -287,7 +287,7 @@
           
   
   <span class="md-ellipsis">
-    Introduction
+    API Introduction
   </span>
   
 
@@ -298,7 +298,7 @@
         
   
   <span class="md-ellipsis">
-    Introduction
+    API Introduction
   </span>
   
 
@@ -583,235 +583,349 @@
   
 
 
-<h1 id="introduction">Introduction</h1>
-<p>This is a brief introduction to the <code>simplechatbot</code> package.</p>
-<pre><code class="language-python">import sys
-sys.path.append('../src/')
-
-import simplechatbot
-</code></pre>
+<h1 id="api-introduction">API Introduction</h1>
+<p>This is a brief introduction to the <code>simplechatbot</code> API.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1">1</a></span>
+<span class="normal"><a href="#__codelineno-0-2">2</a></span>
+<span class="normal"><a href="#__codelineno-0-3">3</a></span>
+<span class="normal"><a href="#__codelineno-0-4">4</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">sys</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../src/&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="kn">import</span> <span class="nn">simplechatbot</span>
+</code></pre></div></td></tr></table></div>
+<hr />
 <h2 id="instantiating-agent-objects">Instantiating <code>Agent</code> Objects</h2>
-<p><code>Agent</code> instances maintain three elements: a chat model (or runnable) LLM, chat history, and available tools / functions.</p>
+<p><code>Agent</code> instances maintain three elements: a chat model (or runnable) LLM, chat history, and available tools / functions. System prompts are simply stored as part of the conversation history.</p>
 <p>It may be instantiated from any <a href="https://python.langchain.com/v0.1/docs/modules/model_io/chat/">langchain chat model</a> or runnable.</p>
-<pre><code class="language-python">from langchain_openai import ChatOpenAI
-
-# optional: use this to grab keys from a json file rather than setting system variables
-keychain = simplechatbot.APIKeyChain.from_json_file('../keys.json')
-
-openai_model = ChatOpenAI(model='gpt-4o-mini', api_key=keychain['openai'])
-agent = simplechatbot.Agent.from_model(model=openai_model)
-print(agent)
-</code></pre>
-<pre><code>Agent(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={}))
-</code></pre>
-<p>The <code>tools</code> parameter allows you to pass any <a href="https://python.langchain.com/v0.1/docs/modules/tools/">langchain tools</a> you want your agent to be able to use. You can use one of <a href="https://python.langchain.com/v0.1/docs/integrations/tools/">Langchain's built-in tools</a> (such as <code>FileManagementToolkit</code>) or <a href="https://python.langchain.com/v0.1/docs/modules/tools/custom_tools/">define your own custom tools</a>. I will use <code>FileManagementToolkit</code> for demonstration purposes here.</p>
-<pre><code class="language-python">import langchain_core.tools
-
-@langchain_core.tools.tool
-def check_new_messages(text: str, username: str) -&gt; str:
-    '''Check messages.'''
-    return f'No new messages.'
-
-agent = simplechatbot.Agent.from_model(
-    model = openai_model,
-    tools = [check_new_messages],
-)
-</code></pre>
-<p>You can see that tools are added to an internal <code>ToolSet</code> object.</p>
-<pre><code class="language-python">agent.toolset
-</code></pre>
-<pre><code>ToolSet(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x116d2f560&gt;)}, tool_factories=[], tool_choice=None)
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-1-1">1</a></span>
+<span class="normal"><a href="#__codelineno-1-2">2</a></span>
+<span class="normal"><a href="#__codelineno-1-3">3</a></span>
+<span class="normal"><a href="#__codelineno-1-4">4</a></span>
+<span class="normal"><a href="#__codelineno-1-5">5</a></span>
+<span class="normal"><a href="#__codelineno-1-6">6</a></span>
+<span class="normal"><a href="#__codelineno-1-7">7</a></span>
+<span class="normal"><a href="#__codelineno-1-8">8</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="kn">from</span> <span class="nn">langchain_openai</span> <span class="kn">import</span> <span class="n">ChatOpenAI</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3"></a><span class="c1"># optional: use this to grab keys from a json file rather than setting system variables</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4"></a><span class="n">keychain</span> <span class="o">=</span> <span class="n">simplechatbot</span><span class="o">.</span><span class="n">APIKeyChain</span><span class="o">.</span><span class="n">from_json_file</span><span class="p">(</span><span class="s1">&#39;../keys.json&#39;</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6"></a><span class="n">openai_model</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;gpt-4o-mini&#39;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">keychain</span><span class="p">[</span><span class="s1">&#39;openai&#39;</span><span class="p">])</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">simplechatbot</span><span class="o">.</span><span class="n">Agent</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">openai_model</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>Agent(model_type=ChatOpenAI, model_name=&quot;gpt-4o-mini&quot;, tools=ToolLookup(tools={}))
+</code></pre></div>
+<hr />
 <p>Set a system prompt for the agent by passing it as the <code>system_prompt</code> argument.</p>
-<pre><code class="language-python">system_prompt = '''
-You are a creative designer who has been tasked with creating a new slogan for a company.
-The user will describe the company, and you will need to generate three slogan ideas for them.
-'''
-agent = simplechatbot.Agent.from_model(
-    model = openai_model,
-    tools = [check_new_messages],
-    system_prompt=system_prompt,
-)
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-2-1">1</a></span>
+<span class="normal"><a href="#__codelineno-2-2">2</a></span>
+<span class="normal"><a href="#__codelineno-2-3">3</a></span>
+<span class="normal"><a href="#__codelineno-2-4">4</a></span>
+<span class="normal"><a href="#__codelineno-2-5">5</a></span>
+<span class="normal"><a href="#__codelineno-2-6">6</a></span>
+<span class="normal"><a href="#__codelineno-2-7">7</a></span>
+<span class="normal"><a href="#__codelineno-2-8">8</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="n">system_prompt</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="s1">You are a creative designer who has been tasked with creating a new slogan for a company.</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3"></a><span class="s1">The user will describe the company, and you will need to generate three slogan ideas for them.</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4"></a><span class="s1">&#39;&#39;&#39;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">simplechatbot</span><span class="o">.</span><span class="n">Agent</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">openai_model</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7"></a>    <span class="n">system_prompt</span><span class="o">=</span><span class="n">system_prompt</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8"></a><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<hr />
+<p>The <code>tools</code> parameter allows you to pass any <a href="https://python.langchain.com/v0.1/docs/modules/tools/">langchain tools</a> you want your agent to be able to use. You can use one of <a href="https://python.langchain.com/v0.1/docs/integrations/tools/">Langchain's built-in tools</a> (such as <code>FileManagementToolkit</code>) or <a href="https://python.langchain.com/v0.1/docs/modules/tools/custom_tools/">define your own custom tools</a>. I will use <code>FileManagementToolkit</code> for demonstration purposes here.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-3-1"> 1</a></span>
+<span class="normal"><a href="#__codelineno-3-2"> 2</a></span>
+<span class="normal"><a href="#__codelineno-3-3"> 3</a></span>
+<span class="normal"><a href="#__codelineno-3-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-3-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-3-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-3-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-3-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-3-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-3-10">10</a></span>
+<span class="normal"><a href="#__codelineno-3-11">11</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kn">import</span> <span class="nn">langchain_core.tools</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="nd">@langchain_core</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">tool</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="k">def</span> <span class="nf">check_new_messages</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5"></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;Check messages.&#39;&#39;&#39;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;No new messages.&#39;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">simplechatbot</span><span class="o">.</span><span class="n">Agent</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">openai_model</span><span class="p">,</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10"></a>    <span class="n">tools</span> <span class="o">=</span> <span class="p">[</span><span class="n">check_new_messages</span><span class="p">],</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11"></a><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<hr />
+<p>You can see that tools are added to an internal <code>ToolSet</code> object.</p>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-4-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">toolset</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ToolSet(tools={&#39;check_new_messages&#39;: StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x131f511c0&gt;)}, tool_factories=[], tool_choice=None)
+</code></pre></div>
+<hr />
 <p>While the LLM itself is just a function, we build conversation-like behavior by storing a chat history. In <code>simplechatbot</code>, the history is stored in a <code>ChatHistory</code>, which is just a list subtype where list elements contain langchain <code>BaseMessage</code> subtypes. You can access it through the <code>history</code> property, and work with it just as a list.</p>
 <p>Here you can see that the system prompt is simply added as the first message in the agent history. </p>
-<pre><code class="language-python">agent.history
-</code></pre>
-<pre><code>[SystemMessage(content='\nYou are a creative designer who has been tasked with creating a new slogan for a company.\nThe user will describe the company, and you will need to generate three slogan ideas for them.\n', additional_kwargs={}, response_metadata={})]
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-5-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">history</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>[]
+</code></pre></div>
+<hr />
 <p>To see the conversation history that is sent to the LLM, you can use the <code>get_buffer_string</code> method. This uses the same langchain methods used to invoke the LLM, so it is useful for debugging.</p>
-<pre><code class="language-python">print(agent.history.get_buffer_string())
-</code></pre>
-<pre><code>System: 
-You are a creative designer who has been tasked with creating a new slogan for a company.
-The user will describe the company, and you will need to generate three slogan ideas for them.
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-6-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">get_buffer_string</span><span class="p">())</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<hr />
 <p>Note that history is a <code>list</code> subtype, so you can iterate through messages as you would expect.</p>
-<pre><code class="language-python">for m in agent.history:
-    print(m)
-</code></pre>
-<pre><code>content='\nYou are a creative designer who has been tasked with creating a new slogan for a company.\nThe user will describe the company, and you will need to generate three slogan ideas for them.\n' additional_kwargs={} response_metadata={}
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-7-1">1</a></span>
+<span class="normal"><a href="#__codelineno-7-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">agent</span><span class="o">.</span><span class="n">history</span><span class="p">:</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<hr />
 <h2 id="high-level-chat-and-stream-methods">High-level <code>chat</code> and <code>stream</code> Methods</h2>
 <p>There are two primary methods used to interact with the chatbot: <code>chat</code> and <code>stream</code>. </p>
 <p>These are the method use-cases:</p>
 <p><code>.chat()</code> → <code>ChatResult</code>: Use when you want to retrieve the full LLM response at once when it finishes.</p>
 <p><code>.stream()</code> → <code>ChatStream</code>: Use when you would like to show intermediary results to the user as they are received from the LLM.</p>
-<pre><code class="language-python">agent.chat('My name is Devin.')
-</code></pre>
-<pre><code>ChatResult(content=Nice to meet you, Devin! How can I assist you today? If you have a company description, I can help create some catchy slogans for you!, tool_calls=[])
-</code></pre>
-<pre><code class="language-python">agent.stream('My name is Devin and I am a creative designer.')
-</code></pre>
-<pre><code>StreamResult(message_iter=&lt;generator object RunnableBindingBase.stream at 0x11632e890&gt;, agent=Agent(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x116d2f560&gt;)})), tool_lookup=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x116d2f560&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content='', additional_kwargs={}, response_metadata={}), exhausted=False, receive_callback=None)
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-8-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s1">&#39;My name is Devin.&#39;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=Nice to meet you, Devin! How can I assist you today?, tool_calls=[])
+</code></pre></div>
+<hr />
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-9-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="s1">&#39;My name is Devin and I am a creative designer.&#39;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>StreamResult(message_iter=&lt;generator object RunnableBindingBase.stream at 0x131542d40&gt;, agent=Agent(model_type=ChatOpenAI, model_name=&quot;gpt-4o-mini&quot;, tools=ToolLookup(tools={&#39;check_new_messages&#39;: StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x131f511c0&gt;)})), tool_lookup=ToolLookup(tools={&#39;check_new_messages&#39;: StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x131f511c0&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content=&#39;&#39;, additional_kwargs={}, response_metadata={}), exhausted=False, receive_callback=None)
+</code></pre></div>
+<hr />
 <p>Again use the <code>get_buffer_string</code> method to conveniently view the chat history.</p>
-<pre><code class="language-python">print(agent.history.get_buffer_string())
-</code></pre>
-<pre><code>System: 
-You are a creative designer who has been tasked with creating a new slogan for a company.
-The user will describe the company, and you will need to generate three slogan ideas for them.
-
-Human: My name is Devin.
-AI: Nice to meet you, Devin! How can I assist you today? If you have a company description, I can help create some catchy slogans for you!
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-10-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">get_buffer_string</span><span class="p">())</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>Human: My name is Devin.
+AI: Nice to meet you, Devin! How can I assist you today?
 Human: My name is Devin and I am a creative designer.
-</code></pre>
+</code></pre></div>
+<hr />
 <p>From the response to the prompt below you can see that it is maintained in the chat history because it "retains" knowledge that is given to it.</p>
-<pre><code class="language-python">agent.chat('I have a quiz for you: what is my name?')
-</code></pre>
-<pre><code>ChatResult(content=Your name is Devin!, tool_calls=[])
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-11-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s1">&#39;I have a quiz for you: what is my name?&#39;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=Your name is Devin!, tool_calls=[])
+</code></pre></div>
+<hr />
 <h4 id="chat-and-chatresult-objects"><code>.chat()</code> and <code>ChatResult</code> Objects</h4>
 <p>The <code>chat</code> method submits the current message and all history to the LLM and returns the reply as a <code>ChatResult</code> object.</p>
-<pre><code class="language-python">agent.chat('Hello world.')
-</code></pre>
-<pre><code>ChatResult(content=Hello, Devin! How can I assist you today?, tool_calls=[])
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-12-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s1">&#39;Hello world.&#39;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=Hello, Devin! How are you today?, tool_calls=[])
+</code></pre></div>
+<hr />
 <p>If you want to submit the current chat history but do not want to add a new message, you can pass <code>None</code> as the message argument.</p>
-<pre><code class="language-python">agent.chat(None)
-</code></pre>
-<pre><code>ChatResult(content=If you're looking for creative ideas or need assistance with something specific, feel free to let me know!, tool_calls=[])
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-13-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=Is there anything specific you&#39;d like to discuss or any questions you have?, tool_calls=[])
+</code></pre></div>
+<hr />
 <p>Alternatively, if you want to submit a query to the LLM but do not want to save it in the history, set <code>add_to_history = False</code>.</p>
-<pre><code class="language-python">agent.chat('Hello world.', add_to_history=False)
-</code></pre>
-<pre><code>ChatResult(content=Hello again! If you have any questions or something specific you’d like to discuss, just let me know!, tool_calls=[])
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-14-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s1">&#39;Hello world.&#39;</span><span class="p">,</span> <span class="n">add_to_history</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=Hello again, Devin! If there&#39;s anything specific you&#39;d like to talk about or if you have any questions, feel free to share!, tool_calls=[])
+</code></pre></div>
+<hr />
 <p><code>ChatResult</code> objects are returned from <code>chat()</code> and <code>invoke()</code> calls and include the LLM response text or tool calling information.</p>
-<pre><code class="language-python">result = agent.chat('What is my name?')
-result
-</code></pre>
-<pre><code>ChatResult(content=Your name is Devin!, tool_calls=[])
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-15-1">1</a></span>
+<span class="normal"><a href="#__codelineno-15-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s1">&#39;What is my name?&#39;</span><span class="p">)</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2"></a><span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=Your name is Devin., tool_calls=[])
+</code></pre></div>
+<hr />
 <p>If no tool calls were requested from the LLM, you can access the response as a string through the <code>content</code> property.</p>
-<pre><code class="language-python">result.content
-</code></pre>
-<pre><code>'Your name is Devin!'
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-16-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1"></a><span class="n">result</span><span class="o">.</span><span class="n">content</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>&#39;Your name is Devin.&#39;
+</code></pre></div>
+<hr />
 <p>If tool calls were made, the content will be empty but you can get information about any tool calls through the <code>tool_calls</code> attribute. Notice that no tool calls were requested by the LLM in the response to this query.</p>
-<pre><code class="language-python">result.tool_calls
-</code></pre>
-<pre><code>[]
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-17-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1"></a><span class="n">result</span><span class="o">.</span><span class="n">tool_calls</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>[]
+</code></pre></div>
+<hr />
 <p>If there were tool calls, you can execute them using the <code>execute_tools</code> method.</p>
-<pre><code class="language-python">result.execute_tools()
-</code></pre>
-<pre><code>{}
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-18-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1"></a><span class="n">result</span><span class="o">.</span><span class="n">execute_tools</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>{}
+</code></pre></div>
+<hr />
 <p>We provided the agent with a tool called <code>check_new_messages</code> earlier, and the LLM will request a tool call if the user requests it.</p>
-<pre><code class="language-python">result = agent.chat('Check new messages.')
-result.tool_calls
-</code></pre>
-<pre><code>[ToolCallInfo(id='call_WhqKp8uQZW882oC0OPBbDtsl', name='check_new_messages', type='tool_call', args={'text': 'Check new messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x116d2f560&gt;))]
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-19-1">1</a></span>
+<span class="normal"><a href="#__codelineno-19-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s1">&#39;Check new messages.&#39;</span><span class="p">)</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2"></a><span class="n">result</span><span class="o">.</span><span class="n">tool_calls</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>[ToolCallInfo(id=&#39;call_208aNIO1I1TlXxijnOdWYQFf&#39;, name=&#39;check_new_messages&#39;, type=&#39;tool_call&#39;, args={&#39;text&#39;: &#39;Check new messages.&#39;, &#39;username&#39;: &#39;Devin&#39;}, tool=StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x131f511c0&gt;))]
+</code></pre></div>
+<hr />
 <p>The <code>execute_tools</code> method returns a dictionary of <code>ToolCallResult</code> objects which contain the tool call information from the LLM (<code>ToolCallInfo</code>) and the return value of the tool execution.</p>
-<pre><code class="language-python">tool_results = result.execute_tools()
-tool_results
-</code></pre>
-<pre><code>{'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_WhqKp8uQZW882oC0OPBbDtsl', name='check_new_messages', type='tool_call', args={'text': 'Check new messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x116d2f560&gt;)), return_value='No new messages.')}
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-20-1">1</a></span>
+<span class="normal"><a href="#__codelineno-20-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1"></a><span class="n">tool_results</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">execute_tools</span><span class="p">()</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2"></a><span class="n">tool_results</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>{&#39;check_new_messages&#39;: ToolCallResult(info=ToolCallInfo(id=&#39;call_208aNIO1I1TlXxijnOdWYQFf&#39;, name=&#39;check_new_messages&#39;, type=&#39;tool_call&#39;, args={&#39;text&#39;: &#39;Check new messages.&#39;, &#39;username&#39;: &#39;Devin&#39;}, tool=StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x131f511c0&gt;)), return_value=&#39;No new messages.&#39;)}
+</code></pre></div>
+<hr />
 <p>Use the <code>return_value</code> attribute to access these results.</p>
-<pre><code class="language-python">tool_results['check_new_messages'].return_value
-</code></pre>
-<pre><code>'No new messages.'
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-21-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1"></a><span class="n">tool_results</span><span class="p">[</span><span class="s1">&#39;check_new_messages&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">return_value</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>&#39;No new messages.&#39;
+</code></pre></div>
+<hr />
 <h4 id="stream-and-streamresult-objects"><code>.stream()</code> and <code>StreamResult</code> Objects</h4>
 <p><code>stream</code> is very similar to <code>chat</code>, but allows you to return content to the user as soon as the LLM produces it. The method returns a <code>StreamResult</code> object which has an iterator interface that accumulates results from the LLM while also returning incremental results.</p>
 <p>In this example, I call <code>stream</code> to retrieve a <code>StreamResult</code> object, which I then iterate through to retrieve and print all results.</p>
-<pre><code class="language-python">stream = agent.stream('What is my name?')
-for r in stream:
-    print(r.content, end='', flush=True)
-stream
-</code></pre>
-<pre><code>Your name is Devin!
-
-
-
-
-StreamResult(message_iter=&lt;generator object RunnableBindingBase.stream at 0x115a398a0&gt;, agent=Agent(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x116d2f560&gt;)})), tool_lookup=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x116d2f560&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content='Your name is Devin!', additional_kwargs={}, response_metadata={'finish_reason': 'stop', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_06737a9306'}), exhausted=True, receive_callback=None)
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-22-1">1</a></span>
+<span class="normal"><a href="#__codelineno-22-2">2</a></span>
+<span class="normal"><a href="#__codelineno-22-3">3</a></span>
+<span class="normal"><a href="#__codelineno-22-4">4</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1"></a><span class="n">stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="s1">&#39;What is my name?&#39;</span><span class="p">)</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2"></a><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4"></a><span class="n">stream</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>Your name is Devin.
+</code></pre></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>StreamResult(message_iter=&lt;generator object RunnableBindingBase.stream at 0x1229117b0&gt;, agent=Agent(model_type=ChatOpenAI, model_name=&quot;gpt-4o-mini&quot;, tools=ToolLookup(tools={&#39;check_new_messages&#39;: StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x131f511c0&gt;)})), tool_lookup=ToolLookup(tools={&#39;check_new_messages&#39;: StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x131f511c0&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content=&#39;Your name is Devin.&#39;, additional_kwargs={}, response_metadata={&#39;finish_reason&#39;: &#39;stop&#39;, &#39;model_name&#39;: &#39;gpt-4o-mini-2024-07-18&#39;, &#39;system_fingerprint&#39;: &#39;fp_06737a9306&#39;}), exhausted=True, receive_callback=None)
+</code></pre></div>
+<hr />
 <p>You can check the <code>exhausted</code> flag to see if the LLM has returned all results yet.</p>
-<pre><code class="language-python">stream = agent.stream('What is my name?')
-print(stream.exhausted)
-for r in stream:
-    print(r.content, end='', flush=True)
-print(stream.exhausted)
-stream
-</code></pre>
-<pre><code>False
-Your name is Devin!True
-
-
-
-
-
-StreamResult(message_iter=&lt;generator object RunnableBindingBase.stream at 0x11632dd50&gt;, agent=Agent(model_type=ChatOpenAI, model_name="gpt-4o-mini", tools=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x116d2f560&gt;)})), tool_lookup=ToolLookup(tools={'check_new_messages': StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x116d2f560&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content='Your name is Devin!', additional_kwargs={}, response_metadata={'finish_reason': 'stop', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_06737a9306'}), exhausted=True, receive_callback=None)
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-23-1">1</a></span>
+<span class="normal"><a href="#__codelineno-23-2">2</a></span>
+<span class="normal"><a href="#__codelineno-23-3">3</a></span>
+<span class="normal"><a href="#__codelineno-23-4">4</a></span>
+<span class="normal"><a href="#__codelineno-23-5">5</a></span>
+<span class="normal"><a href="#__codelineno-23-6">6</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1"></a><span class="n">stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="s1">&#39;What is my name?&#39;</span><span class="p">)</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">exhausted</span><span class="p">)</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3"></a><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">exhausted</span><span class="p">)</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6"></a><span class="n">stream</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>False
+Your name is Devin.True
+</code></pre></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>StreamResult(message_iter=&lt;generator object RunnableBindingBase.stream at 0x1315422f0&gt;, agent=Agent(model_type=ChatOpenAI, model_name=&quot;gpt-4o-mini&quot;, tools=ToolLookup(tools={&#39;check_new_messages&#39;: StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x131f511c0&gt;)})), tool_lookup=ToolLookup(tools={&#39;check_new_messages&#39;: StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x131f511c0&gt;)}), add_reply_to_history=True, full_message=AIMessageChunk(content=&#39;Your name is Devin.&#39;, additional_kwargs={}, response_metadata={&#39;finish_reason&#39;: &#39;stop&#39;, &#39;model_name&#39;: &#39;gpt-4o-mini-2024-07-18&#39;, &#39;system_fingerprint&#39;: &#39;fp_06737a9306&#39;}), exhausted=True, receive_callback=None)
+</code></pre></div>
+<hr />
 <p>After retrieving all of the LLM response, you can check if any tool calls are required.</p>
-<pre><code class="language-python">stream = agent.stream('Check my messages.')
-for r in stream:
-    print(r.content, end='', flush=True)
-stream.tool_calls
-</code></pre>
-<pre><code>[ToolCallInfo(id='call_HDH2aVaLMWzJF8jDnzUioDhi', name='check_new_messages', type='tool_call', args={'text': 'Check my messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x116d2f560&gt;))]
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-24-1">1</a></span>
+<span class="normal"><a href="#__codelineno-24-2">2</a></span>
+<span class="normal"><a href="#__codelineno-24-3">3</a></span>
+<span class="normal"><a href="#__codelineno-24-4">4</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1"></a><span class="n">stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="s1">&#39;Check my messages.&#39;</span><span class="p">)</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2"></a><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4"></a><span class="n">stream</span><span class="o">.</span><span class="n">tool_calls</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>[ToolCallInfo(id=&#39;call_wxhHcOtuj5XPSHvnbFVvOXrQ&#39;, name=&#39;check_new_messages&#39;, type=&#39;tool_call&#39;, args={&#39;text&#39;: &#39;Check my messages.&#39;, &#39;username&#39;: &#39;Devin&#39;}, tool=StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x131f511c0&gt;))]
+</code></pre></div>
+<hr />
 <p>And you would similarly execute tools by calling <code>execute_tools</code>. Note that you cannot call this method if the stream has not been exhausted.</p>
-<pre><code class="language-python">stream.execute_tools()
-</code></pre>
-<pre><code>{'check_new_messages': ToolCallResult(info=ToolCallInfo(id='call_HDH2aVaLMWzJF8jDnzUioDhi', name='check_new_messages', type='tool_call', args={'text': 'Check my messages.', 'username': 'Devin'}, tool=StructuredTool(name='check_new_messages', description='Check messages.', args_schema=&lt;class 'langchain_core.utils.pydantic.check_new_messages'&gt;, func=&lt;function check_new_messages at 0x116d2f560&gt;)), return_value='No new messages.')}
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-25-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1"></a><span class="n">stream</span><span class="o">.</span><span class="n">execute_tools</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>{&#39;check_new_messages&#39;: ToolCallResult(info=ToolCallInfo(id=&#39;call_wxhHcOtuj5XPSHvnbFVvOXrQ&#39;, name=&#39;check_new_messages&#39;, type=&#39;tool_call&#39;, args={&#39;text&#39;: &#39;Check my messages.&#39;, &#39;username&#39;: &#39;Devin&#39;}, tool=StructuredTool(name=&#39;check_new_messages&#39;, description=&#39;Check messages.&#39;, args_schema=&lt;class &#39;langchain_core.utils.pydantic.check_new_messages&#39;&gt;, func=&lt;function check_new_messages at 0x131f511c0&gt;)), return_value=&#39;No new messages.&#39;)}
+</code></pre></div>
+<hr />
 <p>You can use the <code>result</code> method to get a <code>ChatResult</code> object instead. If it has not retrieved all results from the LLM, it will do so before returning.</p>
-<pre><code class="language-python">agent.stream('Hello world.').collect()
-</code></pre>
-<pre><code>ChatResult(content=Hello again, Devin! How can I help you today?, tool_calls=[])
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-26-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="s1">&#39;Hello world.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=Hello again, Devin! What would you like to talk about?, tool_calls=[])
+</code></pre></div>
+<hr />
 <h2 id="low-level-llm-methods-_invoke-and-_stream">Low-level LLM Methods: <code>_invoke</code> and <code>_stream</code></h2>
 <p>These lower-level <code>_invoke</code> and <code>_stream</code> methods are used by the <code>chat</code> and <code>chat_stream</code> methods to submit prompts to the LLM. They can allow you to interact with the LLM and tools/functions without chat history. Their signatures are very similar to high-level methods and they return the same types.</p>
 <p><strong><em>NOTE</em></strong>: <em>These methods ignore the system prompt!</em></p>
 <p>The low-level <code>_invoke</code> method returns a <code>ChatResult</code> object with the content and tool call information.</p>
-<pre><code class="language-python">result = agent._invoke('Hello world!')
-result
-</code></pre>
-<pre><code>ChatResult(content=Hello! How can I assist you today?, tool_calls=[])
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-27-1">1</a></span>
+<span class="normal"><a href="#__codelineno-27-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">_invoke</span><span class="p">(</span><span class="s1">&#39;Hello world!&#39;</span><span class="p">)</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2"></a><span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>ChatResult(content=Hello! How can I assist you today?, tool_calls=[])
+</code></pre></div>
+<hr />
 <p>And <code>stream</code> is very similar to <code>stream</code> except that it ignores chat history.</p>
-<pre><code class="language-python">stream = agent._stream('Check messages.')
-for r in stream:
-    print(r.content, end='', flush=True)
-stream.execute_tools()
-</code></pre>
-<pre><code>Could you please provide your username and the specific text you would like me to check for new messages?
-
-
-
-
-{}
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-28-1">1</a></span>
+<span class="normal"><a href="#__codelineno-28-2">2</a></span>
+<span class="normal"><a href="#__codelineno-28-3">3</a></span>
+<span class="normal"><a href="#__codelineno-28-4">4</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1"></a><span class="n">stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">_stream</span><span class="p">(</span><span class="s1">&#39;Check messages.&#39;</span><span class="p">)</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2"></a><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4"></a><span class="n">stream</span><span class="o">.</span><span class="n">execute_tools</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<p>stdout:</p>
+<div class="language-text highlight"><pre><span></span><code>Can you please provide your username and the message you would like to check?
+</code></pre></div>
+<p>text:</p>
+<div class="language-text highlight"><pre><span></span><code>{}
+</code></pre></div>
+<hr />
 <h2 id="chat-user-interface">Chat User Interface</h2>
 <p>Of course, what is a chatbot if you can't actually use it? To run an interactive command-line chat, use <code>.ui.start_interactive</code>.</p>
-<pre><code class="language-python"># uncomment to start interactive chat
-#agent.ui.start_interactive(stream=True, show_intro=True, show_tools=True)
-</code></pre>
+<hr />
+<div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-29-1">1</a></span>
+<span class="normal"><a href="#__codelineno-29-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1"></a><span class="c1"># uncomment to start interactive chat</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2"></a><span class="c1">#agent.ui.start_interactive(stream=True, show_intro=True, show_tools=True)</span>
+</code></pre></div></td></tr></table></div>
+<hr />
 
 
 
@@ -858,7 +972,7 @@ stream.execute_tools()
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.expand"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "navigation.expand", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
