@@ -220,9 +220,9 @@ class StructuredOutputResult:
             add_reply_to_history=add_reply_to_history,
         )
 
-    def as_json(self) -> str:
+    def as_json(self, **kwargs) -> str:
         '''Return the data as a json string.'''
-        return self.data.model_dump_json()
+        return self.data.model_dump_json(**kwargs)
     
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(data={self.data})'
