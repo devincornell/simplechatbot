@@ -162,13 +162,13 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
-scripts/keys.json
+experiments/keys.json
 
 .DS_Store
 Simplechatbot/.DS_Store
 
 keys.json
 
-scripts/credentials.json
-scripts/token.json
+experiments/credentials.json
+experiments/token.json
 settings.json
