@@ -3,6 +3,7 @@ from __future__ import annotations
 import typing
 import dataclasses
 import pydantic
+import tqdm
 
 from .message_history import AIMessage, AIMessageChunk
 
@@ -135,6 +136,20 @@ class StreamResult(ChatResultBase):
             print(chunk.content, end='', flush=True)
         return self.collect()
 
+    def progress_and_collect(self) -> ChatResult:
+        '''Iterate through the chat stream result and collect the result.
+        Example:
+            result = agent.stream('hello world').progress_and_collect()
+            result.execute_tools()
+        '''
+        pbar = tqdm.tqdm(ncols=100)
+        for chunk in self:
+            chunk.content
+            pbar.update(1)
+        pbar.close()
+        return self.collect()
+
+
     def collect(self) -> ChatResult:
         '''Get the full chat result after accumulating all messages.'''
         if not self.exhausted:
@@ -155,6 +170,10 @@ class StreamResult(ChatResultBase):
 
     def __next__(self):
         '''Get the next message and add it to the full message.'''
+        return self.next()
+        
+    def next(self) -> AIMessageChunk:
+        '''Get the next message and add it to the full message.'''
         try:
             next_message = next(self.message_iter)
             if self.receive_callback is not None:
@@ -167,6 +186,7 @@ class StreamResult(ChatResultBase):
                 self.agent.history.add_message(self.full_message)
             self.exhausted = True
             raise StopIteration
+
     
     ####################### handle tool calls #######################
     def execute_tools(self, 
