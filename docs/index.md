@@ -8,7 +8,7 @@ See the examples in the navigation bar to the left!
 ## Installation
 
 ```
-pip install git+ssh://git@github.com/devincornell/simplechatbot.git@main
+pip install git+https://github.com/devincornell/simplechatbot.git
 ```
 
 When inside the package directory: Basic install: 
